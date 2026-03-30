@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="GIC Licensing - Become a TGDP Licensee and earn recurring income">
+  <title>GIC Licensing · TGDP Licensee Portal</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  
+  <!-- Shared Styles -->
+  <link rel="stylesheet" href="../../css/shared.css">
+  
+  <style>
+    .hero-section {
+      background: radial-gradient(ellipse 80% 60% at 50% 30%, rgba(167, 139, 250, 0.12) 0%, transparent 60%);
+    }
+    
+    .income-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+    
+    .income-card {
+      background: var(--obsidian-light);
+      border: 1px solid var(--obsidian-border);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      text-align: center;
+      transition: all var(--transition-base);
+    }
+    
+    .income-card:hover {
+      border-color: var(--purple);
+      transform: translateY(-4px);
+    }
+    
+    .income-icon {
+      font-size: 3rem;
+      margin-bottom: 1rem;
+    }
+    
+    .income-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--purple);
+      margin-bottom: 0.5rem;
+    }
+    
+    .income-percent {
+      font-family: var(--font-display);
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 0.5rem;
+    }
+    
+    .income-desc {
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+    
+    .pricing-card {
+      background: var(--obsidian-light);
+      border: 2px solid var(--purple);
+      border-radius: var(--radius-xl);
+      padding: 3rem;
+      text-align: center;
+      max-width: 500px;
+      margin: 2rem auto;
+    }
+    
+    .pricing-amount {
+      font-family: var(--font-display);
+      font-size: 4rem;
+      font-weight: 700;
+      color: var(--purple);
+    }
+    
+    .pricing-unit {
+      font-size: 1.25rem;
+      color: var(--text-muted);
+    }
+    
+    .pricing-desc {
+      color: var(--text-secondary);
+      margin: 1rem 0 2rem;
+    }
+    
+    @media (max-width: 768px) {
+      .income-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-pattern"></div>
+  
+  <!-- Navigation -->
+  <nav class="landing-nav">
+    <div class="landing-nav-content">
+      <a href="../../index.html" class="landing-nav-logo-trot">
+        <img src="../../assets/images/trot-logo.jpg" alt="TROT®">
+        <span style="color: var(--purple);">GIC</span> <span style="color: var(--text-secondary);">Licensing</span>
+      </a>
+      <div class="landing-nav-links">
+        <a href="#income-streams">Income Streams</a>
+        <a href="#pricing">Pricing</a>
+        <a href="../../faq.html">FAQ</a>
+        <a href="dashboard.html" class="btn btn-purple">Dashboard</a>
+      </div>
+    </div>
+  </nav>
+  
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-content">
+      <div class="hero-badge" style="background: var(--purple-muted); border-color: rgba(167, 139, 250, 0.3); color: var(--purple);">
+        25% Revenue Share · Three Income Streams
+      </div>
+      <h1 class="hero-title">Become a <em style="color: var(--purple);">TGDP Licensee</em></h1>
+      <p class="hero-desc">
+        Acquire the right to register gold-holding households and earn three streams of recurring 
+        income through Gold Income Coupons (GICs). $300 USD per household capacity.
+      </p>
+      <div class="cta-buttons">
+        <a href="../../registration.html" class="btn btn-purple btn-lg">Apply for License</a>
+        <a href="#income-streams" class="btn btn-outline btn-lg" style="border-color: rgba(167, 139, 250, 0.3); color: var(--purple);">View Income Streams</a>
+      </div>
+    </div>
+  </section>
+  
+  <!-- Income Streams -->
+  <section class="section" id="income-streams" style="background: var(--obsidian-light);">
+    <div class="section-inner">
+      <div class="section-tag" style="color: var(--purple);">Three Revenue Streams</div>
+      <h2 class="section-title">GIC <em style="color: var(--purple);">Income Streams</em></h2>
+      <div class="gold-rule" style="background: var(--purple);"></div>
+      
+      <div class="income-grid">
+        <div class="income-card">
+          <div class="income-icon">💰</div>
+          <div class="income-title">Stream 1: Registration</div>
+          <div class="income-percent">25%</div>
+          <p class="income-desc">
+            Earn 25% of the registration fee when a household you register pays their one-time 
+            registration fee to join the TGDP ecosystem.
+          </p>
+        </div>
+        <div class="income-card">
+          <div class="income-icon">⛏️</div>
+          <div class="income-title">Stream 2: Minting</div>
+          <div class="income-percent">25%</div>
+          <p class="income-desc">
+            Receive 25% of the minting fee every time your registered household mints new TGDPs 
+            from their gold jewelry.
+          </p>
+        </div>
+        <div class="income-card">
+          <div class="income-icon">🔄</div>
+          <div class="income-title">Stream 3: Trading</div>
+          <div class="income-percent">25%</div>
+          <p class="income-desc">
+            Collect 25% of platform revenue from all FTR swaps and trades executed by your 
+            registered households.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <!-- Pricing -->
+  <section class="section" id="pricing">
+    <div class="section-inner">
+      <div class="section-tag" style="color: var(--purple);">License Pricing</div>
+      <h2 class="section-title">Investment <em style="color: var(--purple);">Required</em></h2>
+      <div class="gold-rule" style="background: var(--purple);"></div>
+      
+      <div class="pricing-card">
+        <div class="pricing-amount">$300</div>
+        <div class="pricing-unit">USD per household capacity</div>
+        <p class="pricing-desc">
+          One-time license fee that grants you the right to register one gold-holding household. 
+          Scale your earnings by acquiring more household capacity.
+        </p>
+        <ul style="text-align: left; color: var(--text-secondary); margin-bottom: 2rem; list-style: none;">
+          <li style="padding: 0.5rem 0; border-bottom: 1px solid var(--obsidian-border);">
+            ✓ Lifetime license per household capacity
+          </li>
+          <li style="padding: 0.5rem 0; border-bottom: 1px solid var(--obsidian-border);">
+            ✓ Three income streams from each household
+          </li>
+          <li style="padding: 0.5rem 0; border-bottom: 1px solid var(--obsidian-border);">
+            ✓ Recurring revenue from all household activity
+          </li>
+          <li style="padding: 0.5rem 0;">
+            ✓ GIC redemption at LBMA benchmark rates
+          </li>
+        </ul>
+        <a href="../../registration.html" class="btn btn-purple btn-lg">Apply Now</a>
+      </div>
+    </div>
+  </section>
+  
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-bottom" style="border-top: none; padding-top: 0;">
+        © 2026 GIC Licensing · Part of TGDP Ecosystem · 
+        <a href="../../index.html" style="color: var(--purple);">Back to Ecosystem</a>
+      </div>
+    </div>
+  </footer>
+  
+  <!-- Shared JavaScript -->
+  <script src="../../js/shared.txt"></script>
+</body>
+</html>

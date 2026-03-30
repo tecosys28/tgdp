@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel | TGDP Ecosystem</title>
+  <link rel="stylesheet" href="../css/shared.css">
+  <style>
+    .admin-container { display: flex; min-height: 100vh; }
+    .admin-sidebar { width: 260px; background: linear-gradient(180deg, #1a1a2e 0%, #16213e 100%); position: fixed; height: 100vh; overflow-y: auto; }
+    .admin-logo { padding: 20px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 12px; }
+    .admin-logo img { width: 40px; height: 40px; border-radius: 8px; }
+    .admin-logo h1 { color: #d4af37; font-size: 1.2rem; margin: 0; }
+    .admin-logo span { color: #94a3b8; font-size: 0.75rem; display: block; }
+    .admin-nav { padding: 20px 0; }
+    .nav-section { margin-bottom: 20px; }
+    .nav-section-title { color: #64748b; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; padding: 0 20px; margin-bottom: 8px; }
+    .nav-item { display: flex; align-items: center; gap: 12px; padding: 12px 20px; color: #94a3b8; text-decoration: none; cursor: pointer; border-left: 3px solid transparent; }
+    .nav-item:hover, .nav-item.active { background: rgba(212, 175, 55, 0.1); color: #d4af37; border-left-color: #d4af37; }
+    .nav-item .icon { font-size: 1.2rem; width: 24px; text-align: center; }
+    .nav-item .badge { margin-left: auto; background: #ef4444; color: white; font-size: 0.7rem; padding: 2px 8px; border-radius: 10px; }
+    .admin-main { flex: 1; margin-left: 260px; background: #f8fafc; min-height: 100vh; }
+    .admin-header { background: white; padding: 16px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; position: sticky; top: 0; z-index: 100; }
+    .admin-header h2 { margin: 0; font-size: 1.5rem; color: #1e293b; }
+    .admin-content { padding: 30px; }
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 30px; }
+    .stat-card { background: white; border-radius: 12px; padding: 24px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .stat-card .stat-value { font-size: 2rem; font-weight: 700; color: #1e293b; margin-bottom: 4px; }
+    .stat-card .stat-label { color: #64748b; font-size: 0.875rem; }
+    .stat-card .stat-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; }
+    .stat-card .stat-icon.gold { background: rgba(212, 175, 55, 0.1); }
+    .stat-card .stat-icon.purple { background: rgba(167, 139, 250, 0.1); }
+    .stat-card .stat-icon.teal { background: rgba(45, 212, 191, 0.1); }
+    .stat-card .stat-icon.pink { background: rgba(251, 113, 133, 0.1); }
+    .admin-card { background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); margin-bottom: 24px; }
+    .admin-card-header { padding: 20px 24px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; }
+    .admin-card-header h3 { margin: 0; font-size: 1.1rem; color: #1e293b; }
+    .admin-card-body { padding: 24px; }
+    .admin-table { width: 100%; border-collapse: collapse; }
+    .admin-table th { text-align: left; padding: 12px 16px; background: #f8fafc; color: #64748b; font-size: 0.75rem; text-transform: uppercase; }
+    .admin-table td { padding: 16px; border-bottom: 1px solid #f1f5f9; color: #334155; font-size: 0.875rem; }
+    .status-badge { display: inline-flex; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 500; }
+    .status-badge.pending { background: rgba(251, 191, 36, 0.1); color: #d97706; }
+    .status-badge.approved { background: rgba(34, 197, 94, 0.1); color: #16a34a; }
+    .status-badge.active { background: rgba(96, 165, 250, 0.1); color: #2563eb; }
+    .action-btn { padding: 6px 12px; border: none; border-radius: 6px; font-size: 0.75rem; cursor: pointer; }
+    .action-btn.approve { background: #22c55e; color: white; }
+    .action-btn.reject { background: #ef4444; color: white; }
+    .action-btn.view { background: #e2e8f0; color: #475569; }
+    .panel-section { display: none; }
+    .panel-section.active { display: block; }
+  </style>
+</head>
+<body>
+  <div class="admin-container">
+    <aside class="admin-sidebar">
+      <div class="admin-logo">
+        <img src="../assets/images/trot-logo.jpg" alt="TROT">
+        <div><h1>TGDP Admin</h1><span>Control Panel</span></div>
+      </div>
+      <nav class="admin-nav">
+        <div class="nav-section">
+          <div class="nav-section-title">Overview</div>
+          <a class="nav-item active" onclick="showPanel('dashboard')"><span class="icon">📊</span><span>Dashboard</span></a>
+          <a class="nav-item" onclick="showPanel('analytics')"><span class="icon">📈</span><span>Analytics</span></a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">User Management</div>
+          <a class="nav-item" onclick="showPanel('users')"><span class="icon">👥</span><span>All Users</span></a>
+          <a class="nav-item" onclick="showPanel('kyc')"><span class="icon">🔐</span><span>KYC Queue</span><span class="badge" id="kyc-count">0</span></a>
+          <a class="nav-item" onclick="showPanel('licensees')"><span class="icon">🏆</span><span>Licensees</span></a>
+          <a class="nav-item" onclick="showPanel('jewelers')"><span class="icon">💎</span><span>Jewelers</span></a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">Operations</div>
+          <a class="nav-item" onclick="showPanel('transactions')"><span class="icon">💰</span><span>Transactions</span></a>
+          <a class="nav-item" onclick="showPanel('complaints')"><span class="icon">📝</span><span>Complaints</span><span class="badge" id="complaint-count">0</span></a>
+          <a class="nav-item" onclick="showPanel('blockchain')"><span class="icon">⛓️</span><span>Blockchain</span></a>
+        </div>
+        <div class="nav-section">
+          <div class="nav-section-title">System</div>
+          <a class="nav-item" onclick="showPanel('config')"><span class="icon">⚙️</span><span>Configuration</span></a>
+          <a class="nav-item" onclick="showPanel('audit')"><span class="icon">📋</span><span>Audit Logs</span></a>
+        </div>
+      </nav>
+    </aside>
+    <main class="admin-main">
+      <header class="admin-header">
+        <h2 id="panel-title">Dashboard</h2>
+        <div><span id="lbma-rate">LBMA: ₹7,342/g</span> | <span id="current-time"></span></div>
+      </header>
+      <div class="admin-content">
+        <section class="panel-section active" id="panel-dashboard">
+          <div class="stats-grid">
+            <div class="stat-card"><div class="stat-icon gold">🪙</div><div class="stat-value" id="stat-tgdp">0</div><div class="stat-label">Total TGDP Minted</div></div>
+            <div class="stat-card"><div class="stat-icon purple">👥</div><div class="stat-value" id="stat-users">0</div><div class="stat-label">Registered Users</div></div>
+            <div class="stat-card"><div class="stat-icon teal">🏆</div><div class="stat-value" id="stat-licensees">0</div><div class="stat-label">Active Licensees</div></div>
+            <div class="stat-card"><div class="stat-icon pink">💰</div><div class="stat-value" id="stat-tx">0</div><div class="stat-label">Transactions</div></div>
+          </div>
+          <div class="admin-card">
+            <div class="admin-card-header"><h3>Recent Activity</h3></div>
+            <div class="admin-card-body">
+              <table class="admin-table">
+                <thead><tr><th>Time</th><th>Type</th><th>User</th><th>Details</th><th>Status</th></tr></thead>
+                <tbody id="activity-table"><tr><td colspan="5" style="text-align:center;color:#94a3b8;">Loading...</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+        <section class="panel-section" id="panel-users">
+          <div class="admin-card">
+            <div class="admin-card-header"><h3>All Users</h3></div>
+            <div class="admin-card-body">
+              <table class="admin-table">
+                <thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Roles</th><th>KYC</th><th>Actions</th></tr></thead>
+                <tbody id="users-table"><tr><td colspan="6" style="text-align:center;color:#94a3b8;">No users</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+        <section class="panel-section" id="panel-kyc">
+          <div class="admin-card">
+            <div class="admin-card-header"><h3>KYC Verification Queue</h3></div>
+            <div class="admin-card-body">
+              <table class="admin-table">
+                <thead><tr><th>User</th><th>Roles</th><th>Documents</th><th>Submitted</th><th>Status</th><th>Actions</th></tr></thead>
+                <tbody id="kyc-table"><tr><td colspan="6" style="text-align:center;color:#94a3b8;">No pending KYC</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+        <section class="panel-section" id="panel-complaints">
+          <div class="admin-card">
+            <div class="admin-card-header"><h3>Complaint Management</h3></div>
+            <div class="admin-card-body">
+              <table class="admin-table">
+                <thead><tr><th>ID</th><th>Portal</th><th>Category</th><th>Filed</th><th>Status</th><th>Actions</th></tr></thead>
+                <tbody id="complaints-table"><tr><td colspan="6" style="text-align:center;color:#94a3b8;">No complaints</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+        <section class="panel-section" id="panel-blockchain">
+          <div class="stats-grid">
+            <div class="stat-card"><div class="stat-icon gold">⛓️</div><div class="stat-value" id="bc-total">0</div><div class="stat-label">Blockchain Records</div></div>
+            <div class="stat-card"><div class="stat-icon teal">✅</div><div class="stat-value" id="bc-confirmed">0</div><div class="stat-label">Confirmed</div></div>
+          </div>
+          <div class="admin-card">
+            <div class="admin-card-header"><h3>Smart Contract Addresses</h3></div>
+            <div class="admin-card-body">
+              <p><strong>Network:</strong> Polygon</p>
+              <p><strong>TGDP Token:</strong> <code>0x0000...0000</code> (Deploy pending)</p>
+              <p><strong>FTR Token:</strong> <code>0x0000...0000</code> (Deploy pending)</p>
+              <p><strong>GIC Token:</strong> <code>0x0000...0000</code> (Deploy pending)</p>
+              <p><strong>Registry:</strong> <code>0x0000...0000</code> (Deploy pending)</p>
+              <p><strong>IPR Registry:</strong> <code>0x0000...0000</code> (Deploy pending)</p>
+            </div>
+          </div>
+        </section>
+        <section class="panel-section" id="panel-config">
+          <div class="admin-card">
+            <div class="admin-card-header"><h3>System Configuration</h3></div>
+            <div class="admin-card-body">
+              <h4>Commission Rates</h4>
+              <p>Trading Fee: <strong>0%</strong></p>
+              <p>FTR Swap: <strong>4%</strong></p>
+              <p>GIC Share: <strong>25%</strong></p>
+              <p>Designer Share: <strong>85%</strong></p>
+              <h4 style="margin-top:20px;">SLA Configuration</h4>
+              <p>Acknowledgment: <strong>48 hours</strong></p>
+              <p>Investigation: <strong>7 days</strong></p>
+              <p>Resolution: <strong>14 days</strong></p>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      loadStats();
+      updateTime();
+      setInterval(updateTime, 1000);
+    });
+    function showPanel(id) {
+      document.querySelectorAll('.panel-section').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+      document.getElementById('panel-' + id)?.classList.add('active');
+      event.target.closest('.nav-item')?.classList.add('active');
+      const titles = {dashboard:'Dashboard',users:'Users',kyc:'KYC Queue',complaints:'Complaints',blockchain:'Blockchain',config:'Configuration'};
+      document.getElementById('panel-title').textContent = titles[id] || 'Admin';
+      loadPanelData(id);
+    }
+    function loadStats() {
+      const users = JSON.parse(localStorage.getItem('tgdp_users')||'[]');
+      const mints = JSON.parse(localStorage.getItem('tgdp_mints')||'[]');
+      const tx = JSON.parse(localStorage.getItem('tgdp_transactions')||'[]');
+      document.getElementById('stat-tgdp').textContent = mints.reduce((s,m)=>s+(m.tgdpAmount||0),0).toLocaleString();
+      document.getElementById('stat-users').textContent = users.length;
+      document.getElementById('stat-licensees').textContent = users.filter(u=>u.roles?.includes('licensee')).length;
+      document.getElementById('stat-tx').textContent = tx.length;
+    }
+    function loadPanelData(id) {
+      if(id==='users') loadUsers();
+      if(id==='kyc') loadKYC();
+      if(id==='complaints') loadComplaints();
+    }
+    function loadUsers() {
+      const users = JSON.parse(localStorage.getItem('tgdp_users')||'[]');
+      const tbody = document.getElementById('users-table');
+      if(!users.length) { tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:#94a3b8;">No users</td></tr>'; return; }
+      tbody.innerHTML = users.map(u=>'<tr><td>'+u.id+'</td><td>'+(u.name||'-')+'</td><td>'+(u.email||'-')+'</td><td>'+(u.roles||[]).join(', ')+'</td><td><span class="status-badge '+(u.kycStatus==='approved'?'approved':'pending')+'">'+(u.kycStatus||'pending')+'</span></td><td><button class="action-btn view">View</button></td></tr>').join('');
+    }
+    function loadKYC() {
+      const kyc = JSON.parse(localStorage.getItem('tgdp_kyc')||'[]');
+      document.getElementById('kyc-count').textContent = kyc.filter(k=>k.status!=='approved').length;
+      const tbody = document.getElementById('kyc-table');
+      if(!kyc.length) { tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:#94a3b8;">No KYC requests</td></tr>'; return; }
+      tbody.innerHTML = kyc.map(k=>'<tr><td>'+k.userId+'</td><td>-</td><td>'+(k.documents||[]).length+' docs</td><td>'+new Date(k.submittedAt).toLocaleDateString()+'</td><td><span class="status-badge '+k.status+'">'+k.status+'</span></td><td><button class="action-btn approve" onclick="approveKYC(\''+k.id+'\')">Approve</button></td></tr>').join('');
+    }
+    function loadComplaints() {
+      const complaints = JSON.parse(localStorage.getItem('tgdp_complaints')||'[]');
+      document.getElementById('complaint-count').textContent = complaints.filter(c=>c.status!=='resolved').length;
+      const tbody = document.getElementById('complaints-table');
+      if(!complaints.length) { tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:#94a3b8;">No complaints</td></tr>'; return; }
+      tbody.innerHTML = complaints.map(c=>'<tr><td>'+c.id+'</td><td>'+c.portal+'</td><td>'+c.category+'</td><td>'+new Date(c.filedAt).toLocaleDateString()+'</td><td><span class="status-badge '+c.status+'">'+c.status+'</span></td><td><button class="action-btn view">View</button></td></tr>').join('');
+    }
+    function approveKYC(id) {
+      const kyc = JSON.parse(localStorage.getItem('tgdp_kyc')||'[]');
+      const idx = kyc.findIndex(k=>k.id===id);
+      if(idx>=0) { kyc[idx].status='approved'; localStorage.setItem('tgdp_kyc',JSON.stringify(kyc)); loadKYC(); alert('KYC Approved'); }
+    }
+    function updateTime() {
+      document.getElementById('current-time').textContent = new Date().toLocaleString('en-IN',{weekday:'short',day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+    }
+  </script>
+</body>
+</html>

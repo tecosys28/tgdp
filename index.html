@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="TGDP Ecosystem - Tokenize Gold, Trade Freely, Unlock Value">
+  <title>TGDP · Gold Tokenization Ecosystem</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  
+  <!-- Shared Styles -->
+  <link rel="stylesheet" href="css/shared.css">
+  
+  <style>
+    .portal-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+    
+    .portal-card {
+      background: var(--obsidian-light);
+      border: 2px solid var(--obsidian-border);
+      border-radius: var(--radius-xl);
+      padding: 2rem;
+      transition: all var(--transition-base);
+      text-decoration: none;
+      color: inherit;
+      display: block;
+    }
+    
+    .portal-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+    }
+    
+    .portal-card.gold:hover { border-color: var(--gold); }
+    .portal-card.purple:hover { border-color: var(--purple); }
+    .portal-card.teal:hover { border-color: var(--teal); }
+    .portal-card.rose:hover { border-color: var(--rose); }
+    .portal-card.slate:hover { border-color: #94a3b8; }
+    
+    .portal-icon { font-size: 3rem; margin-bottom: 1rem; }
+    .portal-name { font-family: var(--font-display); font-size: 1.5rem; font-weight: 600; margin-bottom: 0.5rem; }
+    .portal-card.gold .portal-name { color: var(--gold); }
+    .portal-card.purple .portal-name { color: var(--purple); }
+    .portal-card.teal .portal-name { color: var(--teal); }
+    .portal-card.rose .portal-name { color: var(--rose); }
+    .portal-card.slate .portal-name { color: #94a3b8; }
+    .portal-desc { color: var(--text-secondary); font-size: 0.95rem; line-height: 1.6; margin-bottom: 1rem; }
+    .portal-features { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .portal-feature { padding: 0.35rem 0.75rem; background: var(--obsidian); border-radius: var(--radius-full); font-size: 0.75rem; color: var(--text-muted); }
+    
+    .ecosystem-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-top: 3rem; }
+    .eco-stat { text-align: center; padding: 2rem; background: var(--obsidian-light); border: 1px solid var(--obsidian-border); border-radius: var(--radius-lg); }
+    .eco-stat-value { font-family: var(--font-display); font-size: 2.5rem; font-weight: 700; color: var(--gold); margin-bottom: 0.5rem; }
+    .eco-stat-label { font-size: 0.85rem; color: var(--text-muted); }
+    
+    .role-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-top: 2rem; }
+    .role-card { background: var(--obsidian-light); border: 1px solid var(--obsidian-border); border-radius: var(--radius-lg); padding: 1.5rem; text-align: center; transition: all var(--transition-base); }
+    .role-card:hover { border-color: var(--gold); transform: translateY(-2px); }
+    .role-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+    .role-name { font-weight: 600; margin-bottom: 0.35rem; }
+    .role-desc { font-size: 0.8rem; color: var(--text-muted); }
+    
+    .protocol-preview { display: flex; justify-content: space-between; align-items: center; padding: 2rem 0; margin-top: 1rem; }
+    .protocol-step { flex: 1; text-align: center; position: relative; }
+    .protocol-step::after { content: '→'; position: absolute; right: -5px; top: 50%; transform: translateY(-50%); color: var(--gold); font-size: 1.25rem; }
+    .protocol-step:last-child::after { display: none; }
+    .protocol-num { width: 40px; height: 40px; background: var(--gold-muted); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 0.75rem; font-weight: 600; color: var(--gold); }
+    .protocol-title { font-weight: 600; font-size: 0.9rem; margin-bottom: 0.25rem; }
+    .protocol-time { font-size: 0.75rem; color: var(--text-muted); }
+    
+    @media (max-width: 1024px) {
+      .portal-grid { grid-template-columns: 1fr; }
+      .ecosystem-stats { grid-template-columns: repeat(2, 1fr); }
+      .role-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 768px) {
+      .ecosystem-stats { grid-template-columns: 1fr; }
+      .role-grid { grid-template-columns: 1fr; }
+      .protocol-preview { flex-direction: column; gap: 1rem; }
+      .protocol-step::after { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-pattern"></div>
+  
+  <nav class="landing-nav">
+    <div class="landing-nav-content">
+      <a href="index.html" class="landing-nav-logo-trot">
+        <img src="assets/images/trot-logo.jpg" alt="TROT®">
+        <span class="logo-text">TGDP</span>
+      </a>
+      <div class="landing-nav-links">
+        <a href="#portals">Portals</a>
+        <a href="#roles">Roles</a>
+        <a href="faq.html">FAQ</a>
+        <a href="#protocol">Complaints</a>
+        <a href="registration.html" class="btn btn-gold">Register</a>
+      </div>
+    </div>
+  </nav>
+  
+  <section class="hero-section">
+    <div class="hero-content">
+      <div class="hero-badge">LBMA Benchmark · Zero Fee · 164 Nations</div>
+      <h1 class="hero-title">The Gold <em>Tokenization</em> Ecosystem</h1>
+      <p class="hero-desc">Transform your physical gold into digital assets. Trade freely across borders, earn through licensing, design jewelry, and resolve disputes — all in one unified ecosystem.</p>
+      <div class="cta-buttons">
+        <a href="registration.html" class="btn btn-gold btn-lg">Join Ecosystem</a>
+        <a href="#portals" class="btn btn-outline-gold btn-lg">Explore Portals</a>
+      </div>
+      <div class="ecosystem-stats">
+        <div class="eco-stat"><div class="eco-stat-value">₹734</div><div class="eco-stat-label">LBMA Rate/gram</div></div>
+        <div class="eco-stat"><div class="eco-stat-value">0%</div><div class="eco-stat-label">Platform Fee</div></div>
+        <div class="eco-stat"><div class="eco-stat-value">164</div><div class="eco-stat-label">Nations Covered</div></div>
+        <div class="eco-stat"><div class="eco-stat-value">24hr</div><div class="eco-stat-label">Settlement Time</div></div>
+      </div>
+    </div>
+  </section>
+  
+  <section class="section" id="portals" style="background: var(--obsidian-light);">
+    <div class="section-inner">
+      <div class="section-tag">Ecosystem Portals</div>
+      <h2 class="section-title">Access Your <em>Portal</em></h2>
+      <div class="gold-rule"></div>
+      <div class="portal-grid">
+        <a href="portals/tgold/index.html" class="portal-card gold">
+          <div class="portal-icon">💰</div>
+          <div class="portal-name">T-Gold</div>
+          <p class="portal-desc">Tokenize your gold jewelry into TGDPs. Trade freely with zero platform fees, swap for Future Trade Rights.</p>
+          <div class="portal-features"><span class="portal-feature">Mint TGDPs</span><span class="portal-feature">Zero Fee Trading</span><span class="portal-feature">FTR Swaps</span></div>
+        </a>
+        <a href="portals/gic/index.html" class="portal-card purple">
+          <div class="portal-icon">📜</div>
+          <div class="portal-name">GIC Licensing</div>
+          <p class="portal-desc">Become a TGDP Licensee. Register households and earn three streams of recurring GIC income at 25% share.</p>
+          <div class="portal-features"><span class="portal-feature">$300/Household</span><span class="portal-feature">25% Revenue Share</span><span class="portal-feature">Three Streams</span></div>
+        </a>
+        <a href="portals/tjr/index.html" class="portal-card teal">
+          <div class="portal-icon">🔄</div>
+          <div class="portal-name">T-JR Jewelry Return</div>
+          <p class="portal-desc">Return old gold jewelry at fair LBMA-benchmarked value. Instant T-Gold credits or bank transfer.</p>
+          <div class="portal-features"><span class="portal-feature">Fair Valuation</span><span class="portal-feature">Instant Credits</span><span class="portal-feature">Home Pickup</span></div>
+        </a>
+        <a href="portals/tjdb/index.html" class="portal-card rose">
+          <div class="portal-icon">🎨</div>
+          <div class="portal-name">T-JDB Design Bank</div>
+          <p class="portal-desc">Discover exclusive jewelry designs from India's artisans. Commission custom pieces, pay with T-Gold.</p>
+          <div class="portal-features"><span class="portal-feature">IPR Protected</span><span class="portal-feature">Pay with T-Gold</span><span class="portal-feature">Custom Orders</span></div>
+        </a>
+      </div>
+      <a href="portals/ombudsman/index.html" class="portal-card slate" style="margin-top: 1.5rem;">
+        <div style="display: flex; align-items: center; gap: 2rem;">
+          <div class="portal-icon" style="margin-bottom: 0;">⚖️</div>
+          <div style="flex: 1;">
+            <div class="portal-name">Ombudsman Portal</div>
+            <p class="portal-desc" style="margin-bottom: 0;">Independent dispute resolution for all ecosystem participants. Fair, impartial, and binding arbitration.</p>
+          </div>
+          <div class="portal-features" style="flex-direction: column;"><span class="portal-feature">File Complaints</span><span class="portal-feature">Track Cases</span><span class="portal-feature">Mediation</span></div>
+        </div>
+      </a>
+    </div>
+  </section>
+  
+  <section class="section" id="roles">
+    <div class="section-inner">
+      <div class="section-tag">Participant Roles</div>
+      <h2 class="section-title">Choose Your <em>Role</em></h2>
+      <div class="gold-rule"></div>
+      <div class="role-grid">
+        <div class="role-card"><div class="role-icon">🏠</div><div class="role-name">Household</div><p class="role-desc">Earmark gold and mint TGDPs</p></div>
+        <div class="role-card"><div class="role-icon">📜</div><div class="role-name">Licensee</div><p class="role-desc">Register households, earn GIC</p></div>
+        <div class="role-card"><div class="role-icon">💎</div><div class="role-name">Jeweler</div><p class="role-desc">Accept T-Gold payments</p></div>
+        <div class="role-card"><div class="role-icon">🎨</div><div class="role-name">Designer</div><p class="role-desc">List IPR-protected designs</p></div>
+        <div class="role-card"><div class="role-icon">🔄</div><div class="role-name">Returnee</div><p class="role-desc">Return jewelry via T-JR</p></div>
+        <div class="role-card"><div class="role-icon">💼</div><div class="role-name">Consultant</div><p class="role-desc">Advisory & referral income</p></div>
+        <div class="role-card"><div class="role-icon">📢</div><div class="role-name">Advertiser</div><p class="role-desc">Promote to community</p></div>
+        <div class="role-card"><div class="role-icon">⚖️</div><div class="role-name">Ombudsman</div><p class="role-desc">Resolve disputes (exclusive)</p></div>
+      </div>
+      <div style="text-align: center; margin-top: 2rem;"><a href="registration.html" class="btn btn-gold btn-lg">Register Now →</a></div>
+    </div>
+  </section>
+  
+  <section class="section" id="protocol" style="background: var(--obsidian-light);">
+    <div class="section-inner">
+      <div class="section-tag">Dispute Resolution</div>
+      <h2 class="section-title">Complaint <em>Protocol</em></h2>
+      <div class="gold-rule"></div>
+      <p style="text-align: center; color: var(--text-secondary); max-width: 700px; margin: 0 auto;">All ecosystem participants can file complaints through their portals. The Ombudsman ensures fair resolution within 14 days.</p>
+      <div class="protocol-preview">
+        <div class="protocol-step"><div class="protocol-num">1</div><div class="protocol-title">Filing</div><p class="protocol-time">Day 0</p></div>
+        <div class="protocol-step"><div class="protocol-num">2</div><div class="protocol-title">Acknowledgment</div><p class="protocol-time">24-48 hours</p></div>
+        <div class="protocol-step"><div class="protocol-num">3</div><div class="protocol-title">Investigation</div><p class="protocol-time">3-7 days</p></div>
+        <div class="protocol-step"><div class="protocol-num">4</div><div class="protocol-title">Mediation</div><p class="protocol-time">7-10 days</p></div>
+        <div class="protocol-step"><div class="protocol-num">5</div><div class="protocol-title">Resolution</div><p class="protocol-time">10-14 days</p></div>
+      </div>
+      <div style="text-align: center; margin-top: 1rem;"><a href="portals/ombudsman/index.html" class="btn btn-outline btn-lg" style="border-color: #94a3b8; color: #94a3b8;">Learn More About Complaints →</a></div>
+    </div>
+  </section>
+  
+  <section class="section" style="background: linear-gradient(135deg, rgba(212, 175, 55, 0.1), rgba(212, 175, 55, 0.02));">
+    <div class="section-inner" style="text-align: center;">
+      <h2 class="section-title">Ready to <em>Join</em>?</h2>
+      <p style="color: var(--text-secondary); max-width: 600px; margin: 1.5rem auto 2rem;">Create your account, complete KYC, and start participating in the TGDP ecosystem today.</p>
+      <a href="registration.html" class="btn btn-gold btn-lg">Create Account</a>
+    </div>
+  </section>
+  
+  <footer class="footer">
+    <div class="footer-inner">
+      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 2rem; padding-bottom: 2rem; border-bottom: 1px solid var(--obsidian-border);">
+        <div><h4 style="color: var(--gold); margin-bottom: 1rem;">Portals</h4><a href="portals/tgold/index.html" style="display: block; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.5rem;">T-Gold</a><a href="portals/gic/index.html" style="display: block; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.5rem;">GIC Licensing</a><a href="portals/tjr/index.html" style="display: block; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.5rem;">T-JR</a><a href="portals/tjdb/index.html" style="display: block; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.5rem;">T-JDB</a><a href="portals/ombudsman/index.html" style="display: block; color: var(--text-muted); font-size: 0.9rem;">Ombudsman</a></div>
+        <div><h4 style="color: var(--gold); margin-bottom: 1rem;">Resources</h4><a href="docs/whitepaper/index.html" style="display: block; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.5rem;">Whitepaper</a><a href="docs/whitepaper/taxonomy.html" style="display: block; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.5rem;">Asset Taxonomy</a><a href="docs/whitepaper/roadmap.html" style="display: block; color: var(--text-muted); font-size: 0.9rem;">Roadmap</a></div>
+        <div><h4 style="color: var(--gold); margin-bottom: 1rem;">Legal</h4><a href="docs/agreements/terms.html" style="display: block; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.5rem;">Terms of Service</a><a href="docs/agreements/privacy.html" style="display: block; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.5rem;">Privacy Policy</a><a href="docs/agreements/disclaimer.html" style="display: block; color: var(--text-muted); font-size: 0.9rem;">Disclaimer</a></div>
+        <div><h4 style="color: var(--gold); margin-bottom: 1rem;">Contact</h4><span style="display: block; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.5rem;">support@trot-gold.com</span><span style="display: block; color: var(--text-muted); font-size: 0.9rem;">Mumbai, India</span></div>
+      </div>
+      <div class="footer-bottom">© 2026 TGDP Ecosystem · www.trot-gold.com</div>
+    </div>
+  </footer>
+  
+  <script src="js/shared.txt"></script>
+</body>
+</html>

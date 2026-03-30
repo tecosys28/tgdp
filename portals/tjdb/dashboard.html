@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="T-JDB Dashboard - Browse designs and manage orders">
+  <title>Dashboard · T-JDB</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  
+  <!-- Shared Styles -->
+  <link rel="stylesheet" href="../../css/shared.css">
+  
+  <style>
+    .sidebar-logo a { color: var(--rose) !important; }
+    .nav-item.active { 
+      background: var(--rose-muted) !important; 
+      color: var(--rose) !important; 
+      border-left-color: var(--rose) !important;
+    }
+    .nav-item:hover { background: var(--rose-muted) !important; }
+    
+    .design-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+    
+    .design-card {
+      background: var(--obsidian);
+      border: 1px solid var(--obsidian-border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      transition: all var(--transition-base);
+      cursor: pointer;
+    }
+    
+    .design-card:hover {
+      border-color: var(--rose);
+      transform: translateY(-2px);
+    }
+    
+    .design-image {
+      height: 180px;
+      background: linear-gradient(135deg, var(--rose-muted), var(--obsidian-light));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 4rem;
+      position: relative;
+    }
+    
+    .design-badge {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      padding: 0.25rem 0.75rem;
+      background: var(--rose);
+      color: white;
+      font-size: 0.65rem;
+      font-weight: 600;
+      border-radius: var(--radius-full);
+    }
+    
+    .design-favorite {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 32px;
+      height: 32px;
+      background: var(--obsidian);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+    
+    .design-favorite:hover {
+      background: var(--rose);
+    }
+    
+    .design-info {
+      padding: 1rem;
+    }
+    
+    .design-name {
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+    
+    .design-designer {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+    
+    .design-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem 1rem;
+      border-top: 1px solid var(--obsidian-border);
+    }
+    
+    .design-price {
+      font-family: var(--font-mono);
+      font-weight: 600;
+      color: var(--rose);
+    }
+    
+    .design-rating {
+      font-size: 0.8rem;
+      color: var(--gold);
+    }
+    
+    .filter-bar {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+    
+    .filter-chip {
+      padding: 0.5rem 1rem;
+      background: var(--obsidian);
+      border: 1px solid var(--obsidian-border);
+      border-radius: var(--radius-full);
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all var(--transition-fast);
+    }
+    
+    .filter-chip:hover, .filter-chip.active {
+      border-color: var(--rose);
+      color: var(--rose);
+    }
+    
+    @media (max-width: 1024px) {
+      .design-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    
+    @media (max-width: 768px) {
+      .design-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-logo-trot">
+        <img src="../../assets/images/trot-logo.jpg" alt="TROT®">
+        <div class="logo-text">
+        <a href="index.html">T-JDB</a>
+        <span>Design Bank</span>
+      </div>
+      
+      <nav class="sidebar-nav">
+        <div class="nav-group">
+          <div class="nav-group-label">Browse</div>
+          <div class="nav-item active" onclick="showPanel('gallery')">
+            <span class="nav-icon">🎨</span>
+            <span>Design Gallery</span>
+          </div>
+          <div class="nav-item" onclick="showPanel('designers')">
+            <span class="nav-icon">👩‍🎨</span>
+            <span>Designers</span>
+          </div>
+          <div class="nav-item" onclick="showPanel('collections')">
+            <span class="nav-icon">📚</span>
+            <span>Collections</span>
+          </div>
+        </div>
+        
+        <div class="nav-group">
+          <div class="nav-group-label">My Orders</div>
+          <div class="nav-item" onclick="showPanel('orders')">
+            <span class="nav-icon">🛒</span>
+            <span>My Orders</span>
+            <span class="nav-badge">2</span>
+          </div>
+          <div class="nav-item" onclick="showPanel('custom')">
+            <span class="nav-icon">✨</span>
+            <span>Custom Requests</span>
+          </div>
+          <div class="nav-item" onclick="showPanel('favorites')">
+            <span class="nav-icon">❤️</span>
+            <span>Favorites</span>
+          </div>
+        </div>
+        
+        <div class="nav-group">
+          <div class="nav-group-label">Account</div>
+          <div class="nav-item" onclick="showPanel('complaints')">
+            <span class="nav-icon">⚖️</span>
+            <span>File Complaint</span>
+          </div>
+          <div class="nav-item" onclick="showPanel('settings')">
+            <span class="nav-icon">⚙️</span>
+            <span>Settings</span>
+          </div>
+        </div>
+      </nav>
+      
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <div class="sidebar-avatar" style="background: linear-gradient(135deg, var(--rose-dark), var(--rose));">RK</div>
+          <div>
+            <div class="sidebar-name">Rajesh Kumar</div>
+            <div class="sidebar-id">HH-IND-54321</div>
+          </div>
+        </div>
+        <a href="../../index.html" class="btn btn-outline btn-sm" style="width: 100%;">
+          ← Back to Ecosystem
+        </a>
+      </div>
+    </aside>
+    
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Topbar -->
+      <header class="topbar">
+        <div>
+          <span class="topbar-title" id="pageTitle">Design Gallery</span>
+        </div>
+        <div class="topbar-right">
+          <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <span style="color: var(--text-muted); font-size: 0.85rem;">T-Gold Balance:</span>
+            <span style="font-family: var(--font-mono); color: var(--gold); font-weight: 600;">1,250 TGDPs</span>
+          </div>
+        </div>
+      </header>
+      
+      <!-- Content Area -->
+      <div class="content">
+        <!-- Gallery Panel -->
+        <div class="panel active" id="panel-gallery">
+          <!-- Search & Filters -->
+          <div class="card" style="margin-bottom: 1.5rem;">
+            <div class="card-body">
+              <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                <input type="text" class="form-input" placeholder="Search designs, designers..." style="flex: 1;">
+                <button class="btn btn-rose">Search</button>
+              </div>
+              
+              <div class="filter-bar">
+                <span class="filter-chip active">All</span>
+                <span class="filter-chip">Rings</span>
+                <span class="filter-chip">Necklaces</span>
+                <span class="filter-chip">Earrings</span>
+                <span class="filter-chip">Bangles</span>
+                <span class="filter-chip">Pendants</span>
+                <span class="filter-chip">Bridal</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Design Grid -->
+          <div class="design-grid">
+            <div class="design-card" onclick="openModal('design-detail')">
+              <div class="design-image">
+                💍
+                <span class="design-badge">New</span>
+                <div class="design-favorite">🤍</div>
+              </div>
+              <div class="design-info">
+                <div class="design-name">Lotus Bloom Ring</div>
+                <div class="design-designer">by Priya Mehta</div>
+              </div>
+              <div class="design-footer">
+                <span class="design-price">₹45,000</span>
+                <span class="design-rating">⭐ 4.9</span>
+              </div>
+            </div>
+            
+            <div class="design-card">
+              <div class="design-image">
+                📿
+                <div class="design-favorite">🤍</div>
+              </div>
+              <div class="design-info">
+                <div class="design-name">Temple Necklace</div>
+                <div class="design-designer">by Arjun Sharma</div>
+              </div>
+              <div class="design-footer">
+                <span class="design-price">₹2,85,000</span>
+                <span class="design-rating">⭐ 4.8</span>
+              </div>
+            </div>
+            
+            <div class="design-card">
+              <div class="design-image">
+                ✨
+                <span class="design-badge">Trending</span>
+                <div class="design-favorite">❤️</div>
+              </div>
+              <div class="design-info">
+                <div class="design-name">Peacock Earrings</div>
+                <div class="design-designer">by Meera Reddy</div>
+              </div>
+              <div class="design-footer">
+                <span class="design-price">₹78,000</span>
+                <span class="design-rating">⭐ 5.0</span>
+              </div>
+            </div>
+            
+            <div class="design-card">
+              <div class="design-image">
+                👑
+                <div class="design-favorite">🤍</div>
+              </div>
+              <div class="design-info">
+                <div class="design-name">Royal Bangle Set</div>
+                <div class="design-designer">by Vikram Arts</div>
+              </div>
+              <div class="design-footer">
+                <span class="design-price">₹1,65,000</span>
+                <span class="design-rating">⭐ 4.7</span>
+              </div>
+            </div>
+            
+            <div class="design-card">
+              <div class="design-image">
+                💎
+                <span class="design-badge">Premium</span>
+                <div class="design-favorite">🤍</div>
+              </div>
+              <div class="design-info">
+                <div class="design-name">Diamond Pendant</div>
+                <div class="design-designer">by Anjali Jewels</div>
+              </div>
+              <div class="design-footer">
+                <span class="design-price">₹3,45,000</span>
+                <span class="design-rating">⭐ 4.9</span>
+              </div>
+            </div>
+            
+            <div class="design-card">
+              <div class="design-image">
+                🌸
+                <div class="design-favorite">🤍</div>
+              </div>
+              <div class="design-info">
+                <div class="design-name">Floral Anklet</div>
+                <div class="design-designer">by Traditional Touch</div>
+              </div>
+              <div class="design-footer">
+                <span class="design-price">₹32,000</span>
+                <span class="design-rating">⭐ 4.6</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Pagination -->
+          <div style="display: flex; justify-content: center; gap: 0.5rem; margin-top: 2rem;">
+            <button class="btn btn-outline btn-sm" disabled>← Previous</button>
+            <button class="btn btn-rose btn-sm">1</button>
+            <button class="btn btn-outline btn-sm">2</button>
+            <button class="btn btn-outline btn-sm">3</button>
+            <button class="btn btn-outline btn-sm">Next →</button>
+          </div>
+        </div>
+        
+        <!-- Designers Panel -->
+        <div class="panel" id="panel-designers">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Featured Designers</h3>
+            </div>
+            <div class="card-body">
+              <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                <div style="background: var(--obsidian); border: 1px solid var(--obsidian-border); border-radius: var(--radius-lg); padding: 1.5rem; display: flex; gap: 1rem;">
+                  <div style="width: 64px; height: 64px; background: linear-gradient(135deg, var(--rose-dark), var(--rose)); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">PM</div>
+                  <div style="flex: 1;">
+                    <div style="font-weight: 600;">Priya Mehta</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">Mumbai · Contemporary Designs</div>
+                    <div style="font-size: 0.8rem; color: var(--rose);">⭐ 4.9 · 45 designs · 230 orders</div>
+                  </div>
+                  <button class="btn btn-outline btn-sm" style="border-color: var(--rose); color: var(--rose);">View</button>
+                </div>
+                
+                <div style="background: var(--obsidian); border: 1px solid var(--obsidian-border); border-radius: var(--radius-lg); padding: 1.5rem; display: flex; gap: 1rem;">
+                  <div style="width: 64px; height: 64px; background: linear-gradient(135deg, var(--gold-dark), var(--gold)); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">AS</div>
+                  <div style="flex: 1;">
+                    <div style="font-weight: 600;">Arjun Sharma</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">Jaipur · Traditional Temple Jewelry</div>
+                    <div style="font-size: 0.8rem; color: var(--rose);">⭐ 4.8 · 62 designs · 185 orders</div>
+                  </div>
+                  <button class="btn btn-outline btn-sm" style="border-color: var(--rose); color: var(--rose);">View</button>
+                </div>
+                
+                <div style="background: var(--obsidian); border: 1px solid var(--obsidian-border); border-radius: var(--radius-lg); padding: 1.5rem; display: flex; gap: 1rem;">
+                  <div style="width: 64px; height: 64px; background: linear-gradient(135deg, var(--purple-dark), var(--purple)); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">MR</div>
+                  <div style="flex: 1;">
+                    <div style="font-weight: 600;">Meera Reddy</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">Hyderabad · South Indian Designs</div>
+                    <div style="font-size: 0.8rem; color: var(--rose);">⭐ 5.0 · 38 designs · 156 orders</div>
+                  </div>
+                  <button class="btn btn-outline btn-sm" style="border-color: var(--rose); color: var(--rose);">View</button>
+                </div>
+                
+                <div style="background: var(--obsidian); border: 1px solid var(--obsidian-border); border-radius: var(--radius-lg); padding: 1.5rem; display: flex; gap: 1rem;">
+                  <div style="width: 64px; height: 64px; background: linear-gradient(135deg, var(--teal-dark), var(--teal)); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">VA</div>
+                  <div style="flex: 1;">
+                    <div style="font-weight: 600;">Vikram Arts Studio</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">Delhi · Fusion & Bridal</div>
+                    <div style="font-size: 0.8rem; color: var(--rose);">⭐ 4.7 · 89 designs · 312 orders</div>
+                  </div>
+                  <button class="btn btn-outline btn-sm" style="border-color: var(--rose); color: var(--rose);">View</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Collections Panel -->
+        <div class="panel" id="panel-collections">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Curated Collections</h3>
+            </div>
+            <div class="card-body">
+              <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
+                <div style="background: linear-gradient(135deg, rgba(251, 113, 133, 0.2), var(--obsidian)); border: 1px solid var(--obsidian-border); border-radius: var(--radius-lg); padding: 2rem; cursor: pointer;" onclick="showToast('Opening Bridal Collection...', 'info')">
+                  <div style="font-size: 3rem; margin-bottom: 1rem;">👰</div>
+                  <div style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem;">Bridal Collection</div>
+                  <div style="font-size: 0.85rem; color: var(--text-muted);">56 exquisite pieces for your special day</div>
+                </div>
+                <div style="background: linear-gradient(135deg, rgba(212, 175, 55, 0.2), var(--obsidian)); border: 1px solid var(--obsidian-border); border-radius: var(--radius-lg); padding: 2rem; cursor: pointer;">
+                  <div style="font-size: 3rem; margin-bottom: 1rem;">🏛️</div>
+                  <div style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem;">Temple Jewelry</div>
+                  <div style="font-size: 0.85rem; color: var(--text-muted);">Traditional South Indian temple designs</div>
+                </div>
+                <div style="background: linear-gradient(135deg, rgba(167, 139, 250, 0.2), var(--obsidian)); border: 1px solid var(--obsidian-border); border-radius: var(--radius-lg); padding: 2rem; cursor: pointer;">
+                  <div style="font-size: 3rem; margin-bottom: 1rem;">💎</div>
+                  <div style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem;">Modern Minimalist</div>
+                  <div style="font-size: 0.85rem; color: var(--text-muted);">Contemporary everyday wear</div>
+                </div>
+                <div style="background: linear-gradient(135deg, rgba(45, 212, 191, 0.2), var(--obsidian)); border: 1px solid var(--obsidian-border); border-radius: var(--radius-lg); padding: 2rem; cursor: pointer;">
+                  <div style="font-size: 3rem; margin-bottom: 1rem;">🎭</div>
+                  <div style="font-size: 1.25rem; font-weight: 600; margin-bottom: 0.5rem;">Kundan & Polki</div>
+                  <div style="font-size: 0.85rem; color: var(--text-muted);">Royal Rajasthani heritage pieces</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Orders Panel -->
+        <div class="panel" id="panel-orders">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">My Orders</h3>
+            </div>
+            <div class="card-body" style="padding: 0;">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Order ID</th>
+                    <th>Design</th>
+                    <th>Designer</th>
+                    <th>Amount</th>
+                    <th>Payment</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="mono">JDB-2026-00234</td>
+                    <td>Lotus Bloom Ring</td>
+                    <td>Priya Mehta</td>
+                    <td class="mono">₹45,000</td>
+                    <td><span class="badge badge-gold">T-Gold</span></td>
+                    <td>25 Mar 2026</td>
+                    <td><span class="badge badge-warning">In Production</span></td>
+                  </tr>
+                  <tr>
+                    <td class="mono">JDB-2026-00198</td>
+                    <td>Peacock Earrings</td>
+                    <td>Meera Reddy</td>
+                    <td class="mono">₹78,000</td>
+                    <td><span class="badge badge-info">Bank</span></td>
+                    <td>18 Mar 2026</td>
+                    <td><span class="badge badge-purple">Shipping</span></td>
+                  </tr>
+                  <tr>
+                    <td class="mono">JDB-2026-00156</td>
+                    <td>Diamond Pendant</td>
+                    <td>Anjali Jewels</td>
+                    <td class="mono">₹3,45,000</td>
+                    <td><span class="badge badge-gold">T-Gold</span></td>
+                    <td>05 Mar 2026</td>
+                    <td><span class="badge badge-success">Delivered</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Custom Requests Panel -->
+        <div class="panel" id="panel-custom">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Request Custom Design</h3>
+            </div>
+            <div class="card-body">
+              <div class="alert alert-info" style="margin-bottom: 1.5rem;">
+                <span class="alert-icon">✨</span>
+                <div>
+                  Commission a custom design from your favorite designer. 
+                  Describe your vision and get a personalized quote.
+                </div>
+              </div>
+              
+              <form id="customForm">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label required">Select Designer</label>
+                    <select class="form-select" name="designer" required>
+                      <option value="">Choose a designer</option>
+                      <option value="priya">Priya Mehta - Contemporary</option>
+                      <option value="arjun">Arjun Sharma - Temple</option>
+                      <option value="meera">Meera Reddy - South Indian</option>
+                      <option value="vikram">Vikram Arts - Fusion</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label required">Jewelry Type</label>
+                    <select class="form-select" name="jewelryType" required>
+                      <option value="">Select type</option>
+                      <option value="ring">Ring</option>
+                      <option value="necklace">Necklace</option>
+                      <option value="earrings">Earrings</option>
+                      <option value="bangle">Bangle</option>
+                      <option value="pendant">Pendant</option>
+                      <option value="set">Complete Set</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label required">Estimated Budget</label>
+                    <select class="form-select" name="budget" required>
+                      <option value="">Select range</option>
+                      <option value="25-50">₹25,000 - ₹50,000</option>
+                      <option value="50-100">₹50,000 - ₹1,00,000</option>
+                      <option value="100-250">₹1,00,000 - ₹2,50,000</option>
+                      <option value="250+">₹2,50,000+</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label required">Occasion</label>
+                    <select class="form-select" name="occasion" required>
+                      <option value="">Select occasion</option>
+                      <option value="wedding">Wedding</option>
+                      <option value="engagement">Engagement</option>
+                      <option value="anniversary">Anniversary</option>
+                      <option value="festival">Festival</option>
+                      <option value="daily">Daily Wear</option>
+                      <option value="gift">Gift</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <div class="form-group">
+                  <label class="form-label required">Design Description</label>
+                  <textarea class="form-textarea" name="description" required placeholder="Describe your vision in detail - style preferences, motifs, stones, etc." rows="4"></textarea>
+                </div>
+                
+                <div class="form-group">
+                  <label class="form-label">Reference Images</label>
+                  <div class="file-upload" onclick="document.getElementById('refImages').click()">
+                    <input type="file" id="refImages" name="images" accept="image/*" multiple>
+                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">📷</div>
+                    <div>Upload reference images (optional)</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">JPG, PNG up to 5MB</div>
+                  </div>
+                </div>
+                
+                <button type="submit" class="btn btn-rose btn-lg">Submit Request</button>
+              </form>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Favorites Panel -->
+        <div class="panel" id="panel-favorites">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">My Favorites</h3>
+            </div>
+            <div class="card-body">
+              <div class="design-grid">
+                <div class="design-card">
+                  <div class="design-image">
+                    ✨
+                    <div class="design-favorite">❤️</div>
+                  </div>
+                  <div class="design-info">
+                    <div class="design-name">Peacock Earrings</div>
+                    <div class="design-designer">by Meera Reddy</div>
+                  </div>
+                  <div class="design-footer">
+                    <span class="design-price">₹78,000</span>
+                    <button class="btn btn-rose btn-sm">Buy Now</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Settings Panel -->
+        <div class="panel" id="panel-settings">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Account Settings</h3>
+            </div>
+            <div class="card-body">
+              <h4 style="margin-bottom: 1rem;">Profile Information</h4>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Full Name</label>
+                  <input type="text" class="form-input" value="Rajesh Kumar" disabled>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Email</label>
+                  <input type="email" class="form-input" value="rajesh.kumar@email.com" disabled>
+                </div>
+              </div>
+              
+              <hr style="border: none; border-top: 1px solid var(--obsidian-border); margin: 2rem 0;">
+              
+              <h4 style="margin-bottom: 1rem;">Shipping Address</h4>
+              <div class="form-group">
+                <textarea class="form-textarea" rows="2">123, Gold Lane, Andheri West, Mumbai - 400058</textarea>
+              </div>
+              <button class="btn btn-outline">Update Address</button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Complaints Panel -->
+        <div class="panel" id="panel-complaints">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">File a Complaint</h3>
+            </div>
+            <div class="card-body">
+              <div class="alert alert-info" style="margin-bottom: 1.5rem;">
+                <span class="alert-icon">⚖️</span>
+                <div>
+                  <strong>Complaint Protocol:</strong> All complaints are reviewed by the TGDP Ombudsman. 
+                  Resolution typically takes 7-14 business days.
+                </div>
+              </div>
+              
+              <!-- Protocol Steps -->
+              <div style="display: flex; justify-content: space-between; padding: 1rem; background: var(--obsidian); border-radius: var(--radius-lg); margin-bottom: 1.5rem;">
+                <div style="text-align: center; flex: 1;"><div style="width: 28px; height: 28px; background: var(--rose-muted); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 0.35rem; font-size: 0.75rem; font-weight: 600; color: var(--rose);">1</div><div style="font-size: 0.7rem; color: var(--text-muted);">Filing</div></div>
+                <div style="color: var(--rose); align-self: center;">→</div>
+                <div style="text-align: center; flex: 1;"><div style="width: 28px; height: 28px; background: var(--rose-muted); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 0.35rem; font-size: 0.75rem; font-weight: 600; color: var(--rose);">2</div><div style="font-size: 0.7rem; color: var(--text-muted);">Acknowledgment</div></div>
+                <div style="color: var(--rose); align-self: center;">→</div>
+                <div style="text-align: center; flex: 1;"><div style="width: 28px; height: 28px; background: var(--rose-muted); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 0.35rem; font-size: 0.75rem; font-weight: 600; color: var(--rose);">3</div><div style="font-size: 0.7rem; color: var(--text-muted);">Investigation</div></div>
+                <div style="color: var(--rose); align-self: center;">→</div>
+                <div style="text-align: center; flex: 1;"><div style="width: 28px; height: 28px; background: var(--rose-muted); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 0.35rem; font-size: 0.75rem; font-weight: 600; color: var(--rose);">4</div><div style="font-size: 0.7rem; color: var(--text-muted);">Mediation</div></div>
+                <div style="color: var(--rose); align-self: center;">→</div>
+                <div style="text-align: center; flex: 1;"><div style="width: 28px; height: 28px; background: var(--rose-muted); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 0.35rem; font-size: 0.75rem; font-weight: 600; color: var(--rose);">5</div><div style="font-size: 0.7rem; color: var(--text-muted);">Resolution</div></div>
+              </div>
+              
+              <form id="complaintForm">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label required">Complaint Against</label>
+                    <select class="form-select" name="against" required>
+                      <option value="">Select Party</option>
+                      <option value="designer">Designer</option>
+                      <option value="jeweler">Jeweler</option>
+                      <option value="platform">Platform/Technical</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label required">Category</label>
+                    <select class="form-select" name="category" required>
+                      <option value="">Select Category</option>
+                      <option value="ipr">IPR Violation</option>
+                      <option value="order">Order Dispute</option>
+                      <option value="payment">Payment Issue</option>
+                      <option value="designer">Designer Complaint</option>
+                      <option value="quality">Quality Issue</option>
+                      <option value="technical">Technical Problem</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <div class="form-group">
+                  <label class="form-label required">Subject</label>
+                  <input type="text" class="form-input" name="subject" required placeholder="Brief description of the issue">
+                </div>
+                
+                <div class="form-group">
+                  <label class="form-label required">Description</label>
+                  <textarea class="form-textarea" name="description" required placeholder="Provide detailed information about your complaint" rows="5"></textarea>
+                </div>
+                
+                <button type="submit" class="btn btn-rose btn-lg">Submit Complaint</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+  
+  <!-- Design Detail Modal -->
+  <div class="modal-overlay" id="modal-design-detail">
+    <div class="modal" style="max-width: 600px;">
+      <div class="modal-header">
+        <h3 class="modal-title">Lotus Bloom Ring</h3>
+        <button class="modal-close" onclick="closeModal('design-detail')">×</button>
+      </div>
+      <div class="modal-body">
+        <div style="height: 200px; background: linear-gradient(135deg, var(--rose-muted), var(--obsidian)); border-radius: var(--radius-lg); display: flex; align-items: center; justify-content: center; font-size: 5rem; margin-bottom: 1.5rem;">💍</div>
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+          <div>
+            <div style="font-size: 0.85rem; color: var(--text-muted);">Designer</div>
+            <div style="font-weight: 600;">Priya Mehta</div>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-size: 0.85rem; color: var(--text-muted);">Price</div>
+            <div style="font-family: var(--font-mono); font-size: 1.5rem; color: var(--rose); font-weight: 600;">₹45,000</div>
+          </div>
+        </div>
+        
+        <p style="color: var(--text-secondary); margin-bottom: 1rem;">
+          Inspired by the serene beauty of lotus flowers, this contemporary ring features 
+          delicate petal motifs in 22K gold with subtle diamond accents. Perfect for 
+          everyday elegance.
+        </p>
+        
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1rem;">
+          <div style="background: var(--obsidian); padding: 0.75rem; border-radius: var(--radius-md); text-align: center;">
+            <div style="font-size: 0.75rem; color: var(--text-muted);">Gold Purity</div>
+            <div style="font-weight: 600;">22K (916)</div>
+          </div>
+          <div style="background: var(--obsidian); padding: 0.75rem; border-radius: var(--radius-md); text-align: center;">
+            <div style="font-size: 0.75rem; color: var(--text-muted);">Weight</div>
+            <div style="font-weight: 600;">5.2g</div>
+          </div>
+          <div style="background: var(--obsidian); padding: 0.75rem; border-radius: var(--radius-md); text-align: center;">
+            <div style="font-size: 0.75rem; color: var(--text-muted);">Delivery</div>
+            <div style="font-weight: 600;">10-14 days</div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal('design-detail')">Close</button>
+        <button class="btn btn-rose" onclick="showToast('Added to cart!', 'success'); closeModal('design-detail');">Add to Cart</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Shared JavaScript -->
+  <script src="../../js/shared.txt"></script>
+  
+  <script>
+    // Custom form submission
+    document.getElementById('customForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      showLoading('Submitting your custom request...');
+      setTimeout(() => {
+        hideLoading();
+        showToast('Custom design request submitted! Designer will respond within 48 hours.', 'success');
+        this.reset();
+      }, 1500);
+    });
+    
+    // Filter chips
+    document.querySelectorAll('.filter-chip').forEach(chip => {
+      chip.addEventListener('click', function() {
+        document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+        this.classList.add('active');
+        showToast(`Filtering by ${this.textContent}...`, 'info');
+      });
+    });
+    
+    // Complaint form submission
+    document.getElementById('complaintForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      showLoading('Submitting complaint to Ombudsman...');
+      setTimeout(() => {
+        hideLoading();
+        const refNo = 'OMB-2026-' + String(Math.floor(Math.random() * 90000) + 10000).padStart(5, '0');
+        showToast('Complaint ' + refNo + ' submitted! Acknowledgment within 24-48 hours.', 'success');
+        this.reset();
+      }, 1500);
+    });
+  </script>
+</body>
+</html>

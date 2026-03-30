@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Register for TGDP Ecosystem - Create your account and select your roles">
+  <title>Register · TGDP Ecosystem</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  
+  <!-- Shared Styles -->
+  <link rel="stylesheet" href="css/shared.css">
+  
+  <style>
+    .register-page {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .register-header {
+      padding: 1.5rem 2rem;
+      border-bottom: 1px solid var(--obsidian-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .register-logo {
+      font-family: var(--font-display);
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--gold);
+    }
+    
+    .register-main {
+      flex: 1;
+      display: flex;
+      justify-content: center;
+      padding: 2rem;
+    }
+    
+    .register-container {
+      width: 100%;
+      max-width: 900px;
+    }
+    
+    .register-title {
+      text-align: center;
+      margin-bottom: 0.5rem;
+    }
+    
+    .register-subtitle {
+      text-align: center;
+      color: var(--text-secondary);
+      font-size: 1rem;
+      margin-bottom: 2rem;
+    }
+    
+    /* Role Selection */
+    .role-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+      margin-bottom: 1rem;
+    }
+    
+    .role-card {
+      background: var(--obsidian);
+      border: 2px solid var(--obsidian-border);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem;
+      cursor: pointer;
+      transition: all var(--transition-base);
+      position: relative;
+    }
+    
+    .role-card:hover:not(.disabled) {
+      border-color: var(--gold);
+    }
+    
+    .role-card.selected {
+      border-color: var(--gold);
+      background: var(--gold-muted);
+    }
+    
+    .role-card.disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    
+    .role-card input {
+      position: absolute;
+      opacity: 0;
+    }
+    
+    .role-icon {
+      font-size: 1.75rem;
+      margin-bottom: 0.75rem;
+    }
+    
+    .role-name {
+      font-weight: 600;
+      margin-bottom: 0.35rem;
+    }
+    
+    .role-desc {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+    
+    .role-check {
+      position: absolute;
+      top: 0.75rem;
+      right: 0.75rem;
+      width: 22px;
+      height: 22px;
+      background: var(--obsidian-border);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.8rem;
+      color: transparent;
+    }
+    
+    .role-card.selected .role-check {
+      background: var(--gold);
+      color: var(--obsidian);
+    }
+    
+    .exclusive-warning {
+      background: var(--warning-muted);
+      border: 1px solid rgba(251, 191, 36, 0.3);
+      border-radius: var(--radius-md);
+      padding: 0.75rem 1rem;
+      font-size: 0.85rem;
+      color: var(--warning);
+      margin-top: 1rem;
+      display: none;
+    }
+    
+    .exclusive-warning.visible {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    
+    /* KYC Documents */
+    .kyc-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+    }
+    
+    .kyc-upload {
+      background: var(--obsidian);
+      border: 2px dashed var(--obsidian-border);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      text-align: center;
+      transition: all var(--transition-base);
+      cursor: pointer;
+    }
+    
+    .kyc-upload:hover {
+      border-color: var(--gold);
+      background: var(--gold-muted);
+    }
+    
+    .kyc-upload.uploaded {
+      border-color: var(--success);
+      border-style: solid;
+    }
+    
+    .kyc-upload input {
+      display: none;
+    }
+    
+    .kyc-icon {
+      font-size: 2rem;
+      margin-bottom: 0.75rem;
+    }
+    
+    .kyc-label {
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+    
+    .kyc-hint {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+    
+    .kyc-filename {
+      font-size: 0.8rem;
+      color: var(--success);
+      margin-top: 0.5rem;
+      display: none;
+    }
+    
+    .kyc-upload.uploaded .kyc-filename {
+      display: block;
+    }
+    
+    /* Review Section */
+    .review-section {
+      background: var(--obsidian);
+      border: 1px solid var(--obsidian-border);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+    
+    .review-title {
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid var(--obsidian-border);
+    }
+    
+    .review-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.5rem 0;
+    }
+    
+    .review-label {
+      color: var(--text-muted);
+    }
+    
+    .review-value {
+      font-weight: 500;
+    }
+    
+    /* Terms Agreement */
+    .terms-box {
+      background: var(--obsidian);
+      border: 1px solid var(--obsidian-border);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      max-height: 200px;
+      overflow-y: auto;
+    }
+    
+    .terms-text {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+      line-height: 1.8;
+    }
+    
+    /* Wizard Navigation */
+    .wizard-nav {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 2rem;
+      padding-top: 1.5rem;
+      border-top: 1px solid var(--obsidian-border);
+    }
+    
+    @media (max-width: 768px) {
+      .role-grid, .kyc-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-pattern"></div>
+  
+  <div class="register-page">
+    <!-- Header -->
+    <header class="register-header">
+      <a href="index.html" class="landing-nav-logo-trot" style="text-decoration: none;">
+        <img src="assets/images/trot-logo.jpg" alt="TROT®">
+        <span class="logo-text">TGDP</span>
+      </a>
+      <span style="color: var(--text-muted); font-size: 0.9rem;">Already registered? <a href="#" style="color: var(--gold);">Sign In</a></span>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="register-main">
+      <div class="register-container">
+        <h1 class="register-title">Create Your <em>Account</em></h1>
+        <p class="register-subtitle">Join the TGDP ecosystem and unlock the value of your gold</p>
+        
+        <!-- Wizard Steps -->
+        <div class="wizard-steps">
+          <div class="wizard-step active" onclick="goToStep(1)">
+            <span class="wizard-step-num">1</span>
+            <span>Select Roles</span>
+          </div>
+          <div class="wizard-connector"></div>
+          <div class="wizard-step" onclick="goToStep(2)">
+            <span class="wizard-step-num">2</span>
+            <span>Personal Info</span>
+          </div>
+          <div class="wizard-connector"></div>
+          <div class="wizard-step" onclick="goToStep(3)">
+            <span class="wizard-step-num">3</span>
+            <span>KYC Documents</span>
+          </div>
+          <div class="wizard-connector"></div>
+          <div class="wizard-step" onclick="goToStep(4)">
+            <span class="wizard-step-num">4</span>
+            <span>Review & Submit</span>
+          </div>
+        </div>
+        
+        <form id="registrationForm">
+          <!-- Step 1: Role Selection -->
+          <div class="wizard-content" id="step1">
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Select Your Role(s)</h3>
+                <span class="badge badge-info">Multi-select allowed</span>
+              </div>
+              <div class="card-body">
+                <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem;">
+                  Choose one or more roles based on how you wish to participate in the TGDP ecosystem. 
+                  Some roles have restrictions and cannot be combined.
+                </p>
+                
+                <div class="role-grid">
+                  <!-- Household -->
+                  <label class="role-card" id="role-household">
+                    <input type="checkbox" name="roles" value="household" onchange="updateRoleSelection()">
+                    <div class="role-check">✓</div>
+                    <div class="role-icon">🏠</div>
+                    <div class="role-name">Household</div>
+                    <div class="role-desc">Earmark your gold jewelry and mint TGDPs. Access T-Gold platform and earn through tokenization.</div>
+                  </label>
+                  
+                  <!-- TGDP Licensee -->
+                  <label class="role-card" id="role-licensee">
+                    <input type="checkbox" name="roles" value="licensee" onchange="updateRoleSelection()">
+                    <div class="role-check">✓</div>
+                    <div class="role-icon">📜</div>
+                    <div class="role-name">TGDP Licensee</div>
+                    <div class="role-desc">Register gold-holding households and earn three streams of GIC income. $300 USD per household capacity.</div>
+                  </label>
+                  
+                  <!-- Jeweler -->
+                  <label class="role-card" id="role-jeweler">
+                    <input type="checkbox" name="roles" value="jeweler" onchange="updateRoleSelection()">
+                    <div class="role-check">✓</div>
+                    <div class="role-icon">💎</div>
+                    <div class="role-name">Registered Jeweler</div>
+                    <div class="role-desc">Accept T-Gold payments, fulfill design orders, and participate in jewelry return programs.</div>
+                  </label>
+                  
+                  <!-- Designer -->
+                  <label class="role-card" id="role-designer">
+                    <input type="checkbox" name="roles" value="designer" onchange="updateRoleSelection()">
+                    <div class="role-check">✓</div>
+                    <div class="role-icon">🎨</div>
+                    <div class="role-name">Jewelry Designer</div>
+                    <div class="role-desc">List your designs on T-JDB marketplace. IPR protected. Earn from design licensing and sales.</div>
+                  </label>
+                  
+                  <!-- Returnee -->
+                  <label class="role-card" id="role-returnee">
+                    <input type="checkbox" name="roles" value="returnee" onchange="updateRoleSelection()">
+                    <div class="role-check">✓</div>
+                    <div class="role-icon">🔄</div>
+                    <div class="role-name">Jewelry Returnee</div>
+                    <div class="role-desc">Return old gold jewelry through T-JR portal at fair LBMA-benchmarked valuation.</div>
+                  </label>
+                  
+                  <!-- Consultant -->
+                  <label class="role-card" id="role-consultant">
+                    <input type="checkbox" name="roles" value="consultant" onchange="updateRoleSelection()">
+                    <div class="role-check">✓</div>
+                    <div class="role-icon">💼</div>
+                    <div class="role-name">Gold Consultant</div>
+                    <div class="role-desc">Provide advisory services to households and earn referral income from platform activities.</div>
+                  </label>
+                  
+                  <!-- Advertiser -->
+                  <label class="role-card" id="role-advertiser">
+                    <input type="checkbox" name="roles" value="advertiser" onchange="updateRoleSelection()">
+                    <div class="role-check">✓</div>
+                    <div class="role-icon">📢</div>
+                    <div class="role-name">Advertiser</div>
+                    <div class="role-desc">Advertise your business to the TGDP ecosystem community. Promote products and services.</div>
+                  </label>
+                  
+                  <!-- Ombudsman -->
+                  <label class="role-card" id="role-ombudsman">
+                    <input type="checkbox" name="roles" value="ombudsman" onchange="updateRoleSelection()">
+                    <div class="role-check">✓</div>
+                    <div class="role-icon">⚖️</div>
+                    <div class="role-name">Ombudsman</div>
+                    <div class="role-desc">Resolve disputes between ecosystem participants. Requires legal/arbitration experience. Exclusive role.</div>
+                  </label>
+                </div>
+                
+                <div class="exclusive-warning" id="roleWarning">
+                  <span>⚠️</span>
+                  <span id="roleWarningText">Some selected roles cannot be combined. Please adjust your selection.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Step 2: Personal Information -->
+          <div class="wizard-content" id="step2" style="display: none;">
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Personal Information</h3>
+              </div>
+              <div class="card-body">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label required">First Name</label>
+                    <input type="text" class="form-input" name="firstName" required placeholder="Enter first name">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label required">Last Name</label>
+                    <input type="text" class="form-input" name="lastName" required placeholder="Enter last name">
+                  </div>
+                </div>
+                
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label required">Email Address</label>
+                    <input type="email" class="form-input" name="email" required placeholder="your.email@example.com">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label required">Mobile Number</label>
+                    <input type="tel" class="form-input" name="phone" required data-validate="phone" placeholder="+91 98765 43210">
+                  </div>
+                </div>
+                
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label required">PAN Number</label>
+                    <input type="text" class="form-input" name="pan" required data-validate="pan" placeholder="ABCDE1234F" style="text-transform: uppercase;">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label required">Aadhaar Number</label>
+                    <input type="text" class="form-input" name="aadhaar" id="aadhaar-input" required data-validate="aadhaar" data-soft-keyboard="numeric" placeholder="1234 5678 9012">
+                  </div>
+                </div>
+                
+                <div class="form-group">
+                  <label class="form-label required">Address</label>
+                  <textarea class="form-textarea" name="address" required placeholder="Enter your full address" rows="3"></textarea>
+                </div>
+                
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label required">City</label>
+                    <input type="text" class="form-input" name="city" required placeholder="City">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label required">State</label>
+                    <select class="form-select" name="state" required>
+                      <option value="">Select State</option>
+                      <option value="AP">Andhra Pradesh</option>
+                      <option value="AR">Arunachal Pradesh</option>
+                      <option value="AS">Assam</option>
+                      <option value="BR">Bihar</option>
+                      <option value="CT">Chhattisgarh</option>
+                      <option value="GA">Goa</option>
+                      <option value="GJ">Gujarat</option>
+                      <option value="HR">Haryana</option>
+                      <option value="HP">Himachal Pradesh</option>
+                      <option value="JH">Jharkhand</option>
+                      <option value="KA">Karnataka</option>
+                      <option value="KL">Kerala</option>
+                      <option value="MP">Madhya Pradesh</option>
+                      <option value="MH">Maharashtra</option>
+                      <option value="MN">Manipur</option>
+                      <option value="ML">Meghalaya</option>
+                      <option value="MZ">Mizoram</option>
+                      <option value="NL">Nagaland</option>
+                      <option value="OR">Odisha</option>
+                      <option value="PB">Punjab</option>
+                      <option value="RJ">Rajasthan</option>
+                      <option value="SK">Sikkim</option>
+                      <option value="TN">Tamil Nadu</option>
+                      <option value="TG">Telangana</option>
+                      <option value="TR">Tripura</option>
+                      <option value="UP">Uttar Pradesh</option>
+                      <option value="UK">Uttarakhand</option>
+                      <option value="WB">West Bengal</option>
+                      <option value="AN">Andaman and Nicobar Islands</option>
+                      <option value="CH">Chandigarh</option>
+                      <option value="DN">Dadra and Nagar Haveli</option>
+                      <option value="DD">Daman and Diu</option>
+                      <option value="DL">Delhi</option>
+                      <option value="LD">Lakshadweep</option>
+                      <option value="PY">Puducherry</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label required">PIN Code</label>
+                    <input type="text" class="form-input" name="pincode" id="pincode-input" required placeholder="400001" maxlength="6" data-soft-keyboard="numeric">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">GST Number (if applicable)</label>
+                    <input type="text" class="form-input" name="gst" id="gst-input" data-validate="gst" data-soft-keyboard="alpha" placeholder="22AAAAA0000A1Z5" style="text-transform: uppercase;">
+                  </div>
+                </div>
+                
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label required">Create Password</label>
+                    <input type="password" class="form-input" name="password" required placeholder="Min 8 chars, 1 upper, 1 number, 1 special">
+                    <span class="form-hint">Minimum 8 characters with uppercase, number, and special character</span>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label required">Confirm Password</label>
+                    <input type="password" class="form-input" name="confirmPassword" required placeholder="Re-enter password">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Step 3: KYC Documents -->
+          <div class="wizard-content" id="step3" style="display: none;">
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Upload KYC Documents</h3>
+                <span class="badge badge-muted">Max 5MB per file</span>
+              </div>
+              <div class="card-body">
+                <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem;">
+                  Upload clear scans or photos of the following documents. Accepted formats: JPG, PNG, PDF.
+                </p>
+                
+                <div class="kyc-grid">
+                  <label class="kyc-upload" id="upload-pan">
+                    <input type="file" name="panDoc" accept=".jpg,.jpeg,.png,.pdf" onchange="handleKYCUpload(this, 'pan')">
+                    <div class="kyc-icon">📄</div>
+                    <div class="kyc-label">PAN Card</div>
+                    <div class="kyc-hint">Front side clearly visible</div>
+                    <div class="kyc-filename" id="filename-pan"></div>
+                  </label>
+                  
+                  <label class="kyc-upload" id="upload-aadhaar">
+                    <input type="file" name="aadhaarDoc" accept=".jpg,.jpeg,.png,.pdf" onchange="handleKYCUpload(this, 'aadhaar')">
+                    <div class="kyc-icon">📄</div>
+                    <div class="kyc-label">Aadhaar Card</div>
+                    <div class="kyc-hint">Front and back both sides</div>
+                    <div class="kyc-filename" id="filename-aadhaar"></div>
+                  </label>
+                  
+                  <label class="kyc-upload" id="upload-photo">
+                    <input type="file" name="photoDoc" accept=".jpg,.jpeg,.png" onchange="handleKYCUpload(this, 'photo')">
+                    <div class="kyc-icon">📷</div>
+                    <div class="kyc-label">Passport Photo</div>
+                    <div class="kyc-hint">Recent passport-size photograph</div>
+                    <div class="kyc-filename" id="filename-photo"></div>
+                  </label>
+                  
+                  <label class="kyc-upload" id="upload-address">
+                    <input type="file" name="addressDoc" accept=".jpg,.jpeg,.png,.pdf" onchange="handleKYCUpload(this, 'address')">
+                    <div class="kyc-icon">📄</div>
+                    <div class="kyc-label">Address Proof</div>
+                    <div class="kyc-hint">Utility bill, bank statement, etc.</div>
+                    <div class="kyc-filename" id="filename-address"></div>
+                  </label>
+                </div>
+                
+                <div class="alert alert-info" style="margin-top: 1.5rem;">
+                  <span class="alert-icon">ℹ️</span>
+                  <div>
+                    <strong>KYC Verification</strong><br>
+                    Documents will be verified within 24-48 hours. You will receive an email/SMS notification once verification is complete.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Step 4: Review & Submit -->
+          <div class="wizard-content" id="step4" style="display: none;">
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Review & Submit</h3>
+              </div>
+              <div class="card-body">
+                <div class="review-section">
+                  <div class="review-title">Selected Roles</div>
+                  <div id="reviewRoles">
+                    <!-- Populated dynamically -->
+                  </div>
+                </div>
+                
+                <div class="review-section">
+                  <div class="review-title">Personal Information</div>
+                  <div class="review-row">
+                    <span class="review-label">Full Name</span>
+                    <span class="review-value" id="reviewName">-</span>
+                  </div>
+                  <div class="review-row">
+                    <span class="review-label">Email</span>
+                    <span class="review-value" id="reviewEmail">-</span>
+                  </div>
+                  <div class="review-row">
+                    <span class="review-label">Mobile</span>
+                    <span class="review-value" id="reviewPhone">-</span>
+                  </div>
+                  <div class="review-row">
+                    <span class="review-label">PAN</span>
+                    <span class="review-value" id="reviewPan">-</span>
+                  </div>
+                  <div class="review-row">
+                    <span class="review-label">Location</span>
+                    <span class="review-value" id="reviewLocation">-</span>
+                  </div>
+                </div>
+                
+                <div class="review-section">
+                  <div class="review-title">Documents Uploaded</div>
+                  <div id="reviewDocs">
+                    <!-- Populated dynamically -->
+                  </div>
+                </div>
+                
+                <div class="terms-box">
+                  <div class="terms-text">
+                    <strong>Terms & Conditions</strong><br><br>
+                    By registering on the TGDP platform, you agree to:
+                    <br><br>
+                    1. Provide accurate and truthful information during registration
+                    <br>2. Complete KYC verification as required by applicable laws
+                    <br>3. Abide by the platform's Terms of Service and Privacy Policy
+                    <br>4. Accept that all transactions are subject to LBMA benchmark pricing
+                    <br>5. Acknowledge that GIC earnings are subject to applicable TDS deductions
+                    <br>6. Understand that role-specific agreements will be presented upon approval
+                    <br><br>
+                    For complete terms, please refer to our <a href="docs/agreements/terms.html" style="color: var(--gold);">Terms of Service</a> and <a href="docs/agreements/privacy.html" style="color: var(--gold);">Privacy Policy</a>.
+                  </div>
+                </div>
+                
+                <div class="form-check" style="margin-top: 1rem;">
+                  <input type="checkbox" id="agreeTerms" name="agreeTerms" required>
+                  <label for="agreeTerms">I have read and agree to the Terms of Service and Privacy Policy</label>
+                </div>
+                
+                <div class="form-check" style="margin-top: 0.75rem;">
+                  <input type="checkbox" id="agreeKYC" name="agreeKYC" required>
+                  <label for="agreeKYC">I confirm that all information and documents provided are accurate and authentic</label>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Wizard Navigation -->
+          <div class="wizard-nav">
+            <button type="button" class="btn btn-outline" id="wizardPrev" onclick="prevStep()" style="display: none;">
+              ← Previous
+            </button>
+            <div style="flex: 1;"></div>
+            <button type="button" class="btn btn-gold" id="wizardNext" onclick="nextStep()">
+              Continue →
+            </button>
+            <button type="submit" class="btn btn-gold" id="wizardSubmit" style="display: none;">
+              Submit Registration
+            </button>
+          </div>
+        </form>
+      </div>
+    </main>
+  </div>
+  
+  <!-- Shared JavaScript -->
+  <script src="js/shared.txt"></script>
+  
+  <script>
+    let currentWizardStep = 1;
+    const totalWizardSteps = 4;
+    let selectedRoles = [];
+    
+    // Role selection handling
+    function updateRoleSelection() {
+      const checkboxes = document.querySelectorAll('input[name="roles"]');
+      selectedRoles = [];
+      
+      checkboxes.forEach(cb => {
+        if (cb.checked) {
+          selectedRoles.push(cb.value);
+        }
+      });
+      
+      // Update visual selection
+      document.querySelectorAll('.role-card').forEach(card => {
+        const input = card.querySelector('input');
+        card.classList.toggle('selected', input.checked);
+      });
+      
+      // Check role compatibility
+      const incompatible = getIncompatibleRoles(selectedRoles);
+      const hasConflict = !isRoleCombinationValid(selectedRoles);
+      
+      // Disable incompatible roles
+      document.querySelectorAll('.role-card').forEach(card => {
+        const input = card.querySelector('input');
+        const isDisabled = incompatible.includes(input.value) && !input.checked;
+        card.classList.toggle('disabled', isDisabled);
+        if (isDisabled) {
+          input.disabled = true;
+        } else {
+          input.disabled = false;
+        }
+      });
+      
+      // Show warning if conflict
+      const warning = document.getElementById('roleWarning');
+      if (hasConflict) {
+        warning.classList.add('visible');
+        document.getElementById('roleWarningText').textContent = 
+          'Selected roles cannot be combined. Please remove one of the conflicting roles.';
+      } else if (selectedRoles.includes('ombudsman')) {
+        warning.classList.add('visible');
+        document.getElementById('roleWarningText').textContent = 
+          'Ombudsman is an exclusive role and cannot be combined with any other role.';
+      } else {
+        warning.classList.remove('visible');
+      }
+    }
+    
+    // KYC upload handling
+    function handleKYCUpload(input, docType) {
+      const file = input.files[0];
+      if (!file) return;
+      
+      const maxSize = 5 * 1024 * 1024; // 5MB
+      if (file.size > maxSize) {
+        showToast('File size must be less than 5MB', 'error');
+        input.value = '';
+        return;
+      }
+      
+      const validTypes = ['image/jpeg', 'image/png', 'application/pdf'];
+      if (!validTypes.includes(file.type)) {
+        showToast('Only JPG, PNG, and PDF files are allowed', 'error');
+        input.value = '';
+        return;
+      }
+      
+      const uploadBox = document.getElementById(`upload-${docType}`);
+      const filename = document.getElementById(`filename-${docType}`);
+      
+      uploadBox.classList.add('uploaded');
+      filename.textContent = `✓ ${file.name}`;
+      
+      showToast(`${docType.toUpperCase()} document uploaded`, 'success');
+    }
+    
+    // Wizard navigation
+    function nextStep() {
+      const validation = validateCurrentStep();
+      if (!validation.valid) {
+        showToast(validation.errors[0], 'error');
+        return;
+      }
+      
+      if (currentWizardStep < totalWizardSteps) {
+        currentWizardStep++;
+        updateWizardUI();
+        
+        if (currentWizardStep === 4) {
+          populateReview();
+        }
+      }
+    }
+    
+    function prevStep() {
+      if (currentWizardStep > 1) {
+        currentWizardStep--;
+        updateWizardUI();
+      }
+    }
+    
+    function goToStep(step) {
+      if (step >= 1 && step <= currentWizardStep) {
+        currentWizardStep = step;
+        updateWizardUI();
+      }
+    }
+    
+    function updateWizardUI() {
+      // Update step indicators
+      document.querySelectorAll('.wizard-step').forEach((el, index) => {
+        el.classList.remove('active', 'completed');
+        if (index + 1 < currentWizardStep) {
+          el.classList.add('completed');
+        } else if (index + 1 === currentWizardStep) {
+          el.classList.add('active');
+        }
+      });
+      
+      // Update connectors
+      document.querySelectorAll('.wizard-connector').forEach((el, index) => {
+        el.classList.toggle('completed', index + 1 < currentWizardStep);
+      });
+      
+      // Show/hide step content
+      for (let i = 1; i <= totalWizardSteps; i++) {
+        const step = document.getElementById(`step${i}`);
+        if (step) {
+          step.style.display = (i === currentWizardStep) ? 'block' : 'none';
+        }
+      }
+      
+      // Update navigation buttons
+      document.getElementById('wizardPrev').style.display = currentWizardStep > 1 ? 'inline-flex' : 'none';
+      document.getElementById('wizardNext').style.display = currentWizardStep < totalWizardSteps ? 'inline-flex' : 'none';
+      document.getElementById('wizardSubmit').style.display = currentWizardStep === totalWizardSteps ? 'inline-flex' : 'none';
+      
+      // Scroll to top
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    
+    function validateCurrentStep() {
+      if (currentWizardStep === 1) {
+        if (selectedRoles.length === 0) {
+          return { valid: false, errors: ['Please select at least one role'] };
+        }
+        if (!isRoleCombinationValid(selectedRoles)) {
+          return { valid: false, errors: ['Selected roles cannot be combined. Please adjust your selection.'] };
+        }
+      }
+      
+      if (currentWizardStep === 2) {
+        const form = document.getElementById('registrationForm');
+        const step2Inputs = document.querySelectorAll('#step2 [required]');
+        
+        for (const input of step2Inputs) {
+          if (!input.value.trim()) {
+            const label = input.previousElementSibling?.textContent || input.name;
+            return { valid: false, errors: [`${label.replace(' *', '')} is required`] };
+          }
+          
+          if (input.type === 'email' && !isValidEmail(input.value)) {
+            return { valid: false, errors: ['Please enter a valid email address'] };
+          }
+          
+          if (input.dataset.validate === 'phone' && !isValidPhone(input.value)) {
+            return { valid: false, errors: ['Please enter a valid 10-digit mobile number'] };
+          }
+          
+          if (input.dataset.validate === 'pan' && !isValidPAN(input.value)) {
+            return { valid: false, errors: ['Please enter a valid PAN number (e.g., ABCDE1234F)'] };
+          }
+          
+          if (input.dataset.validate === 'aadhaar' && !isValidAadhaar(input.value)) {
+            return { valid: false, errors: ['Please enter a valid 12-digit Aadhaar number'] };
+          }
+        }
+        
+        const password = form.querySelector('[name="password"]').value;
+        const confirmPassword = form.querySelector('[name="confirmPassword"]').value;
+        
+        if (!isStrongPassword(password)) {
+          return { valid: false, errors: ['Password must be at least 8 characters with uppercase, number, and special character'] };
+        }
+        
+        if (password !== confirmPassword) {
+          return { valid: false, errors: ['Passwords do not match'] };
+        }
+      }
+      
+      if (currentWizardStep === 3) {
+        const panDoc = document.querySelector('[name="panDoc"]').files.length;
+        const aadhaarDoc = document.querySelector('[name="aadhaarDoc"]').files.length;
+        const photoDoc = document.querySelector('[name="photoDoc"]').files.length;
+        
+        if (!panDoc) return { valid: false, errors: ['Please upload your PAN card'] };
+        if (!aadhaarDoc) return { valid: false, errors: ['Please upload your Aadhaar card'] };
+        if (!photoDoc) return { valid: false, errors: ['Please upload your passport photo'] };
+      }
+      
+      return { valid: true, errors: [] };
+    }
+    
+    function populateReview() {
+      // Roles
+      const rolesContainer = document.getElementById('reviewRoles');
+      rolesContainer.innerHTML = selectedRoles.map(role => 
+        `<span class="badge badge-gold" style="margin-right: 0.5rem; margin-bottom: 0.5rem;">${getRoleDisplayName(role)}</span>`
+      ).join('');
+      
+      // Personal info
+      const form = document.getElementById('registrationForm');
+      document.getElementById('reviewName').textContent = 
+        `${form.querySelector('[name="firstName"]').value} ${form.querySelector('[name="lastName"]').value}`;
+      document.getElementById('reviewEmail').textContent = form.querySelector('[name="email"]').value;
+      document.getElementById('reviewPhone').textContent = form.querySelector('[name="phone"]').value;
+      document.getElementById('reviewPan').textContent = form.querySelector('[name="pan"]').value.toUpperCase();
+      document.getElementById('reviewLocation').textContent = 
+        `${form.querySelector('[name="city"]').value}, ${form.querySelector('[name="state"]').value} - ${form.querySelector('[name="pincode"]').value}`;
+      
+      // Documents
+      const docsContainer = document.getElementById('reviewDocs');
+      const docs = [];
+      if (document.querySelector('[name="panDoc"]').files.length) docs.push('PAN Card');
+      if (document.querySelector('[name="aadhaarDoc"]').files.length) docs.push('Aadhaar Card');
+      if (document.querySelector('[name="photoDoc"]').files.length) docs.push('Passport Photo');
+      if (document.querySelector('[name="addressDoc"]').files.length) docs.push('Address Proof');
+      
+      docsContainer.innerHTML = docs.map(doc => 
+        `<div class="review-row"><span class="review-label">${doc}</span><span class="review-value" style="color: var(--success);">✓ Uploaded</span></div>`
+      ).join('');
+    }
+    
+    // Form submission
+    document.getElementById('registrationForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      const agreeTerms = document.getElementById('agreeTerms').checked;
+      const agreeKYC = document.getElementById('agreeKYC').checked;
+      
+      if (!agreeTerms || !agreeKYC) {
+        showToast('Please agree to the terms and confirm your information is accurate', 'error');
+        return;
+      }
+      
+      showLoading('Creating your account...');
+      
+      // Simulate registration
+      setTimeout(() => {
+        hideLoading();
+        showToast('Registration successful! Redirecting to dashboard...', 'success');
+        
+        // In production, this would create the user in Firebase
+        // and redirect to appropriate dashboard based on primary role
+        setTimeout(() => {
+          const primaryRole = selectedRoles[0];
+          const dashboards = {
+            household: 'portals/tgold/dashboard.html',
+            licensee: 'portals/gic/dashboard.html',
+            jeweler: 'portals/tjr/dashboard.html',
+            designer: 'portals/tjdb/dashboard.html',
+            returnee: 'portals/tjr/dashboard.html',
+            consultant: 'portals/tgold/dashboard.html',
+            advertiser: 'portals/tgold/dashboard.html',
+            ombudsman: 'portals/gic/dashboard.html'
+          };
+          
+          window.location.href = dashboards[primaryRole] || 'portals/tgold/dashboard.html';
+        }, 1500);
+      }, 2000);
+    });
+    
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+      updateWizardUI();
+    });
+  </script>
+</body>
+</html>

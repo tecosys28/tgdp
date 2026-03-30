@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="GIC Licensing Dashboard - Manage households and earnings">
+  <title>Dashboard · GIC Licensing</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  
+  <!-- Shared Styles -->
+  <link rel="stylesheet" href="../../css/shared.css">
+  
+  <style>
+    .sidebar-logo a { color: var(--purple) !important; }
+    .nav-item.active { 
+      background: var(--purple-muted) !important; 
+      color: var(--purple) !important; 
+      border-left-color: var(--purple) !important;
+    }
+    .nav-item:hover { background: var(--purple-muted) !important; }
+    
+    .report-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+    }
+    
+    @media (max-width: 1024px) {
+      .report-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    
+    @media (max-width: 768px) {
+      .report-grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-logo-trot">
+        <img src="../../assets/images/trot-logo.jpg" alt="TROT®">
+        <div class="logo-text">
+        <a href="index.html">GIC Licensing</a>
+        <span>Dashboard</span>
+      </div>
+      
+      <nav class="sidebar-nav">
+        <div class="nav-group">
+          <div class="nav-group-label">Main</div>
+          <div class="nav-item active" onclick="showPanel('overview')">
+            <span class="nav-icon">📊</span>
+            <span>Overview</span>
+          </div>
+          <div class="nav-item" onclick="showPanel('households')">
+            <span class="nav-icon">🏠</span>
+            <span>My Households</span>
+            <span class="nav-badge">45</span>
+          </div>
+          <div class="nav-item" onclick="showPanel('register')">
+            <span class="nav-icon">➕</span>
+            <span>Register New</span>
+          </div>
+        </div>
+        
+        <div class="nav-group">
+          <div class="nav-group-label">Earnings</div>
+          <div class="nav-item" onclick="showPanel('gic-earnings')">
+            <span class="nav-icon">🎫</span>
+            <span>GIC Earnings</span>
+          </div>
+          <div class="nav-item" onclick="showPanel('gic-redeem')">
+            <span class="nav-icon">💱</span>
+            <span>Redeem GIC</span>
+          </div>
+        </div>
+        
+        <div class="nav-group">
+          <div class="nav-group-label">Reports</div>
+          <div class="nav-item" onclick="showPanel('reports')">
+            <span class="nav-icon">📄</span>
+            <span>Reports</span>
+          </div>
+          <div class="nav-item" onclick="showPanel('complaints')">
+            <span class="nav-icon">⚖️</span>
+            <span>Complaints</span>
+          </div>
+        </div>
+        
+        <div class="nav-group">
+          <div class="nav-group-label">Account</div>
+          <div class="nav-item" onclick="showPanel('license')">
+            <span class="nav-icon">📜</span>
+            <span>My License</span>
+          </div>
+          <div class="nav-item" onclick="showPanel('settings')">
+            <span class="nav-icon">⚙️</span>
+            <span>Settings</span>
+          </div>
+        </div>
+      </nav>
+      
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <div class="sidebar-avatar" style="background: linear-gradient(135deg, var(--purple-dark), var(--purple));">SK</div>
+          <div>
+            <div class="sidebar-name">Suresh Kapoor</div>
+            <div class="sidebar-id">LIC-IND-12345</div>
+          </div>
+        </div>
+        <a href="../../index.html" class="btn btn-outline btn-sm" style="width: 100%;">
+          ← Back to Ecosystem
+        </a>
+      </div>
+    </aside>
+    
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Topbar -->
+      <header class="topbar">
+        <div>
+          <span class="topbar-title" id="pageTitle">Dashboard Overview</span>
+        </div>
+        <div class="topbar-right">
+          <div class="benchmark-pill">
+            <span class="benchmark-live"></span>
+            <span>License: <strong style="color: var(--purple);">Active</strong></span>
+          </div>
+        </div>
+      </header>
+      
+      <!-- Content Area -->
+      <div class="content">
+        <!-- Overview Panel -->
+        <div class="panel active" id="panel-overview">
+          <div class="stats-row">
+            <div class="stat-card purple">
+              <div class="stat-label">Total Households</div>
+              <div class="stat-value purple">45</div>
+              <div class="stat-sub">of 50 capacity</div>
+            </div>
+            <div class="stat-card gold">
+              <div class="stat-label">Total GIC Earned</div>
+              <div class="stat-value gold">₹2,45,000</div>
+              <div class="stat-trend up">↑ 12% this month</div>
+            </div>
+            <div class="stat-card success">
+              <div class="stat-label">Redeemable GIC</div>
+              <div class="stat-value success">₹85,000</div>
+              <div class="stat-sub">Available now</div>
+            </div>
+            <div class="stat-card info">
+              <div class="stat-label">This Month</div>
+              <div class="stat-value">₹32,500</div>
+              <div class="stat-sub">GIC earnings</div>
+            </div>
+          </div>
+          
+          <!-- Income Breakdown -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">GIC Income Breakdown</h3>
+              <span class="badge badge-purple">March 2026</span>
+            </div>
+            <div class="card-body">
+              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;">
+                <div style="text-align: center; padding: 1.5rem; background: var(--obsidian); border-radius: var(--radius-lg);">
+                  <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">Stream 1: Registration</div>
+                  <div style="font-family: var(--font-mono); font-size: 1.75rem; color: var(--purple);">₹12,500</div>
+                  <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">5 new registrations</div>
+                </div>
+                <div style="text-align: center; padding: 1.5rem; background: var(--obsidian); border-radius: var(--radius-lg);">
+                  <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">Stream 2: Minting</div>
+                  <div style="font-family: var(--font-mono); font-size: 1.75rem; color: var(--gold);">₹15,000</div>
+                  <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">23 minting events</div>
+                </div>
+                <div style="text-align: center; padding: 1.5rem; background: var(--obsidian); border-radius: var(--radius-lg);">
+                  <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">Stream 3: Trading</div>
+                  <div style="font-family: var(--font-mono); font-size: 1.75rem; color: var(--teal);">₹5,000</div>
+                  <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 0.25rem;">12 FTR swaps</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Recent Households -->
+          <div class="card" style="margin-top: 1.5rem;">
+            <div class="card-header">
+              <h3 class="card-title">Recent Household Activity</h3>
+              <button class="btn btn-outline btn-sm" onclick="showPanel('households')">View All</button>
+            </div>
+            <div class="card-body" style="padding: 0;">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Household ID</th>
+                    <th>Name</th>
+                    <th>Registered</th>
+                    <th>Gold Earmarked</th>
+                    <th>Your GIC</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="mono">HH-IND-98765</td>
+                    <td>Priya Sharma</td>
+                    <td>25 Mar 2026</td>
+                    <td class="mono">125g</td>
+                    <td class="mono" style="color: var(--purple);">₹8,500</td>
+                    <td><span class="badge badge-success">Active</span></td>
+                  </tr>
+                  <tr>
+                    <td class="mono">HH-IND-98764</td>
+                    <td>Amit Patel</td>
+                    <td>22 Mar 2026</td>
+                    <td class="mono">85g</td>
+                    <td class="mono" style="color: var(--purple);">₹5,200</td>
+                    <td><span class="badge badge-success">Active</span></td>
+                  </tr>
+                  <tr>
+                    <td class="mono">HH-IND-98763</td>
+                    <td>Meera Reddy</td>
+                    <td>18 Mar 2026</td>
+                    <td class="mono">200g</td>
+                    <td class="mono" style="color: var(--purple);">₹12,000</td>
+                    <td><span class="badge badge-success">Active</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Households Panel -->
+        <div class="panel" id="panel-households">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">My Registered Households</h3>
+              <div style="display: flex; gap: 0.5rem;">
+                <input type="text" class="form-input" placeholder="Search households..." style="width: 200px; padding: 0.5rem;">
+                <button class="btn btn-purple btn-sm" onclick="showPanel('register')">+ Register New</button>
+              </div>
+            </div>
+            <div class="card-body" style="padding: 0;">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Location</th>
+                    <th>Registered</th>
+                    <th>Gold</th>
+                    <th>TGDPs</th>
+                    <th>Your GIC</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="mono">HH-IND-98765</td>
+                    <td>Priya Sharma</td>
+                    <td>Mumbai, MH</td>
+                    <td>25 Mar 2026</td>
+                    <td class="mono">125g</td>
+                    <td class="mono">1,250</td>
+                    <td class="mono" style="color: var(--purple);">₹8,500</td>
+                    <td><span class="badge badge-success">Active</span></td>
+                  </tr>
+                  <tr>
+                    <td class="mono">HH-IND-98764</td>
+                    <td>Amit Patel</td>
+                    <td>Ahmedabad, GJ</td>
+                    <td>22 Mar 2026</td>
+                    <td class="mono">85g</td>
+                    <td class="mono">850</td>
+                    <td class="mono" style="color: var(--purple);">₹5,200</td>
+                    <td><span class="badge badge-success">Active</span></td>
+                  </tr>
+                  <tr>
+                    <td class="mono">HH-IND-98763</td>
+                    <td>Meera Reddy</td>
+                    <td>Hyderabad, TG</td>
+                    <td>18 Mar 2026</td>
+                    <td class="mono">200g</td>
+                    <td class="mono">2,000</td>
+                    <td class="mono" style="color: var(--purple);">₹12,000</td>
+                    <td><span class="badge badge-success">Active</span></td>
+                  </tr>
+                  <tr>
+                    <td class="mono">HH-IND-98762</td>
+                    <td>Vikram Singh</td>
+                    <td>Delhi, DL</td>
+                    <td>15 Mar 2026</td>
+                    <td class="mono">150g</td>
+                    <td class="mono">1,500</td>
+                    <td class="mono" style="color: var(--purple);">₹9,800</td>
+                    <td><span class="badge badge-success">Active</span></td>
+                  </tr>
+                  <tr>
+                    <td class="mono">HH-IND-98761</td>
+                    <td>Anjali Gupta</td>
+                    <td>Jaipur, RJ</td>
+                    <td>10 Mar 2026</td>
+                    <td class="mono">75g</td>
+                    <td class="mono">750</td>
+                    <td class="mono" style="color: var(--purple);">₹4,500</td>
+                    <td><span class="badge badge-warning">Pending KYC</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="card-footer">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: var(--text-muted);">Showing 5 of 45 households</span>
+                <div style="display: flex; gap: 0.5rem;">
+                  <button class="btn btn-outline btn-sm" disabled>← Previous</button>
+                  <button class="btn btn-outline btn-sm">Next →</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Register New Panel -->
+        <div class="panel" id="panel-register">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Register New Household</h3>
+              <span class="badge badge-info">5 capacity remaining</span>
+            </div>
+            <div class="card-body">
+              <div class="alert alert-info" style="margin-bottom: 1.5rem;">
+                <span class="alert-icon">ℹ️</span>
+                <div>
+                  Register a new gold-holding household to earn GIC income from their activities. 
+                  The household will complete their own KYC process.
+                </div>
+              </div>
+              
+              <form id="registerHouseholdForm">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label required">First Name</label>
+                    <input type="text" class="form-input" name="firstName" required placeholder="Enter first name">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label required">Last Name</label>
+                    <input type="text" class="form-input" name="lastName" required placeholder="Enter last name">
+                  </div>
+                </div>
+                
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label required">Email Address</label>
+                    <input type="email" class="form-input" name="email" required placeholder="household@email.com">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label required">Mobile Number</label>
+                    <input type="tel" class="form-input" name="phone" required placeholder="+91 98765 43210">
+                  </div>
+                </div>
+                
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label required">City</label>
+                    <input type="text" class="form-input" name="city" required placeholder="City">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label required">State</label>
+                    <select class="form-select" name="state" required>
+                      <option value="">Select State</option>
+                      <option value="MH">Maharashtra</option>
+                      <option value="GJ">Gujarat</option>
+                      <option value="KA">Karnataka</option>
+                      <option value="TG">Telangana</option>
+                      <option value="DL">Delhi</option>
+                      <option value="TN">Tamil Nadu</option>
+                      <option value="RJ">Rajasthan</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <div class="form-group">
+                  <label class="form-label">Estimated Gold Holdings (grams)</label>
+                  <input type="number" class="form-input" name="estimatedGold" placeholder="Approximate gold weight">
+                  <span class="form-hint">Optional: helps with capacity planning</span>
+                </div>
+                
+                <button type="submit" class="btn btn-purple btn-lg">Register Household</button>
+              </form>
+            </div>
+          </div>
+        </div>
+        
+        <!-- GIC Earnings Panel -->
+        <div class="panel" id="panel-gic-earnings">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">GIC Earnings History</h3>
+              <div style="display: flex; gap: 0.5rem;">
+                <select class="form-select" style="width: auto; padding: 0.5rem 1rem; font-size: 0.85rem;">
+                  <option>All Streams</option>
+                  <option>Registration</option>
+                  <option>Minting</option>
+                  <option>Trading</option>
+                </select>
+                <button class="btn btn-outline btn-sm">Export</button>
+              </div>
+            </div>
+            <div class="card-body" style="padding: 0;">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Household</th>
+                    <th>Stream</th>
+                    <th>Activity</th>
+                    <th>Base Amount</th>
+                    <th>Your GIC (25%)</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>28 Mar 2026</td>
+                    <td class="mono">HH-IND-98765</td>
+                    <td><span class="badge badge-gold">Minting</span></td>
+                    <td>Gold earmarking - 25g</td>
+                    <td class="mono">₹18,350</td>
+                    <td class="mono" style="color: var(--purple);">+₹4,587</td>
+                  </tr>
+                  <tr>
+                    <td>25 Mar 2026</td>
+                    <td class="mono">HH-IND-98765</td>
+                    <td><span class="badge badge-purple">Registration</span></td>
+                    <td>New household registration</td>
+                    <td class="mono">₹10,000</td>
+                    <td class="mono" style="color: var(--purple);">+₹2,500</td>
+                  </tr>
+                  <tr>
+                    <td>24 Mar 2026</td>
+                    <td class="mono">HH-IND-98764</td>
+                    <td><span class="badge badge-teal">Trading</span></td>
+                    <td>FTR swap - Hospitality</td>
+                    <td class="mono">₹3,200</td>
+                    <td class="mono" style="color: var(--purple);">+₹800</td>
+                  </tr>
+                  <tr>
+                    <td>22 Mar 2026</td>
+                    <td class="mono">HH-IND-98764</td>
+                    <td><span class="badge badge-purple">Registration</span></td>
+                    <td>New household registration</td>
+                    <td class="mono">₹10,000</td>
+                    <td class="mono" style="color: var(--purple);">+₹2,500</td>
+                  </tr>
+                  <tr>
+                    <td>20 Mar 2026</td>
+                    <td class="mono">HH-IND-98763</td>
+                    <td><span class="badge badge-gold">Minting</span></td>
+                    <td>Gold earmarking - 100g</td>
+                    <td class="mono">₹73,420</td>
+                    <td class="mono" style="color: var(--purple);">+₹18,355</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        
+        <!-- GIC Redeem Panel -->
+        <div class="panel" id="panel-gic-redeem">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Redeem GIC</h3>
+              <span class="badge badge-success">₹85,000 available</span>
+            </div>
+            <div class="card-body">
+              <div class="alert alert-info" style="margin-bottom: 1.5rem;">
+                <span class="alert-icon">ℹ️</span>
+                <div>
+                  GICs can be redeemed for cash at current LBMA benchmark rates. 
+                  Minimum redemption: ₹5,000. Processing time: 24-48 hours.
+                </div>
+              </div>
+              
+              <form id="redeemForm">
+                <div class="form-group">
+                  <label class="form-label required">Redemption Amount (₹)</label>
+                  <input type="number" class="form-input" name="redeemAmount" required placeholder="Enter amount" min="5000">
+                  <span class="form-hint">Available: ₹85,000 | Minimum: ₹5,000</span>
+                </div>
+                
+                <div class="form-group">
+                  <label class="form-label required">Bank Account</label>
+                  <select class="form-select" name="bankAccount" required>
+                    <option value="">Select Account</option>
+                    <option value="icici">ICICI Bank ****6789</option>
+                    <option value="hdfc">HDFC Bank ****1234</option>
+                    <option value="add">+ Add New Account</option>
+                  </select>
+                </div>
+                
+                <button type="submit" class="btn btn-purple btn-lg">Redeem GIC</button>
+              </form>
+            </div>
+          </div>
+          
+          <!-- Redemption History -->
+          <div class="card" style="margin-top: 1.5rem;">
+            <div class="card-header">
+              <h3 class="card-title">Redemption History</h3>
+            </div>
+            <div class="card-body" style="padding: 0;">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Ref No</th>
+                    <th>Date</th>
+                    <th>Amount</th>
+                    <th>Bank</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="mono">GIC-RDM-2026-00045</td>
+                    <td>15 Mar 2026</td>
+                    <td class="mono">₹50,000</td>
+                    <td>ICICI ****6789</td>
+                    <td><span class="badge badge-success">Completed</span></td>
+                  </tr>
+                  <tr>
+                    <td class="mono">GIC-RDM-2026-00032</td>
+                    <td>28 Feb 2026</td>
+                    <td class="mono">₹75,000</td>
+                    <td>HDFC ****1234</td>
+                    <td><span class="badge badge-success">Completed</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Reports Panel -->
+        <div class="panel" id="panel-reports">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Available Reports</h3>
+            </div>
+            <div class="card-body">
+              <h4 style="margin-bottom: 1rem; color: var(--text-secondary); font-size: 0.9rem;">📊 Standard Reports</h4>
+              <div class="report-grid" style="margin-bottom: 2rem;">
+                <div class="report-card" onclick="generateReport('household-enrolment')">
+                  <div class="report-icon">🏠</div>
+                  <div class="report-name">Household Enrolment Summary</div>
+                  <div class="report-desc">Complete list of registered households with status</div>
+                  <div class="report-meta">
+                    <span class="report-freq">On-demand</span>
+                    <span class="report-action">Generate →</span>
+                  </div>
+                </div>
+                <div class="report-card" onclick="generateReport('gic-earnings')">
+                  <div class="report-icon">🎫</div>
+                  <div class="report-name">GIC Earnings Statement</div>
+                  <div class="report-desc">Detailed breakdown of all three income streams</div>
+                  <div class="report-meta">
+                    <span class="report-freq">Monthly</span>
+                    <span class="report-action">Generate →</span>
+                  </div>
+                </div>
+                <div class="report-card" onclick="generateReport('gic-redemption')">
+                  <div class="report-icon">💱</div>
+                  <div class="report-name">GIC Redemption History</div>
+                  <div class="report-desc">All GIC redemptions with bank details</div>
+                  <div class="report-meta">
+                    <span class="report-freq">On-demand</span>
+                    <span class="report-action">Generate →</span>
+                  </div>
+                </div>
+                <div class="report-card" onclick="generateReport('minting-activity')">
+                  <div class="report-icon">⛏️</div>
+                  <div class="report-name">Household Minting Activity</div>
+                  <div class="report-desc">Gold earmarking and TGDP minting by household</div>
+                  <div class="report-meta">
+                    <span class="report-freq">Monthly</span>
+                    <span class="report-action">Generate →</span>
+                  </div>
+                </div>
+                <div class="report-card" onclick="generateReport('ftr-purchases')">
+                  <div class="report-icon">🎯</div>
+                  <div class="report-name">FTR Purchase Report</div>
+                  <div class="report-desc">FTR swaps by category and household</div>
+                  <div class="report-meta">
+                    <span class="report-freq">Monthly</span>
+                    <span class="report-action">Generate →</span>
+                  </div>
+                </div>
+                <div class="report-card" onclick="generateReport('licence-utilisation')">
+                  <div class="report-icon">📜</div>
+                  <div class="report-name">Licence Utilisation Report</div>
+                  <div class="report-desc">Capacity usage and growth metrics</div>
+                  <div class="report-meta">
+                    <span class="report-freq">Quarterly</span>
+                    <span class="report-action">Generate →</span>
+                  </div>
+                </div>
+              </div>
+              
+              <h4 style="margin-bottom: 1rem; color: var(--text-secondary); font-size: 0.9rem;">⚠️ Exception Reports</h4>
+              <div class="report-grid">
+                <div class="report-card exception" onclick="generateReport('dormant-households')">
+                  <span class="report-badge warning">3</span>
+                  <div class="report-icon">😴</div>
+                  <div class="report-name">Dormant Households</div>
+                  <div class="report-desc">Households with no activity in 90+ days</div>
+                  <div class="report-meta">
+                    <span class="report-freq">Weekly</span>
+                    <span class="report-action">View →</span>
+                  </div>
+                </div>
+                <div class="report-card exception" onclick="generateReport('pending-kyc')">
+                  <span class="report-badge danger">2</span>
+                  <div class="report-icon">📋</div>
+                  <div class="report-name">Pending KYC</div>
+                  <div class="report-desc">Households with incomplete verification</div>
+                  <div class="report-meta">
+                    <span class="report-freq">Daily</span>
+                    <span class="report-action">View →</span>
+                  </div>
+                </div>
+                <div class="report-card exception" onclick="generateReport('gic-expiry')">
+                  <span class="report-badge warning">5</span>
+                  <div class="report-icon">⏰</div>
+                  <div class="report-name">GIC Expiry Warning</div>
+                  <div class="report-desc">GICs expiring in next 30 days</div>
+                  <div class="report-meta">
+                    <span class="report-freq">Weekly</span>
+                    <span class="report-action">View →</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Report Preview -->
+          <div id="reportPreview" class="card" style="margin-top: 1.5rem; display: none;">
+            <div class="card-header">
+              <h3 class="card-title" id="reportPreviewTitle">Report Preview</h3>
+              <div style="display: flex; gap: 0.5rem;">
+                <button class="btn btn-outline btn-sm" onclick="downloadReport('pdf')">📄 PDF</button>
+                <button class="btn btn-outline btn-sm" onclick="downloadReport('xlsx')">📊 Excel</button>
+                <button class="btn btn-outline btn-sm" onclick="closeReportPreview()">✕ Close</button>
+              </div>
+            </div>
+            <div class="card-body" id="reportPreviewContent"></div>
+          </div>
+        </div>
+        
+        <!-- Complaints Panel -->
+        <div class="panel" id="panel-complaints">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">File a Complaint</h3>
+            </div>
+            <div class="card-body">
+              <div class="alert alert-info" style="margin-bottom: 1.5rem;">
+                <span class="alert-icon">⚖️</span>
+                <div>
+                  Complaints are reviewed by the TGDP Ombudsman. Resolution typically takes 7-14 business days.
+                </div>
+              </div>
+              
+              <form id="complaintForm">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label required">Complaint Against</label>
+                    <select class="form-select" id="complaintAgainst" name="complaintAgainst" required>
+                      <option value="">Select Party</option>
+                      <option value="household">Household</option>
+                      <option value="jeweler">Jeweler</option>
+                      <option value="designer">Designer</option>
+                      <option value="platform">Platform/Technical</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label required">Category</label>
+                    <select class="form-select" id="complaintCategory" name="complaintCategory" required>
+                      <option value="">Select Category</option>
+                      <option value="payment">Payment Issue</option>
+                      <option value="gic">GIC Dispute</option>
+                      <option value="fraud">Suspected Fraud</option>
+                      <option value="kyc">KYC Issue</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <div class="form-group">
+                  <label class="form-label required">Subject</label>
+                  <input type="text" class="form-input" id="complaintSubject" name="subject" required placeholder="Brief description of the issue">
+                </div>
+                
+                <div class="form-group">
+                  <label class="form-label required">Description</label>
+                  <textarea class="form-textarea" id="complaintDescription" name="description" required placeholder="Provide detailed information about your complaint" rows="5"></textarea>
+                </div>
+                
+                <div class="form-group">
+                  <label class="form-label">Supporting Documents</label>
+                  <div class="file-upload" onclick="document.getElementById('complaintDocs').click()">
+                    <input type="file" id="complaintDocs" name="documents" accept=".jpg,.jpeg,.png,.pdf" multiple>
+                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">📎</div>
+                    <div>Click to upload supporting documents</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">JPG, PNG, PDF up to 5MB</div>
+                  </div>
+                </div>
+                
+                <button type="button" class="btn btn-purple btn-lg" onclick="submitComplaint()">Submit Complaint</button>
+              </form>
+            </div>
+          </div>
+          
+          <!-- My Complaints -->
+          <div class="card" style="margin-top: 1.5rem;">
+            <div class="card-header">
+              <h3 class="card-title">My Complaints</h3>
+            </div>
+            <div class="card-body" style="padding: 0;">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Ref No</th>
+                    <th>Date</th>
+                    <th>Against</th>
+                    <th>Subject</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="mono">OMB-2026-00123</td>
+                    <td>20 Mar 2026</td>
+                    <td>Household</td>
+                    <td>GIC payment dispute</td>
+                    <td><span class="badge badge-warning">Under Review</span></td>
+                    <td><button class="btn btn-outline btn-sm" onclick="viewComplaint('OMB-2026-00123')">View</button></td>
+                  </tr>
+                  <tr>
+                    <td class="mono">OMB-2026-00089</td>
+                    <td>05 Mar 2026</td>
+                    <td>Platform</td>
+                    <td>Technical issue with dashboard</td>
+                    <td><span class="badge badge-success">Resolved</span></td>
+                    <td><button class="btn btn-outline btn-sm" onclick="viewComplaint('OMB-2026-00089')">View</button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        
+        <!-- License Panel -->
+        <div class="panel" id="panel-license">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">My License</h3>
+              <span class="badge badge-success">Active</span>
+            </div>
+            <div class="card-body">
+              <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 2rem;">
+                <div>
+                  <h4 style="margin-bottom: 1rem;">License Details</h4>
+                  <div style="background: var(--obsidian); border-radius: var(--radius-lg); padding: 1.5rem;">
+                    <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--obsidian-border);">
+                      <span style="color: var(--text-muted);">License ID</span>
+                      <span class="mono">LIC-IND-12345</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--obsidian-border);">
+                      <span style="color: var(--text-muted);">Issue Date</span>
+                      <span>15 Jan 2026</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--obsidian-border);">
+                      <span style="color: var(--text-muted);">Total Capacity</span>
+                      <span class="mono">50 households</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid var(--obsidian-border);">
+                      <span style="color: var(--text-muted);">Used Capacity</span>
+                      <span class="mono">45 households</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding: 0.5rem 0;">
+                      <span style="color: var(--text-muted);">Available</span>
+                      <span class="mono" style="color: var(--success);">5 households</span>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <h4 style="margin-bottom: 1rem;">Expand Capacity</h4>
+                  <div style="background: var(--purple-muted); border: 1px solid rgba(167, 139, 250, 0.3); border-radius: var(--radius-lg); padding: 1.5rem; text-align: center;">
+                    <div style="font-size: 2.5rem; font-family: var(--font-display); font-weight: 700; color: var(--purple);">$300</div>
+                    <div style="color: var(--text-muted); margin-bottom: 1rem;">per additional household</div>
+                    <button class="btn btn-purple">Purchase More Capacity</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Settings Panel -->
+        <div class="panel" id="panel-settings">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Account Settings</h3>
+            </div>
+            <div class="card-body">
+              <h4 style="margin-bottom: 1rem;">Profile Information</h4>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Full Name</label>
+                  <input type="text" class="form-input" value="Suresh Kapoor" disabled>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Email</label>
+                  <input type="email" class="form-input" value="suresh.kapoor@email.com" disabled>
+                </div>
+              </div>
+              <button class="btn btn-outline" style="margin-top: 1rem;">Request Profile Update</button>
+              
+              <hr style="border: none; border-top: 1px solid var(--obsidian-border); margin: 2rem 0;">
+              
+              <h4 style="margin-bottom: 1rem;">Security</h4>
+              <button class="btn btn-outline" style="margin-right: 0.5rem;">Change Password</button>
+              <button class="btn btn-outline">Enable 2FA</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+  
+  <!-- Shared JavaScript -->
+  <script src="../../js/shared.txt"></script>
+  
+  <script>
+    // Register household form
+    document.getElementById('registerHouseholdForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      showLoading('Registering household...');
+      setTimeout(() => {
+        hideLoading();
+        const id = 'HH-IND-' + Math.floor(Math.random() * 90000 + 10000);
+        showToast(`Household ${id} registered successfully! Invitation sent.`, 'success');
+        this.reset();
+      }, 1500);
+    });
+    
+    // Redeem form
+    document.getElementById('redeemForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const amount = document.querySelector('[name="redeemAmount"]').value;
+      if (parseInt(amount) < 5000) {
+        showToast('Minimum redemption amount is ₹5,000', 'error');
+        return;
+      }
+      showLoading('Processing redemption...');
+      setTimeout(() => {
+        hideLoading();
+        showToast(`GIC redemption of ₹${parseInt(amount).toLocaleString()} initiated! Will be processed within 24-48 hours.`, 'success');
+        this.reset();
+      }, 1500);
+    });
+  </script>
+</body>
+</html>

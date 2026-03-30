@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="TGDP Ombudsman - Independent Dispute Resolution">
+  <title>Ombudsman · TGDP Dispute Resolution</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  
+  <!-- Shared Styles -->
+  <link rel="stylesheet" href="../../css/shared.css">
+  
+  <style>
+    :root {
+      --ombudsman: #94a3b8;
+      --ombudsman-dark: #64748b;
+      --ombudsman-muted: rgba(148, 163, 184, 0.15);
+    }
+    
+    .hero-section {
+      background: radial-gradient(ellipse 80% 60% at 50% 30%, rgba(148, 163, 184, 0.12) 0%, transparent 60%);
+    }
+    
+    .protocol-steps {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+    
+    .protocol-step {
+      background: var(--obsidian-light);
+      border: 1px solid var(--obsidian-border);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      text-align: center;
+      position: relative;
+    }
+    
+    .protocol-step::after {
+      content: '→';
+      position: absolute;
+      right: -0.75rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--ombudsman);
+      font-size: 1rem;
+      z-index: 1;
+    }
+    
+    .protocol-step:last-child::after {
+      display: none;
+    }
+    
+    .protocol-num {
+      width: 36px;
+      height: 36px;
+      background: var(--ombudsman-muted);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 0.75rem;
+      font-weight: 600;
+      color: var(--ombudsman);
+    }
+    
+    .protocol-title {
+      font-weight: 600;
+      font-size: 0.9rem;
+      margin-bottom: 0.35rem;
+    }
+    
+    .protocol-time {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+    }
+    
+    .role-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+    
+    .role-card {
+      background: var(--obsidian-light);
+      border: 1px solid var(--obsidian-border);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+    }
+    
+    .role-icon {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
+    
+    .role-title {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+    
+    .role-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+    
+    @media (max-width: 1024px) {
+      .protocol-steps { grid-template-columns: repeat(3, 1fr); }
+      .protocol-step::after { display: none; }
+      .role-grid { grid-template-columns: 1fr; }
+    }
+    
+    @media (max-width: 768px) {
+      .protocol-steps { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-pattern"></div>
+  
+  <!-- Navigation -->
+  <nav class="landing-nav">
+    <div class="landing-nav-content">
+      <a href="../../index.html" class="landing-nav-logo-trot">
+        <img src="../../assets/images/trot-logo.jpg" alt="TROT®">
+        <span style="color: var(--ombudsman);">⚖️ Ombudsman</span>
+      </a>
+      <div class="landing-nav-links">
+        <a href="#protocol">Protocol</a>
+        <a href="#file-complaint">File Complaint</a>
+        <a href="../../faq.html">FAQ</a>
+        <a href="dashboard.html" class="btn" style="background: var(--ombudsman); color: var(--obsidian);">Portal</a>
+      </div>
+    </div>
+  </nav>
+  
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-content">
+      <div class="hero-badge" style="background: var(--ombudsman-muted); border-color: rgba(148, 163, 184, 0.3); color: var(--ombudsman);">
+        Independent · Impartial · Binding Resolution
+      </div>
+      <h1 class="hero-title">TGDP <em style="color: var(--ombudsman);">Ombudsman</em></h1>
+      <p class="hero-desc">
+        Independent dispute resolution for the TGDP ecosystem. Fair, impartial, and binding 
+        arbitration for all participants including Households, Licensees, Jewelers, and Designers.
+      </p>
+      <div class="cta-buttons">
+        <a href="#file-complaint" class="btn btn-lg" style="background: var(--ombudsman); color: var(--obsidian);">File a Complaint</a>
+        <a href="#protocol" class="btn btn-outline btn-lg" style="border-color: rgba(148, 163, 184, 0.3); color: var(--ombudsman);">View Protocol</a>
+      </div>
+    </div>
+  </section>
+  
+  <!-- Complaint Protocol -->
+  <section class="section" id="protocol" style="background: var(--obsidian-light);">
+    <div class="section-inner">
+      <div class="section-tag" style="color: var(--ombudsman);">Resolution Process</div>
+      <h2 class="section-title">Complaint <em style="color: var(--ombudsman);">Protocol</em></h2>
+      <div class="gold-rule" style="background: var(--ombudsman);"></div>
+      
+      <div class="protocol-steps">
+        <div class="protocol-step">
+          <div class="protocol-num">1</div>
+          <div class="protocol-title">Filing</div>
+          <p class="protocol-time">Day 0</p>
+        </div>
+        <div class="protocol-step">
+          <div class="protocol-num">2</div>
+          <div class="protocol-title">Acknowledgment</div>
+          <p class="protocol-time">24-48 hours</p>
+        </div>
+        <div class="protocol-step">
+          <div class="protocol-num">3</div>
+          <div class="protocol-title">Investigation</div>
+          <p class="protocol-time">3-7 days</p>
+        </div>
+        <div class="protocol-step">
+          <div class="protocol-num">4</div>
+          <div class="protocol-title">Mediation</div>
+          <p class="protocol-time">7-10 days</p>
+        </div>
+        <div class="protocol-step">
+          <div class="protocol-num">5</div>
+          <div class="protocol-title">Resolution</div>
+          <p class="protocol-time">10-14 days</p>
+        </div>
+      </div>
+      
+      <div style="max-width: 800px; margin: 3rem auto 0; text-align: center;">
+        <p style="color: var(--text-secondary); line-height: 1.8;">
+          All complaints are handled by certified Ombudsmen with legal/arbitration experience. 
+          Decisions are binding on all parties. Appeals may be filed within 7 days of resolution.
+        </p>
+      </div>
+    </div>
+  </section>
+  
+  <!-- Who Can Complain -->
+  <section class="section">
+    <div class="section-inner">
+      <div class="section-tag" style="color: var(--ombudsman);">Participants</div>
+      <h2 class="section-title">Who Can File <em style="color: var(--ombudsman);">Complaints?</em></h2>
+      <div class="gold-rule" style="background: var(--ombudsman);"></div>
+      
+      <div class="role-grid">
+        <div class="role-card">
+          <div class="role-icon">🏠</div>
+          <div class="role-title">Households</div>
+          <p class="role-desc">File complaints against Licensees, Jewelers, Designers, or platform issues related to minting, trading, or FTR swaps.</p>
+        </div>
+        <div class="role-card">
+          <div class="role-icon">📜</div>
+          <div class="role-title">Licensees</div>
+          <p class="role-desc">File complaints regarding GIC disputes, household issues, payment discrepancies, or platform technical problems.</p>
+        </div>
+        <div class="role-card">
+          <div class="role-icon">💎</div>
+          <div class="role-title">Jewelers</div>
+          <p class="role-desc">File complaints about T-JR disputes, payment issues, customer conflicts, or platform operational matters.</p>
+        </div>
+        <div class="role-card">
+          <div class="role-icon">🎨</div>
+          <div class="role-title">Designers</div>
+          <p class="role-desc">File complaints regarding IPR violations, order disputes, payment issues, or T-JDB platform concerns.</p>
+        </div>
+        <div class="role-card">
+          <div class="role-icon">💼</div>
+          <div class="role-title">Consultants</div>
+          <p class="role-desc">File complaints about referral disputes, commission issues, or conflicts with other ecosystem participants.</p>
+        </div>
+        <div class="role-card">
+          <div class="role-icon">📢</div>
+          <div class="role-title">Advertisers</div>
+          <p class="role-desc">File complaints regarding advertising disputes, billing issues, or content-related conflicts.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <!-- File Complaint CTA -->
+  <section class="section" id="file-complaint" style="background: linear-gradient(135deg, rgba(148, 163, 184, 0.1), rgba(148, 163, 184, 0.02)); border-top: 1px solid rgba(148, 163, 184, 0.2);">
+    <div class="section-inner" style="text-align: center;">
+      <h2 class="section-title">Need to File a <em style="color: var(--ombudsman);">Complaint?</em></h2>
+      <p style="color: var(--text-secondary); max-width: 600px; margin: 1.5rem auto 2rem; font-size: 1.1rem;">
+        Access your portal dashboard to file a complaint. You can also track existing 
+        complaints and view resolution status.
+      </p>
+      <div class="cta-buttons" style="justify-content: center;">
+        <a href="../tgold/dashboard.html" class="btn btn-gold btn-lg">T-Gold Users</a>
+        <a href="../gic/dashboard.html" class="btn btn-purple btn-lg">Licensees</a>
+        <a href="../tjr/dashboard.html" class="btn btn-teal btn-lg">T-JR Users</a>
+        <a href="../tjdb/dashboard.html" class="btn btn-rose btn-lg">T-JDB Users</a>
+      </div>
+    </div>
+  </section>
+  
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-bottom" style="border-top: none; padding-top: 0;">
+        © 2026 TGDP Ombudsman · Part of TGDP Ecosystem · 
+        <a href="../../index.html" style="color: var(--ombudsman);">Back to Ecosystem</a>
+      </div>
+    </div>
+  </footer>
+  
+  <!-- Shared JavaScript -->
+  <script src="../../js/shared.txt"></script>
+</body>
+</html>

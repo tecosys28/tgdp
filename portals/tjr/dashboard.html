@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="T-JR Dashboard - Manage jewelry returns">
+  <title>Dashboard · T-JR</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  
+  <!-- Shared Styles -->
+  <link rel="stylesheet" href="../../css/shared.css">
+  
+  <style>
+    .sidebar-logo a { color: var(--teal) !important; }
+    .nav-item.active { 
+      background: var(--teal-muted) !important; 
+      color: var(--teal) !important; 
+      border-left-color: var(--teal) !important;
+    }
+    .nav-item:hover { background: var(--teal-muted) !important; }
+  </style>
+</head>
+<body>
+  <div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-logo-trot">
+        <img src="../../assets/images/trot-logo.jpg" alt="TROT®">
+        <div class="logo-text">
+        <a href="index.html">T-JR</a>
+        <span>Jewelry Return</span>
+      </div>
+      
+      <nav class="sidebar-nav">
+        <div class="nav-group">
+          <div class="nav-group-label">Main</div>
+          <div class="nav-item active" onclick="showPanel('overview')">
+            <span class="nav-icon">📊</span>
+            <span>Overview</span>
+          </div>
+          <div class="nav-item" onclick="showPanel('new-return')">
+            <span class="nav-icon">➕</span>
+            <span>New Return</span>
+          </div>
+          <div class="nav-item" onclick="showPanel('returns')">
+            <span class="nav-icon">📋</span>
+            <span>My Returns</span>
+          </div>
+        </div>
+        
+        <div class="nav-group">
+          <div class="nav-group-label">Find</div>
+          <div class="nav-item" onclick="showPanel('jewelers')">
+            <span class="nav-icon">💎</span>
+            <span>Nearby Jewelers</span>
+          </div>
+        </div>
+        
+        <div class="nav-group">
+          <div class="nav-group-label">Account</div>
+          <div class="nav-item" onclick="showPanel('complaints')">
+            <span class="nav-icon">⚖️</span>
+            <span>File Complaint</span>
+          </div>
+          <div class="nav-item" onclick="showPanel('settings')">
+            <span class="nav-icon">⚙️</span>
+            <span>Settings</span>
+          </div>
+        </div>
+      </nav>
+      
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <div class="sidebar-avatar" style="background: linear-gradient(135deg, var(--teal-dark), var(--teal));">RK</div>
+          <div>
+            <div class="sidebar-name">Rajesh Kumar</div>
+            <div class="sidebar-id">RET-IND-54321</div>
+          </div>
+        </div>
+        <a href="../../index.html" class="btn btn-outline btn-sm" style="width: 100%;">
+          ← Back to Ecosystem
+        </a>
+      </div>
+    </aside>
+    
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Topbar -->
+      <header class="topbar">
+        <div>
+          <span class="topbar-title" id="pageTitle">Dashboard Overview</span>
+        </div>
+        <div class="topbar-right">
+          <div class="benchmark-pill">
+            <span class="benchmark-live"></span>
+            <span>LBMA: <strong id="lbmaRate">₹7,342</strong>/g</span>
+          </div>
+        </div>
+      </header>
+      
+      <!-- Content Area -->
+      <div class="content">
+        <!-- Overview Panel -->
+        <div class="panel active" id="panel-overview">
+          <div class="stats-row">
+            <div class="stat-card teal">
+              <div class="stat-label">Total Returns</div>
+              <div class="stat-value teal">8</div>
+              <div class="stat-sub">Jewelry items returned</div>
+            </div>
+            <div class="stat-card gold">
+              <div class="stat-label">Total Value Received</div>
+              <div class="stat-value gold">₹4,85,000</div>
+              <div class="stat-trend up">↑ All time</div>
+            </div>
+            <div class="stat-card success">
+              <div class="stat-label">T-Gold Received</div>
+              <div class="stat-value success">5,200</div>
+              <div class="stat-sub">TGDPs credited</div>
+            </div>
+            <div class="stat-card info">
+              <div class="stat-label">Pending</div>
+              <div class="stat-value">1</div>
+              <div class="stat-sub">Awaiting verification</div>
+            </div>
+          </div>
+          
+          <!-- Recent Returns -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Recent Returns</h3>
+              <button class="btn btn-outline btn-sm" onclick="showPanel('returns')">View All</button>
+            </div>
+            <div class="card-body" style="padding: 0;">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Return ID</th>
+                    <th>Item</th>
+                    <th>Weight</th>
+                    <th>Value</th>
+                    <th>Payment</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="mono">TJR-2026-00089</td>
+                    <td>22K Gold Bracelet</td>
+                    <td class="mono">18g</td>
+                    <td class="mono">₹1,21,000</td>
+                    <td><span class="badge badge-gold">T-Gold</span></td>
+                    <td>26 Mar 2026</td>
+                    <td><span class="badge badge-warning">Verification</span></td>
+                  </tr>
+                  <tr>
+                    <td class="mono">TJR-2026-00078</td>
+                    <td>24K Gold Coins (2)</td>
+                    <td class="mono">20g</td>
+                    <td class="mono">₹1,46,840</td>
+                    <td><span class="badge badge-info">Bank</span></td>
+                    <td>20 Mar 2026</td>
+                    <td><span class="badge badge-success">Completed</span></td>
+                  </tr>
+                  <tr>
+                    <td class="mono">TJR-2026-00065</td>
+                    <td>22K Old Necklace</td>
+                    <td class="mono">45g</td>
+                    <td class="mono">₹2,78,000</td>
+                    <td><span class="badge badge-gold">T-Gold</span></td>
+                    <td>15 Mar 2026</td>
+                    <td><span class="badge badge-success">Completed</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          
+          <!-- Quick Actions -->
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-top: 1.5rem;">
+            <button class="btn btn-teal btn-lg" onclick="showPanel('new-return')" style="padding: 1.5rem;">
+              ➕ Submit New Return
+            </button>
+            <button class="btn btn-outline btn-lg" onclick="showPanel('jewelers')" style="padding: 1.5rem; border-color: var(--teal); color: var(--teal);">
+              💎 Find Nearby Jewelers
+            </button>
+          </div>
+        </div>
+        
+        <!-- New Return Panel -->
+        <div class="panel" id="panel-new-return">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Submit Jewelry Return</h3>
+            </div>
+            <div class="card-body">
+              <div class="alert alert-info" style="margin-bottom: 1.5rem;">
+                <span class="alert-icon">ℹ️</span>
+                <div>
+                  Submit details of the jewelry you wish to return. A registered jeweler will verify 
+                  and assess your items. You will receive LBMA benchmark valuation.
+                </div>
+              </div>
+              
+              <form id="returnForm">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label required">Item Type</label>
+                    <select class="form-select" name="itemType" required>
+                      <option value="">Select Type</option>
+                      <option value="necklace">Necklace</option>
+                      <option value="bangle">Bangle</option>
+                      <option value="bracelet">Bracelet</option>
+                      <option value="ring">Ring</option>
+                      <option value="earrings">Earrings</option>
+                      <option value="chain">Chain</option>
+                      <option value="pendant">Pendant</option>
+                      <option value="coins">Gold Coins</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label required">Purity (Karat)</label>
+                    <select class="form-select" name="purity" required>
+                      <option value="">Select Purity</option>
+                      <option value="24K">24K (999)</option>
+                      <option value="22K">22K (916)</option>
+                      <option value="18K">18K (750)</option>
+                      <option value="14K">14K (585)</option>
+                      <option value="unknown">Not Sure</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label required">Approximate Weight (grams)</label>
+                    <input type="number" class="form-input" name="weight" required placeholder="Enter weight" step="0.1" min="0.5">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label required">Item Condition</label>
+                    <select class="form-select" name="condition" required>
+                      <option value="">Select Condition</option>
+                      <option value="excellent">Excellent - Like new</option>
+                      <option value="good">Good - Minor wear</option>
+                      <option value="fair">Fair - Visible wear</option>
+                      <option value="broken">Broken - Needs repair</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <div class="form-group">
+                  <label class="form-label">Description</label>
+                  <textarea class="form-textarea" name="description" rows="3" placeholder="Any additional details about the item (stones, engravings, etc.)"></textarea>
+                </div>
+                
+                <div class="form-group">
+                  <label class="form-label required">Upload Photos</label>
+                  <div class="file-upload" onclick="document.getElementById('itemPhotos').click()">
+                    <input type="file" id="itemPhotos" name="photos" accept="image/*" multiple required>
+                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">📷</div>
+                    <div>Upload clear photos of your jewelry</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">JPG, PNG up to 5MB each. Include multiple angles.</div>
+                  </div>
+                </div>
+                
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label required">Preferred Payment</label>
+                    <select class="form-select" name="paymentMethod" required>
+                      <option value="">Select Method</option>
+                      <option value="tgold">T-Gold Credits (Instant)</option>
+                      <option value="bank">Bank Transfer (24 hrs)</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label required">Pickup/Drop-off</label>
+                    <select class="form-select" name="pickupMethod" required>
+                      <option value="">Select Method</option>
+                      <option value="home">Home Pickup</option>
+                      <option value="jeweler">Visit Jeweler</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <div id="pickupAddress" style="display: none;">
+                  <div class="form-group">
+                    <label class="form-label required">Pickup Address</label>
+                    <textarea class="form-textarea" name="pickupAddress" rows="2" placeholder="Enter complete pickup address"></textarea>
+                  </div>
+                  <div class="form-row">
+                    <div class="form-group">
+                      <label class="form-label required">Preferred Date</label>
+                      <input type="date" class="form-input" name="pickupDate">
+                    </div>
+                    <div class="form-group">
+                      <label class="form-label required">Preferred Time</label>
+                      <select class="form-select" name="pickupTime">
+                        <option value="">Select Slot</option>
+                        <option value="10-12">10:00 AM - 12:00 PM</option>
+                        <option value="12-14">12:00 PM - 2:00 PM</option>
+                        <option value="14-16">2:00 PM - 4:00 PM</option>
+                        <option value="16-18">4:00 PM - 6:00 PM</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+                
+                <button type="submit" class="btn btn-teal btn-lg" style="margin-top: 1rem;">Submit Return Request</button>
+              </form>
+            </div>
+          </div>
+        </div>
+        
+        <!-- My Returns Panel -->
+        <div class="panel" id="panel-returns">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">My Return History</h3>
+              <div style="display: flex; gap: 0.5rem;">
+                <select class="form-select" style="width: auto; padding: 0.5rem 1rem; font-size: 0.85rem;">
+                  <option>All Status</option>
+                  <option>Pending</option>
+                  <option>Verification</option>
+                  <option>Completed</option>
+                </select>
+                <button class="btn btn-outline btn-sm">Export</button>
+              </div>
+            </div>
+            <div class="card-body" style="padding: 0;">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Return ID</th>
+                    <th>Item</th>
+                    <th>Purity</th>
+                    <th>Weight</th>
+                    <th>Value</th>
+                    <th>Payment</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="mono">TJR-2026-00089</td>
+                    <td>22K Gold Bracelet</td>
+                    <td>916</td>
+                    <td class="mono">18g</td>
+                    <td class="mono">₹1,21,000</td>
+                    <td><span class="badge badge-gold">T-Gold</span></td>
+                    <td>26 Mar 2026</td>
+                    <td><span class="badge badge-warning">Verification</span></td>
+                  </tr>
+                  <tr>
+                    <td class="mono">TJR-2026-00078</td>
+                    <td>24K Gold Coins (2)</td>
+                    <td>999</td>
+                    <td class="mono">20g</td>
+                    <td class="mono">₹1,46,840</td>
+                    <td><span class="badge badge-info">Bank</span></td>
+                    <td>20 Mar 2026</td>
+                    <td><span class="badge badge-success">Completed</span></td>
+                  </tr>
+                  <tr>
+                    <td class="mono">TJR-2026-00065</td>
+                    <td>22K Old Necklace</td>
+                    <td>916</td>
+                    <td class="mono">45g</td>
+                    <td class="mono">₹2,78,000</td>
+                    <td><span class="badge badge-gold">T-Gold</span></td>
+                    <td>15 Mar 2026</td>
+                    <td><span class="badge badge-success">Completed</span></td>
+                  </tr>
+                  <tr>
+                    <td class="mono">TJR-2026-00052</td>
+                    <td>22K Broken Earrings</td>
+                    <td>916</td>
+                    <td class="mono">8g</td>
+                    <td class="mono">₹53,600</td>
+                    <td><span class="badge badge-gold">T-Gold</span></td>
+                    <td>05 Mar 2026</td>
+                    <td><span class="badge badge-success">Completed</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Nearby Jewelers Panel -->
+        <div class="panel" id="panel-jewelers">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Registered Jewelers Near You</h3>
+              <div style="display: flex; gap: 0.5rem; align-items: center;">
+                <input type="text" class="form-input" placeholder="Enter PIN code" style="width: 150px; padding: 0.5rem;">
+                <button class="btn btn-teal btn-sm">Search</button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div style="display: grid; gap: 1rem;">
+                <div style="background: var(--obsidian); border: 1px solid var(--obsidian-border); border-radius: var(--radius-lg); padding: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+                  <div>
+                    <div style="font-weight: 600; margin-bottom: 0.25rem;">Sharma Gold Palace</div>
+                    <div style="font-size: 0.85rem; color: var(--text-muted);">Shop 12, Gold Market, Zaveri Bazaar, Mumbai - 400002</div>
+                    <div style="font-size: 0.8rem; color: var(--teal); margin-top: 0.5rem;">⭐ 4.8 (234 reviews) · 1.2 km away</div>
+                  </div>
+                  <button class="btn btn-outline btn-sm" style="border-color: var(--teal); color: var(--teal);">View Details</button>
+                </div>
+                <div style="background: var(--obsidian); border: 1px solid var(--obsidian-border); border-radius: var(--radius-lg); padding: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+                  <div>
+                    <div style="font-weight: 600; margin-bottom: 0.25rem;">Tanishq - Linking Road</div>
+                    <div style="font-size: 0.85rem; color: var(--text-muted);">15, Linking Road, Bandra West, Mumbai - 400050</div>
+                    <div style="font-size: 0.8rem; color: var(--teal); margin-top: 0.5rem;">⭐ 4.6 (512 reviews) · 3.5 km away</div>
+                  </div>
+                  <button class="btn btn-outline btn-sm" style="border-color: var(--teal); color: var(--teal);">View Details</button>
+                </div>
+                <div style="background: var(--obsidian); border: 1px solid var(--obsidian-border); border-radius: var(--radius-lg); padding: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
+                  <div>
+                    <div style="font-weight: 600; margin-bottom: 0.25rem;">Kalyan Jewellers - Dadar</div>
+                    <div style="font-size: 0.85rem; color: var(--text-muted);">Ranade Road, Dadar West, Mumbai - 400028</div>
+                    <div style="font-size: 0.8rem; color: var(--teal); margin-top: 0.5rem;">⭐ 4.7 (387 reviews) · 4.8 km away</div>
+                  </div>
+                  <button class="btn btn-outline btn-sm" style="border-color: var(--teal); color: var(--teal);">View Details</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Settings Panel -->
+        <div class="panel" id="panel-settings">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Account Settings</h3>
+            </div>
+            <div class="card-body">
+              <h4 style="margin-bottom: 1rem;">Profile Information</h4>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Full Name</label>
+                  <input type="text" class="form-input" value="Rajesh Kumar" disabled>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Email</label>
+                  <input type="email" class="form-input" value="rajesh.kumar@email.com" disabled>
+                </div>
+              </div>
+              
+              <h4 style="margin: 2rem 0 1rem;">Default Pickup Address</h4>
+              <div class="form-group">
+                <textarea class="form-textarea" rows="2">123, Gold Lane, Andheri West, Mumbai - 400058</textarea>
+              </div>
+              <button class="btn btn-outline">Update Address</button>
+              
+              <hr style="border: none; border-top: 1px solid var(--obsidian-border); margin: 2rem 0;">
+              
+              <h4 style="margin-bottom: 1rem;">Bank Accounts</h4>
+              <div style="background: var(--obsidian); border-radius: var(--radius-lg); padding: 1rem; margin-bottom: 1rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <div>
+                    <div style="font-weight: 600;">HDFC Bank ****4521</div>
+                    <div style="font-size: 0.85rem; color: var(--text-muted);">Savings Account</div>
+                  </div>
+                  <span class="badge badge-success">Primary</span>
+                </div>
+              </div>
+              <button class="btn btn-outline">+ Add Bank Account</button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Complaints Panel -->
+        <div class="panel" id="panel-complaints">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">File a Complaint</h3>
+            </div>
+            <div class="card-body">
+              <div class="alert alert-info" style="margin-bottom: 1.5rem;">
+                <span class="alert-icon">⚖️</span>
+                <div>
+                  <strong>Complaint Protocol:</strong> All complaints are reviewed by the TGDP Ombudsman. 
+                  Resolution typically takes 7-14 business days.
+                </div>
+              </div>
+              
+              <!-- Protocol Steps -->
+              <div style="display: flex; justify-content: space-between; padding: 1rem; background: var(--obsidian); border-radius: var(--radius-lg); margin-bottom: 1.5rem;">
+                <div style="text-align: center; flex: 1;"><div style="width: 28px; height: 28px; background: var(--teal-muted); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 0.35rem; font-size: 0.75rem; font-weight: 600; color: var(--teal);">1</div><div style="font-size: 0.7rem; color: var(--text-muted);">Filing</div></div>
+                <div style="color: var(--teal); align-self: center;">→</div>
+                <div style="text-align: center; flex: 1;"><div style="width: 28px; height: 28px; background: var(--teal-muted); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 0.35rem; font-size: 0.75rem; font-weight: 600; color: var(--teal);">2</div><div style="font-size: 0.7rem; color: var(--text-muted);">Acknowledgment</div></div>
+                <div style="color: var(--teal); align-self: center;">→</div>
+                <div style="text-align: center; flex: 1;"><div style="width: 28px; height: 28px; background: var(--teal-muted); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 0.35rem; font-size: 0.75rem; font-weight: 600; color: var(--teal);">3</div><div style="font-size: 0.7rem; color: var(--text-muted);">Investigation</div></div>
+                <div style="color: var(--teal); align-self: center;">→</div>
+                <div style="text-align: center; flex: 1;"><div style="width: 28px; height: 28px; background: var(--teal-muted); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 0.35rem; font-size: 0.75rem; font-weight: 600; color: var(--teal);">4</div><div style="font-size: 0.7rem; color: var(--text-muted);">Mediation</div></div>
+                <div style="color: var(--teal); align-self: center;">→</div>
+                <div style="text-align: center; flex: 1;"><div style="width: 28px; height: 28px; background: var(--teal-muted); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 0.35rem; font-size: 0.75rem; font-weight: 600; color: var(--teal);">5</div><div style="font-size: 0.7rem; color: var(--text-muted);">Resolution</div></div>
+              </div>
+              
+              <form id="complaintForm">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label required">Complaint Against</label>
+                    <select class="form-select" name="against" required>
+                      <option value="">Select Party</option>
+                      <option value="jeweler">Jeweler</option>
+                      <option value="platform">Platform/Technical</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label required">Category</label>
+                    <select class="form-select" name="category" required>
+                      <option value="">Select Category</option>
+                      <option value="valuation">Valuation Dispute</option>
+                      <option value="payment">Payment Issue</option>
+                      <option value="pickup">Pickup Problem</option>
+                      <option value="jeweler">Jeweler Complaint</option>
+                      <option value="technical">Technical Problem</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <div class="form-group">
+                  <label class="form-label required">Subject</label>
+                  <input type="text" class="form-input" name="subject" required placeholder="Brief description of the issue">
+                </div>
+                
+                <div class="form-group">
+                  <label class="form-label required">Description</label>
+                  <textarea class="form-textarea" name="description" required placeholder="Provide detailed information about your complaint" rows="5"></textarea>
+                </div>
+                
+                <button type="submit" class="btn btn-teal btn-lg">Submit Complaint</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+  
+  <!-- Shared JavaScript -->
+  <script src="../../js/shared.txt"></script>
+  
+  <script>
+    // Toggle pickup address visibility
+    document.querySelector('[name="pickupMethod"]').addEventListener('change', function() {
+      document.getElementById('pickupAddress').style.display = this.value === 'home' ? 'block' : 'none';
+    });
+    
+    // Return form submission
+    document.getElementById('returnForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      showLoading('Submitting return request...');
+      setTimeout(() => {
+        hideLoading();
+        const id = 'TJR-2026-' + String(Math.floor(Math.random() * 90000) + 10000).padStart(5, '0');
+        showToast(`Return request ${id} submitted successfully!`, 'success');
+        this.reset();
+        document.getElementById('pickupAddress').style.display = 'none';
+      }, 1500);
+    });
+    
+    // Complaint form submission
+    document.getElementById('complaintForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      showLoading('Submitting complaint to Ombudsman...');
+      setTimeout(() => {
+        hideLoading();
+        const refNo = 'OMB-2026-' + String(Math.floor(Math.random() * 90000) + 10000).padStart(5, '0');
+        showToast('Complaint ' + refNo + ' submitted! Acknowledgment within 24-48 hours.', 'success');
+        this.reset();
+      }, 1500);
+    });
+  </script>
+</body>
+</html>

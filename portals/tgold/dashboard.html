@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="T-Gold Dashboard - Manage your gold tokenization">
+  <title>Dashboard · T-Gold</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  
+  <!-- Shared Styles -->
+  <link rel="stylesheet" href="../../css/shared.css">
+</head>
+<body>
+  <div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-logo-trot">
+        <img src="../../assets/images/trot-logo.jpg" alt="TROT®">
+        <div class="logo-text">
+          <a href="index.html">T-Gold</a>
+          <span>Dashboard</span>
+        </div>
+      </div>
+      
+      <nav class="sidebar-nav">
+        <div class="nav-group">
+          <div class="nav-group-label">Main</div>
+          <div class="nav-item active" onclick="showPanel('overview')">
+            <span class="nav-icon">📊</span>
+            <span>Overview</span>
+          </div>
+          <div class="nav-item" onclick="showPanel('holdings')">
+            <span class="nav-icon">💰</span>
+            <span>My Holdings</span>
+          </div>
+          <div class="nav-item" onclick="showPanel('mint')">
+            <span class="nav-icon">⛏️</span>
+            <span>Mint TGDPs</span>
+          </div>
+        </div>
+        
+        <div class="nav-group">
+          <div class="nav-group-label">Trading</div>
+          <div class="nav-item" onclick="showPanel('trade')">
+            <span class="nav-icon">📈</span>
+            <span>Trade</span>
+          </div>
+          <div class="nav-item" onclick="showPanel('ftr')">
+            <span class="nav-icon">🔄</span>
+            <span>FTR Swaps</span>
+          </div>
+          <div class="nav-item" onclick="showPanel('withdraw')">
+            <span class="nav-icon">🏦</span>
+            <span>Withdraw</span>
+          </div>
+        </div>
+        
+        <div class="nav-group">
+          <div class="nav-group-label">Reports</div>
+          <div class="nav-item" onclick="showPanel('transactions')">
+            <span class="nav-icon">📋</span>
+            <span>Transactions</span>
+          </div>
+          <div class="nav-item" onclick="showPanel('statements')">
+            <span class="nav-icon">📄</span>
+            <span>Statements</span>
+          </div>
+        </div>
+        
+        <div class="nav-group">
+          <div class="nav-group-label">Support</div>
+          <div class="nav-item" onclick="showPanel('complaints')">
+            <span class="nav-icon">⚖️</span>
+            <span>File Complaint</span>
+          </div>
+          <div class="nav-item" onclick="showPanel('settings')">
+            <span class="nav-icon">⚙️</span>
+            <span>Settings</span>
+          </div>
+        </div>
+      </nav>
+      
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <div class="sidebar-avatar">RK</div>
+          <div>
+            <div class="sidebar-name">Rajesh Kumar</div>
+            <div class="sidebar-id">HH-IND-54321</div>
+          </div>
+        </div>
+        <a href="../../index.html" class="btn btn-outline btn-sm" style="width: 100%;">
+          ← Back to Ecosystem
+        </a>
+      </div>
+    </aside>
+    
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Topbar -->
+      <header class="topbar">
+        <div>
+          <button class="btn btn-outline btn-sm" onclick="toggleSidebar()" style="display: none;">☰</button>
+          <span class="topbar-title" id="pageTitle">Dashboard Overview</span>
+        </div>
+        <div class="topbar-right">
+          <div class="benchmark-pill">
+            <span class="benchmark-live"></span>
+            <span>LBMA: <strong id="lbmaRate">₹7,342</strong>/g</span>
+          </div>
+        </div>
+      </header>
+      
+      <!-- Content Area -->
+      <div class="content">
+        <!-- Overview Panel -->
+        <div class="panel active" id="panel-overview">
+          <!-- Stats Row -->
+          <div class="stats-row">
+            <div class="stat-card gold">
+              <div class="stat-label">Total TGDPs</div>
+              <div class="stat-value gold">1,250</div>
+              <div class="stat-sub">125 grams earmarked</div>
+            </div>
+            <div class="stat-card success">
+              <div class="stat-label">Current Value</div>
+              <div class="stat-value">₹9,17,750</div>
+              <div class="stat-trend up">↑ 2.3% this week</div>
+            </div>
+            <div class="stat-card purple">
+              <div class="stat-label">FTR Balance</div>
+              <div class="stat-value purple">₹45,000</div>
+              <div class="stat-sub">Hospitality credits</div>
+            </div>
+            <div class="stat-card info">
+              <div class="stat-label">Pending</div>
+              <div class="stat-value">50</div>
+              <div class="stat-sub">Minting in progress</div>
+            </div>
+          </div>
+          
+          <!-- Recent Activity -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Recent Activity</h3>
+              <button class="btn btn-outline btn-sm" onclick="showPanel('transactions')">View All</button>
+            </div>
+            <div class="card-body" style="padding: 0;">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>28 Mar 2026</td>
+                    <td><span class="badge badge-gold">Mint</span></td>
+                    <td>Gold Earmarking - 22K Necklace</td>
+                    <td class="mono">+50 TGDPs</td>
+                    <td><span class="badge badge-warning">Processing</span></td>
+                  </tr>
+                  <tr>
+                    <td>25 Mar 2026</td>
+                    <td><span class="badge badge-purple">Swap</span></td>
+                    <td>FTR Hospitality Exchange</td>
+                    <td class="mono">-100 TGDPs</td>
+                    <td><span class="badge badge-success">Completed</span></td>
+                  </tr>
+                  <tr>
+                    <td>22 Mar 2026</td>
+                    <td><span class="badge badge-teal">Trade</span></td>
+                    <td>Sold to HH-IND-98765</td>
+                    <td class="mono">-200 TGDPs</td>
+                    <td><span class="badge badge-success">Completed</span></td>
+                  </tr>
+                  <tr>
+                    <td>18 Mar 2026</td>
+                    <td><span class="badge badge-gold">Mint</span></td>
+                    <td>Gold Earmarking - 24K Bangle</td>
+                    <td class="mono">+300 TGDPs</td>
+                    <td><span class="badge badge-success">Completed</span></td>
+                  </tr>
+                  <tr>
+                    <td>15 Mar 2026</td>
+                    <td><span class="badge badge-info">Withdraw</span></td>
+                    <td>Bank Transfer to HDFC ****4521</td>
+                    <td class="mono">₹1,50,000</td>
+                    <td><span class="badge badge-success">Completed</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          
+          <!-- Quick Actions -->
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1.5rem;">
+            <button class="btn btn-gold btn-lg" onclick="showPanel('mint')" style="padding: 1.5rem;">
+              ⛏️ Mint New TGDPs
+            </button>
+            <button class="btn btn-purple btn-lg" onclick="showPanel('ftr')" style="padding: 1.5rem;">
+              🔄 Swap for FTR
+            </button>
+            <button class="btn btn-teal btn-lg" onclick="showPanel('trade')" style="padding: 1.5rem;">
+              📈 Start Trading
+            </button>
+          </div>
+        </div>
+        
+        <!-- Holdings Panel -->
+        <div class="panel" id="panel-holdings">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">My Gold Holdings</h3>
+            </div>
+            <div class="card-body" style="padding: 0;">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Item</th>
+                    <th>Purity</th>
+                    <th>Weight (g)</th>
+                    <th>TGDPs</th>
+                    <th>Current Value</th>
+                    <th>Earmarked Date</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>24K Gold Bangle</td>
+                    <td>999</td>
+                    <td class="mono">30.00</td>
+                    <td class="mono">300</td>
+                    <td class="mono">₹2,20,260</td>
+                    <td>18 Mar 2026</td>
+                    <td><span class="badge badge-success">Active</span></td>
+                  </tr>
+                  <tr>
+                    <td>22K Gold Necklace</td>
+                    <td>916</td>
+                    <td class="mono">45.00</td>
+                    <td class="mono">412</td>
+                    <td class="mono">₹3,02,490</td>
+                    <td>10 Mar 2026</td>
+                    <td><span class="badge badge-success">Active</span></td>
+                  </tr>
+                  <tr>
+                    <td>22K Gold Earrings</td>
+                    <td>916</td>
+                    <td class="mono">12.00</td>
+                    <td class="mono">110</td>
+                    <td class="mono">₹80,762</td>
+                    <td>02 Mar 2026</td>
+                    <td><span class="badge badge-success">Active</span></td>
+                  </tr>
+                  <tr>
+                    <td>24K Gold Ring</td>
+                    <td>999</td>
+                    <td class="mono">8.00</td>
+                    <td class="mono">80</td>
+                    <td class="mono">₹58,736</td>
+                    <td>25 Feb 2026</td>
+                    <td><span class="badge badge-success">Active</span></td>
+                  </tr>
+                  <tr>
+                    <td>22K Gold Chain</td>
+                    <td>916</td>
+                    <td class="mono">35.00</td>
+                    <td class="mono">320</td>
+                    <td class="mono">₹2,34,944</td>
+                    <td>20 Feb 2026</td>
+                    <td><span class="badge badge-success">Active</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="card-footer">
+              <div style="display: flex; justify-content: space-between; align-items: center;">
+                <span style="color: var(--text-muted);">Total: 130g Pure Gold = 1,222 TGDPs</span>
+                <button class="btn btn-gold" onclick="showPanel('mint')">+ Add New Item</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Mint Panel -->
+        <div class="panel" id="panel-mint">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Mint New TGDPs</h3>
+              <span class="badge badge-gold">10 TGDPs per gram</span>
+            </div>
+            <div class="card-body">
+              <div class="alert alert-info" style="margin-bottom: 1.5rem;">
+                <span class="alert-icon">ℹ️</span>
+                <div>
+                  Submit your gold jewelry details for earmarking. Our certified assessor will verify purity and weight.
+                  TGDPs will be credited within 24-48 hours of verification.
+                </div>
+              </div>
+              
+              <form id="mintForm">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label required">Item Description</label>
+                    <input type="text" class="form-input" name="itemDesc" required placeholder="e.g., 22K Gold Necklace">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label required">Item Type</label>
+                    <select class="form-select" name="itemType" required>
+                      <option value="">Select Type</option>
+                      <option value="necklace">Necklace</option>
+                      <option value="bangle">Bangle</option>
+                      <option value="ring">Ring</option>
+                      <option value="earrings">Earrings</option>
+                      <option value="chain">Chain</option>
+                      <option value="pendant">Pendant</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label required">Gold Purity</label>
+                    <select class="form-select" name="purity" required onchange="calculateTGDPs()">
+                      <option value="">Select Purity</option>
+                      <option value="999">24K (999)</option>
+                      <option value="916">22K (916)</option>
+                      <option value="750">18K (750)</option>
+                      <option value="585">14K (585)</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label required">Gross Weight (grams)</label>
+                    <input type="number" class="form-input" name="weight" required placeholder="Enter weight" step="0.01" min="0.1" onchange="calculateTGDPs()">
+                  </div>
+                </div>
+                
+                <div class="form-group">
+                  <label class="form-label">Additional Notes</label>
+                  <textarea class="form-textarea" name="notes" rows="3" placeholder="Any additional details about the item"></textarea>
+                </div>
+                
+                <div class="form-group">
+                  <label class="form-label required">Upload Photos</label>
+                  <div class="file-upload" onclick="document.getElementById('itemPhotos').click()">
+                    <input type="file" id="itemPhotos" name="photos" accept="image/*" multiple>
+                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">📷</div>
+                    <div>Click to upload item photos</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">JPG, PNG up to 5MB each</div>
+                  </div>
+                </div>
+                
+                <!-- Calculation Preview -->
+                <div style="background: var(--obsidian); border: 1px solid var(--obsidian-border); border-radius: var(--radius-lg); padding: 1.5rem; margin-top: 1.5rem;">
+                  <h4 style="margin-bottom: 1rem; font-size: 0.85rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.1em;">Estimated TGDPs</h4>
+                  <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; text-align: center;">
+                    <div>
+                      <div style="font-size: 0.75rem; color: var(--text-muted);">Gross Weight</div>
+                      <div style="font-family: var(--font-mono); font-size: 1.25rem;" id="calcGross">0.00g</div>
+                    </div>
+                    <div>
+                      <div style="font-size: 0.75rem; color: var(--text-muted);">Purity</div>
+                      <div style="font-family: var(--font-mono); font-size: 1.25rem;" id="calcPurity">-</div>
+                    </div>
+                    <div>
+                      <div style="font-size: 0.75rem; color: var(--text-muted);">Pure Gold</div>
+                      <div style="font-family: var(--font-mono); font-size: 1.25rem;" id="calcPure">0.00g</div>
+                    </div>
+                    <div>
+                      <div style="font-size: 0.75rem; color: var(--text-muted);">TGDPs</div>
+                      <div style="font-family: var(--font-mono); font-size: 1.5rem; color: var(--gold);" id="calcTgdps">0</div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
+                  <button type="submit" class="btn btn-gold btn-lg">Submit for Minting</button>
+                  <button type="button" class="btn btn-outline btn-lg" onclick="resetForm('mintForm')">Clear Form</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Trade Panel -->
+        <div class="panel" id="panel-trade">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Trade TGDPs</h3>
+              <span class="badge badge-success">0% Platform Fee</span>
+            </div>
+            <div class="card-body">
+              <div class="alert alert-success" style="margin-bottom: 1.5rem;">
+                <span class="alert-icon">✓</span>
+                <div>Zero platform fee on all trades. Trade freely with other registered users.</div>
+              </div>
+              
+              <form id="tradeForm">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label required">Trade Type</label>
+                    <select class="form-select" name="tradeType" required>
+                      <option value="">Select Type</option>
+                      <option value="sell">Sell TGDPs</option>
+                      <option value="buy">Buy TGDPs</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label required">Amount (TGDPs)</label>
+                    <input type="number" class="form-input" name="amount" required placeholder="Enter amount" min="1">
+                  </div>
+                </div>
+                
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label">Recipient/Seller ID (Optional)</label>
+                    <input type="text" class="form-input" name="counterparty" placeholder="HH-IND-XXXXX">
+                    <span class="form-hint">Leave blank to list on open market</span>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label required">Price per TGDP (₹)</label>
+                    <input type="number" class="form-input" name="price" required placeholder="Market: ₹734.20" step="0.01">
+                  </div>
+                </div>
+                
+                <button type="submit" class="btn btn-teal btn-lg">Place Trade Order</button>
+              </form>
+            </div>
+          </div>
+          
+          <!-- Open Orders -->
+          <div class="card" style="margin-top: 1.5rem;">
+            <div class="card-header">
+              <h3 class="card-title">My Open Orders</h3>
+            </div>
+            <div class="card-body" style="padding: 0;">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Order ID</th>
+                    <th>Type</th>
+                    <th>Amount</th>
+                    <th>Price</th>
+                    <th>Total</th>
+                    <th>Created</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="mono">TRD-2026-78543</td>
+                    <td><span class="badge badge-success">Sell</span></td>
+                    <td class="mono">100 TGDPs</td>
+                    <td class="mono">₹735.00</td>
+                    <td class="mono">₹73,500</td>
+                    <td>2 hours ago</td>
+                    <td><button class="btn btn-outline btn-sm">Cancel</button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        
+        <!-- FTR Swaps Panel -->
+        <div class="panel" id="panel-ftr">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">FTR Swaps</h3>
+              <span class="badge badge-purple">4% Commission</span>
+            </div>
+            <div class="card-body">
+              <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
+                Exchange your TGDPs for Future Trade Rights (FTRs) in various categories. 
+                FTRs can be redeemed at partner establishments.
+              </p>
+              
+              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem;">
+                <div class="stat-card purple">
+                  <div class="stat-label">🏨 Hospitality</div>
+                  <div class="stat-value purple">₹25,000</div>
+                  <div class="stat-sub">Hotels, Resorts</div>
+                </div>
+                <div class="stat-card teal">
+                  <div class="stat-label">🏥 Healthcare</div>
+                  <div class="stat-value teal">₹15,000</div>
+                  <div class="stat-sub">Hospitals, Clinics</div>
+                </div>
+                <div class="stat-card rose">
+                  <div class="stat-label">🎓 Education</div>
+                  <div class="stat-value rose">₹5,000</div>
+                  <div class="stat-sub">Schools, Courses</div>
+                </div>
+              </div>
+              
+              <form id="ftrForm">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label required">FTR Category</label>
+                    <select class="form-select" name="ftrCategory" required>
+                      <option value="">Select Category</option>
+                      <option value="hospitality">🏨 Hospitality</option>
+                      <option value="healthcare">🏥 Healthcare</option>
+                      <option value="education">🎓 Education</option>
+                      <option value="retail">🛍️ Retail</option>
+                      <option value="travel">✈️ Travel</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label required">TGDPs to Swap</label>
+                    <input type="number" class="form-input" name="swapAmount" required placeholder="Enter amount" min="10">
+                  </div>
+                </div>
+                
+                <div style="background: var(--obsidian); border-radius: var(--radius-lg); padding: 1rem; margin-bottom: 1rem;">
+                  <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <span style="color: var(--text-muted);">FTR Value (@ ₹734.20/TGDP)</span>
+                    <span class="mono">₹0</span>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                    <span style="color: var(--text-muted);">Commission (4%)</span>
+                    <span class="mono">- ₹0</span>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; padding-top: 0.5rem; border-top: 1px solid var(--obsidian-border);">
+                    <span style="font-weight: 600;">Net FTR Credits</span>
+                    <span class="mono" style="color: var(--purple); font-size: 1.1rem;">₹0</span>
+                  </div>
+                </div>
+                
+                <button type="submit" class="btn btn-purple btn-lg">Execute Swap</button>
+              </form>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Withdraw Panel -->
+        <div class="panel" id="panel-withdraw">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Withdraw to Bank</h3>
+            </div>
+            <div class="card-body">
+              <div class="alert alert-info" style="margin-bottom: 1.5rem;">
+                <span class="alert-icon">ℹ️</span>
+                <div>
+                  Withdrawals are processed within 24 hours. Minimum withdrawal: ₹1,000. 
+                  Bank account must match KYC records.
+                </div>
+              </div>
+              
+              <form id="withdrawForm">
+                <div class="form-group">
+                  <label class="form-label required">Amount (₹)</label>
+                  <input type="number" class="form-input" name="withdrawAmount" required placeholder="Enter amount" min="1000">
+                  <span class="form-hint">Available balance: ₹2,45,000</span>
+                </div>
+                
+                <div class="form-group">
+                  <label class="form-label required">Bank Account</label>
+                  <select class="form-select" name="bankAccount" required>
+                    <option value="">Select Account</option>
+                    <option value="hdfc">HDFC Bank ****4521</option>
+                    <option value="sbi">SBI ****7890</option>
+                    <option value="add">+ Add New Account</option>
+                  </select>
+                </div>
+                
+                <button type="submit" class="btn btn-gold btn-lg">Request Withdrawal</button>
+              </form>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Transactions Panel -->
+        <div class="panel" id="panel-transactions">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Transaction History</h3>
+              <div style="display: flex; gap: 0.5rem;">
+                <select class="form-select" style="width: auto; padding: 0.5rem 1rem; font-size: 0.85rem;">
+                  <option>All Types</option>
+                  <option>Mint</option>
+                  <option>Trade</option>
+                  <option>Swap</option>
+                  <option>Withdraw</option>
+                </select>
+                <button class="btn btn-outline btn-sm">Export CSV</button>
+              </div>
+            </div>
+            <div class="card-body" style="padding: 0;">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Ref No</th>
+                    <th>Date</th>
+                    <th>Type</th>
+                    <th>Description</th>
+                    <th>Debit</th>
+                    <th>Credit</th>
+                    <th>Balance</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="mono">TXN-2026-00128</td>
+                    <td>28 Mar 2026</td>
+                    <td><span class="badge badge-gold">Mint</span></td>
+                    <td>Gold Earmarking - 22K Necklace</td>
+                    <td>-</td>
+                    <td class="mono" style="color: var(--success);">+50</td>
+                    <td class="mono">1,250</td>
+                  </tr>
+                  <tr>
+                    <td class="mono">TXN-2026-00127</td>
+                    <td>25 Mar 2026</td>
+                    <td><span class="badge badge-purple">Swap</span></td>
+                    <td>FTR Hospitality Exchange</td>
+                    <td class="mono" style="color: var(--danger);">-100</td>
+                    <td>-</td>
+                    <td class="mono">1,200</td>
+                  </tr>
+                  <tr>
+                    <td class="mono">TXN-2026-00126</td>
+                    <td>22 Mar 2026</td>
+                    <td><span class="badge badge-teal">Trade</span></td>
+                    <td>Sold to HH-IND-98765</td>
+                    <td class="mono" style="color: var(--danger);">-200</td>
+                    <td>-</td>
+                    <td class="mono">1,300</td>
+                  </tr>
+                  <tr>
+                    <td class="mono">TXN-2026-00125</td>
+                    <td>18 Mar 2026</td>
+                    <td><span class="badge badge-gold">Mint</span></td>
+                    <td>Gold Earmarking - 24K Bangle</td>
+                    <td>-</td>
+                    <td class="mono" style="color: var(--success);">+300</td>
+                    <td class="mono">1,500</td>
+                  </tr>
+                  <tr>
+                    <td class="mono">TXN-2026-00124</td>
+                    <td>15 Mar 2026</td>
+                    <td><span class="badge badge-info">Withdraw</span></td>
+                    <td>Bank Transfer to HDFC ****4521</td>
+                    <td class="mono" style="color: var(--danger);">-200</td>
+                    <td>-</td>
+                    <td class="mono">1,200</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Statements Panel -->
+        <div class="panel" id="panel-statements">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Account Statements</h3>
+            </div>
+            <div class="card-body">
+              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+                <div class="report-card" onclick="generateReport('monthly-statement')">
+                  <div class="report-icon">📄</div>
+                  <div class="report-name">Monthly Statement</div>
+                  <div class="report-desc">Complete account statement for the month</div>
+                  <div class="report-meta">
+                    <span class="report-freq">March 2026</span>
+                    <span class="report-action">Generate →</span>
+                  </div>
+                </div>
+                <div class="report-card" onclick="generateReport('holdings-report')">
+                  <div class="report-icon">💰</div>
+                  <div class="report-name">Holdings Report</div>
+                  <div class="report-desc">Detailed breakdown of all earmarked gold</div>
+                  <div class="report-meta">
+                    <span class="report-freq">Current</span>
+                    <span class="report-action">Generate →</span>
+                  </div>
+                </div>
+                <div class="report-card" onclick="generateReport('tax-report')">
+                  <div class="report-icon">📊</div>
+                  <div class="report-name">Tax Report</div>
+                  <div class="report-desc">FY 2025-26 tax summary</div>
+                  <div class="report-meta">
+                    <span class="report-freq">Annual</span>
+                    <span class="report-action">Generate →</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Report Preview -->
+          <div id="reportPreview" class="card" style="margin-top: 1.5rem; display: none;">
+            <div class="card-header">
+              <h3 class="card-title" id="reportPreviewTitle">Report Preview</h3>
+              <div style="display: flex; gap: 0.5rem;">
+                <button class="btn btn-outline btn-sm" onclick="downloadReport('pdf')">📄 PDF</button>
+                <button class="btn btn-outline btn-sm" onclick="downloadReport('xlsx')">📊 Excel</button>
+                <button class="btn btn-outline btn-sm" onclick="closeReportPreview()">✕ Close</button>
+              </div>
+            </div>
+            <div class="card-body" id="reportPreviewContent">
+              <!-- Report content will be injected here -->
+            </div>
+          </div>
+        </div>
+        
+        <!-- Settings Panel -->
+        <div class="panel" id="panel-settings">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Account Settings</h3>
+            </div>
+            <div class="card-body">
+              <h4 style="margin-bottom: 1rem;">Profile Information</h4>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Full Name</label>
+                  <input type="text" class="form-input" value="Rajesh Kumar" disabled>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Email</label>
+                  <input type="email" class="form-input" value="rajesh.kumar@email.com" disabled>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Mobile</label>
+                  <input type="tel" class="form-input" value="+91 98765 43210">
+                </div>
+                <div class="form-group">
+                  <label class="form-label">PAN</label>
+                  <input type="text" class="form-input" value="ABCDE1234F" disabled>
+                </div>
+              </div>
+              <button class="btn btn-outline" style="margin-top: 1rem;">Update Mobile</button>
+              
+              <hr style="border: none; border-top: 1px solid var(--obsidian-border); margin: 2rem 0;">
+              
+              <h4 style="margin-bottom: 1rem;">Security</h4>
+              <button class="btn btn-outline" style="margin-right: 0.5rem;">Change Password</button>
+              <button class="btn btn-outline">Enable 2FA</button>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Complaints Panel -->
+        <div class="panel" id="panel-complaints">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">File a Complaint</h3>
+            </div>
+            <div class="card-body">
+              <div class="alert alert-info" style="margin-bottom: 1.5rem;">
+                <span class="alert-icon">⚖️</span>
+                <div>
+                  <strong>Complaint Protocol:</strong> All complaints are reviewed by the TGDP Ombudsman. 
+                  Resolution typically takes 7-14 business days.
+                </div>
+              </div>
+              
+              <!-- Protocol Steps -->
+              <div style="display: flex; justify-content: space-between; padding: 1rem; background: var(--obsidian); border-radius: var(--radius-lg); margin-bottom: 1.5rem;">
+                <div style="text-align: center; flex: 1;"><div style="width: 28px; height: 28px; background: var(--gold-muted); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 0.35rem; font-size: 0.75rem; font-weight: 600; color: var(--gold);">1</div><div style="font-size: 0.7rem; color: var(--text-muted);">Filing</div></div>
+                <div style="color: var(--gold); align-self: center;">→</div>
+                <div style="text-align: center; flex: 1;"><div style="width: 28px; height: 28px; background: var(--gold-muted); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 0.35rem; font-size: 0.75rem; font-weight: 600; color: var(--gold);">2</div><div style="font-size: 0.7rem; color: var(--text-muted);">Acknowledgment</div></div>
+                <div style="color: var(--gold); align-self: center;">→</div>
+                <div style="text-align: center; flex: 1;"><div style="width: 28px; height: 28px; background: var(--gold-muted); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 0.35rem; font-size: 0.75rem; font-weight: 600; color: var(--gold);">3</div><div style="font-size: 0.7rem; color: var(--text-muted);">Investigation</div></div>
+                <div style="color: var(--gold); align-self: center;">→</div>
+                <div style="text-align: center; flex: 1;"><div style="width: 28px; height: 28px; background: var(--gold-muted); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 0.35rem; font-size: 0.75rem; font-weight: 600; color: var(--gold);">4</div><div style="font-size: 0.7rem; color: var(--text-muted);">Mediation</div></div>
+                <div style="color: var(--gold); align-self: center;">→</div>
+                <div style="text-align: center; flex: 1;"><div style="width: 28px; height: 28px; background: var(--gold-muted); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 0.35rem; font-size: 0.75rem; font-weight: 600; color: var(--gold);">5</div><div style="font-size: 0.7rem; color: var(--text-muted);">Resolution</div></div>
+              </div>
+              
+              <form id="complaintForm">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label required">Complaint Against</label>
+                    <select class="form-select" name="against" required>
+                      <option value="">Select Party</option>
+                      <option value="licensee">Licensee</option>
+                      <option value="jeweler">Jeweler</option>
+                      <option value="household">Another Household</option>
+                      <option value="platform">Platform/Technical</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label required">Category</label>
+                    <select class="form-select" name="category" required>
+                      <option value="">Select Category</option>
+                      <option value="minting">Minting Issue</option>
+                      <option value="trading">Trading Dispute</option>
+                      <option value="ftr">FTR Swap Problem</option>
+                      <option value="withdrawal">Withdrawal Issue</option>
+                      <option value="technical">Technical Problem</option>
+                      <option value="other">Other</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <div class="form-group">
+                  <label class="form-label required">Subject</label>
+                  <input type="text" class="form-input" name="subject" required placeholder="Brief description of the issue">
+                </div>
+                
+                <div class="form-group">
+                  <label class="form-label required">Description</label>
+                  <textarea class="form-textarea" name="description" required placeholder="Provide detailed information about your complaint" rows="5"></textarea>
+                </div>
+                
+                <div class="form-group">
+                  <label class="form-label">Supporting Documents</label>
+                  <div class="file-upload" onclick="document.getElementById('complaintDocs').click()">
+                    <input type="file" id="complaintDocs" name="documents" accept=".jpg,.jpeg,.png,.pdf" multiple style="display: none;">
+                    <div style="font-size: 2rem; margin-bottom: 0.5rem;">📎</div>
+                    <div>Click to upload supporting documents</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">JPG, PNG, PDF up to 5MB</div>
+                  </div>
+                </div>
+                
+                <button type="submit" class="btn btn-gold btn-lg">Submit Complaint</button>
+              </form>
+            </div>
+          </div>
+          
+          <!-- My Complaints History -->
+          <div class="card" style="margin-top: 1.5rem;">
+            <div class="card-header">
+              <h3 class="card-title">My Complaints</h3>
+            </div>
+            <div class="card-body" style="padding: 0;">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Reference</th>
+                    <th>Subject</th>
+                    <th>Category</th>
+                    <th>Filed</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="mono">OMB-2026-00142</td>
+                    <td>FTR swap not credited</td>
+                    <td><span class="badge badge-gold">FTR</span></td>
+                    <td>20 Mar 2026</td>
+                    <td><span class="badge badge-success">Resolved</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+  
+  <!-- Shared JavaScript -->
+  <script src="../../js/shared.txt"></script>
+  
+  <script>
+    // TGDP Calculation for Minting
+    function calculateTGDPs() {
+      const purity = parseFloat(document.querySelector('[name="purity"]').value) || 0;
+      const weight = parseFloat(document.querySelector('[name="weight"]').value) || 0;
+      
+      const pureGold = (weight * purity) / 1000;
+      const tgdps = Math.floor(pureGold * 10);
+      
+      document.getElementById('calcGross').textContent = weight.toFixed(2) + 'g';
+      document.getElementById('calcPurity').textContent = purity ? purity : '-';
+      document.getElementById('calcPure').textContent = pureGold.toFixed(2) + 'g';
+      document.getElementById('calcTgdps').textContent = tgdps;
+    }
+    
+    // Form submissions
+    document.getElementById('mintForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      showLoading('Submitting for minting...');
+      setTimeout(() => {
+        hideLoading();
+        showToast('Minting request submitted successfully! Ref: MINT-2026-' + Math.floor(Math.random() * 90000 + 10000), 'success');
+        this.reset();
+        document.getElementById('calcGross').textContent = '0.00g';
+        document.getElementById('calcPurity').textContent = '-';
+        document.getElementById('calcPure').textContent = '0.00g';
+        document.getElementById('calcTgdps').textContent = '0';
+      }, 1500);
+    });
+    
+    document.getElementById('tradeForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      showLoading('Placing trade order...');
+      setTimeout(() => {
+        hideLoading();
+        showToast('Trade order placed successfully!', 'success');
+        this.reset();
+      }, 1000);
+    });
+    
+    document.getElementById('ftrForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      showLoading('Executing swap...');
+      setTimeout(() => {
+        hideLoading();
+        showToast('FTR swap completed successfully!', 'success');
+        this.reset();
+      }, 1500);
+    });
+    
+    document.getElementById('withdrawForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      showLoading('Processing withdrawal...');
+      setTimeout(() => {
+        hideLoading();
+        showToast('Withdrawal request submitted! Will be processed within 24 hours.', 'success');
+        this.reset();
+      }, 1000);
+    });
+    
+    document.getElementById('complaintForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      showLoading('Submitting complaint to Ombudsman...');
+      setTimeout(() => {
+        hideLoading();
+        const refNo = 'OMB-2026-' + String(Math.floor(Math.random() * 90000) + 10000).padStart(5, '0');
+        showToast('Complaint ' + refNo + ' submitted! Acknowledgment within 24-48 hours.', 'success');
+        this.reset();
+      }, 1500);
+    });
+  </script>
+</body>
+</html>
