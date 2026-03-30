@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="T-JDB - Premium Jewelry Design Marketplace with IPR Protection">
+  <title>T-JDB · Jewelry Design Bank</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  
+  <!-- Shared Styles -->
+  <link rel="stylesheet" href="../../css/shared.css">
+  
+  <style>
+    .hero-section {
+      background: radial-gradient(ellipse 80% 60% at 50% 30%, rgba(251, 113, 133, 0.12) 0%, transparent 60%);
+    }
+    
+    .design-gallery {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.5rem;
+    }
+    
+    .design-card {
+      background: var(--obsidian-light);
+      border: 1px solid var(--obsidian-border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      transition: all var(--transition-base);
+    }
+    
+    .design-card:hover {
+      border-color: var(--rose);
+      transform: translateY(-4px);
+      box-shadow: 0 8px 32px rgba(251, 113, 133, 0.2);
+    }
+    
+    .design-image {
+      height: 200px;
+      background: linear-gradient(135deg, var(--rose-muted), var(--obsidian));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 4rem;
+    }
+    
+    .design-info {
+      padding: 1.25rem;
+    }
+    
+    .design-name {
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+    
+    .design-designer {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 0.75rem;
+    }
+    
+    .design-price {
+      font-family: var(--font-mono);
+      color: var(--rose);
+      font-weight: 600;
+    }
+    
+    .feature-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.5rem;
+    }
+    
+    .feature-box {
+      text-align: center;
+      padding: 2rem;
+      background: var(--obsidian-light);
+      border: 1px solid var(--obsidian-border);
+      border-radius: var(--radius-lg);
+    }
+    
+    .feature-box:hover {
+      border-color: var(--rose);
+    }
+    
+    .feature-icon {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
+    
+    .feature-title {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+    
+    .feature-text {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+    
+    @media (max-width: 1024px) {
+      .design-gallery { grid-template-columns: repeat(2, 1fr); }
+      .feature-row { grid-template-columns: repeat(2, 1fr); }
+    }
+    
+    @media (max-width: 768px) {
+      .design-gallery { grid-template-columns: 1fr; }
+      .feature-row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-pattern"></div>
+  
+  <!-- Navigation -->
+  <nav class="landing-nav">
+    <div class="landing-nav-content">
+      <a href="../../index.html" class="landing-nav-logo-trot">
+        <img src="../../assets/images/trot-logo.jpg" alt="TROT®">
+        <span style="color: var(--rose);">T-JDB</span> <span style="color: var(--text-secondary);">Design Bank</span>
+      </a>
+      <div class="landing-nav-links">
+        <a href="#gallery">Gallery</a>
+        <a href="#features">Features</a>
+        <a href="../../faq.html">FAQ</a>
+        <a href="dashboard.html" class="btn btn-rose">Dashboard</a>
+      </div>
+    </div>
+  </nav>
+  
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-content">
+      <div class="hero-badge" style="background: var(--rose-muted); border-color: rgba(251, 113, 133, 0.3); color: var(--rose);">
+        IPR Protected · Designer Marketplace · Pay with T-Gold
+      </div>
+      <h1 class="hero-title">Premium <em style="color: var(--rose);">Jewelry Designs</em></h1>
+      <p class="hero-desc">
+        Discover exclusive jewelry designs from India's finest artisans. 
+        Commission custom pieces, pay with T-Gold, and own IPR-protected creations.
+      </p>
+      <div class="cta-buttons">
+        <a href="../../faq.html">FAQ</a>
+        <a href="dashboard.html" class="btn btn-rose btn-lg">Browse Designs</a>
+        <a href="../../registration.html" class="btn btn-outline btn-lg" style="border-color: rgba(251, 113, 133, 0.3); color: var(--rose);">Become a Designer</a>
+      </div>
+    </div>
+  </section>
+  
+  <!-- Featured Designs -->
+  <section class="section" id="gallery" style="background: var(--obsidian-light);">
+    <div class="section-inner">
+      <div class="section-tag" style="color: var(--rose);">Featured Collection</div>
+      <h2 class="section-title">Trending <em style="color: var(--rose);">Designs</em></h2>
+      <div class="gold-rule" style="background: var(--rose);"></div>
+      
+      <div class="design-gallery">
+        <div class="design-card">
+          <div class="design-image">💍</div>
+          <div class="design-info">
+            <div class="design-name">Lotus Bloom Ring</div>
+            <div class="design-designer">by Priya Mehta</div>
+            <div class="design-price">₹45,000</div>
+          </div>
+        </div>
+        <div class="design-card">
+          <div class="design-image">📿</div>
+          <div class="design-info">
+            <div class="design-name">Temple Necklace</div>
+            <div class="design-designer">by Arjun Sharma</div>
+            <div class="design-price">₹2,85,000</div>
+          </div>
+        </div>
+        <div class="design-card">
+          <div class="design-image">✨</div>
+          <div class="design-info">
+            <div class="design-name">Peacock Earrings</div>
+            <div class="design-designer">by Meera Reddy</div>
+            <div class="design-price">₹78,000</div>
+          </div>
+        </div>
+        <div class="design-card">
+          <div class="design-image">👑</div>
+          <div class="design-info">
+            <div class="design-name">Royal Bangle Set</div>
+            <div class="design-designer">by Vikram Arts</div>
+            <div class="design-price">₹1,65,000</div>
+          </div>
+        </div>
+      </div>
+      
+      <div style="text-align: center; margin-top: 2rem;">
+        <a href="../../faq.html">FAQ</a>
+        <a href="dashboard.html" class="btn btn-outline btn-lg" style="border-color: var(--rose); color: var(--rose);">View All Designs →</a>
+      </div>
+    </div>
+  </section>
+  
+  <!-- Features -->
+  <section class="section" id="features">
+    <div class="section-inner">
+      <div class="section-tag" style="color: var(--rose);">Platform Features</div>
+      <h2 class="section-title">Why <em style="color: var(--rose);">T-JDB?</em></h2>
+      <div class="gold-rule" style="background: var(--rose);"></div>
+      
+      <div class="feature-row">
+        <div class="feature-box">
+          <div class="feature-icon">🎨</div>
+          <div class="feature-title">Original Designs</div>
+          <p class="feature-text">Curated collection from verified designers across India</p>
+        </div>
+        <div class="feature-box">
+          <div class="feature-icon">📋</div>
+          <div class="feature-title">IPR Protected</div>
+          <p class="feature-text">Every design is IPR registered and legally protected</p>
+        </div>
+        <div class="feature-box">
+          <div class="feature-icon">💰</div>
+          <div class="feature-title">Pay with T-Gold</div>
+          <p class="feature-text">Use your T-Gold balance to purchase designs</p>
+        </div>
+        <div class="feature-box">
+          <div class="feature-icon">🛠️</div>
+          <div class="feature-title">Custom Orders</div>
+          <p class="feature-text">Commission custom pieces from your favorite designers</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <!-- For Designers -->
+  <section class="section" style="background: linear-gradient(135deg, rgba(251, 113, 133, 0.1), rgba(251, 113, 133, 0.02)); border-top: 1px solid rgba(251, 113, 133, 0.2);">
+    <div class="section-inner" style="text-align: center;">
+      <h2 class="section-title">Are You a <em style="color: var(--rose);">Designer?</em></h2>
+      <p style="color: var(--text-secondary); max-width: 600px; margin: 1.5rem auto 2rem; font-size: 1.1rem;">
+        Showcase your creations to thousands of buyers. Get IPR protection, 
+        earn from every sale, and build your brand on India's premier jewelry design platform.
+      </p>
+      <div class="cta-buttons" style="justify-content: center;">
+        <a href="../../registration.html" class="btn btn-rose btn-lg">Register as Designer</a>
+        <a href="../../faq.html">FAQ</a>
+        <a href="dashboard.html" class="btn btn-outline btn-lg" style="border-color: rgba(251, 113, 133, 0.3); color: var(--rose);">Learn More</a>
+      </div>
+    </div>
+  </section>
+  
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-bottom" style="border-top: none; padding-top: 0;">
+        © 2026 T-JDB · Part of TGDP Ecosystem · 
+        <a href="../../index.html" style="color: var(--rose);">Back to Ecosystem</a>
+      </div>
+    </div>
+  </footer>
+  
+  <!-- Shared JavaScript -->
+  <script src="../../js/shared.txt"></script>
+</body>
+</html>

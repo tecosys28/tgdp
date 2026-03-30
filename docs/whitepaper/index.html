@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Whitepaper · TGDP</title>
+  <link rel="stylesheet" href="../../css/shared.css">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="bg-pattern"></div>
+  <nav class="landing-nav">
+    <div class="landing-nav-content">
+      <a href="../../index.html" class="landing-nav-logo-trot">
+        <img src="../../assets/images/trot-logo.jpg" alt="TROT®">
+        <span class="logo-text">TGDP</span>
+      </a>
+      <div class="landing-nav-links">
+        <a href="taxonomy.html">Taxonomy</a>
+        <a href="roadmap.html">Roadmap</a>
+        <a href="../../index.html">Home</a>
+      </div>
+    </div>
+  </nav>
+  
+  <section class="section" style="padding-top: 120px;">
+    <div class="section-inner" style="max-width: 900px;">
+      <div class="section-tag">Technical Documentation</div>
+      <h1 style="font-family: var(--font-display); font-size: 2.5rem; margin-bottom: 1rem;">TGDP Whitepaper</h1>
+      <p style="color: var(--text-muted); margin-bottom: 2rem;">Version 1.0 · March 2026</p>
+      
+      <div class="alert alert-info" style="margin-bottom: 2rem;">
+        <span class="alert-icon">📄</span>
+        <div>This whitepaper outlines the technical architecture, economic model, and governance framework of the TGDP ecosystem.</div>
+      </div>
+      
+      <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin-bottom: 2rem;">
+        <a href="#executive-summary" style="background: var(--obsidian-light); border: 1px solid var(--obsidian-border); border-radius: var(--radius-lg); padding: 1.5rem; text-decoration: none; color: inherit;">
+          <h3 style="color: var(--gold); margin-bottom: 0.5rem;">1. Executive Summary</h3>
+          <p style="font-size: 0.9rem; color: var(--text-muted);">Overview of the TGDP ecosystem and value proposition</p>
+        </a>
+        <a href="taxonomy.html" style="background: var(--obsidian-light); border: 1px solid var(--obsidian-border); border-radius: var(--radius-lg); padding: 1.5rem; text-decoration: none; color: inherit;">
+          <h3 style="color: var(--gold); margin-bottom: 0.5rem;">2. Asset Taxonomy</h3>
+          <p style="font-size: 0.9rem; color: var(--text-muted);">Classification of TGDPs, FTRs, and GICs</p>
+        </a>
+        <a href="#technical" style="background: var(--obsidian-light); border: 1px solid var(--obsidian-border); border-radius: var(--radius-lg); padding: 1.5rem; text-decoration: none; color: inherit;">
+          <h3 style="color: var(--gold); margin-bottom: 0.5rem;">3. Technical Architecture</h3>
+          <p style="font-size: 0.9rem; color: var(--text-muted);">Blockchain infrastructure and smart contracts</p>
+        </a>
+        <a href="#economics" style="background: var(--obsidian-light); border: 1px solid var(--obsidian-border); border-radius: var(--radius-lg); padding: 1.5rem; text-decoration: none; color: inherit;">
+          <h3 style="color: var(--gold); margin-bottom: 0.5rem;">4. Economic Model</h3>
+          <p style="font-size: 0.9rem; color: var(--text-muted);">GIC revenue streams and pricing structure</p>
+        </a>
+        <a href="#governance" style="background: var(--obsidian-light); border: 1px solid var(--obsidian-border); border-radius: var(--radius-lg); padding: 1.5rem; text-decoration: none; color: inherit;">
+          <h3 style="color: var(--gold); margin-bottom: 0.5rem;">5. Governance</h3>
+          <p style="font-size: 0.9rem; color: var(--text-muted);">Ombudsman system and dispute resolution</p>
+        </a>
+        <a href="roadmap.html" style="background: var(--obsidian-light); border: 1px solid var(--obsidian-border); border-radius: var(--radius-lg); padding: 1.5rem; text-decoration: none; color: inherit;">
+          <h3 style="color: var(--gold); margin-bottom: 0.5rem;">6. Roadmap</h3>
+          <p style="font-size: 0.9rem; color: var(--text-muted);">Development milestones and future plans</p>
+        </a>
+      </div>
+      
+      <div id="executive-summary" style="color: var(--text-secondary); line-height: 1.8; padding-top: 2rem; border-top: 1px solid var(--obsidian-border);">
+        <h2 style="color: var(--text-primary); margin-bottom: 1rem;">Executive Summary</h2>
+        <p>The Tokenized Gold Depository Protocol (TGDP) is a comprehensive ecosystem designed to unlock the latent value of household gold in India. By tokenizing physical gold into digital TGDPs (Tokenized Gold Depository Points), the platform enables zero-fee trading, FTR swaps, and participation in a licensed network spanning 164 nations.</p>
+        
+        <h3 style="color: var(--text-primary); margin: 1.5rem 0 0.75rem;">Key Components</h3>
+        <ul style="list-style: none; padding: 0;">
+          <li style="padding: 0.5rem 0; border-bottom: 1px solid var(--obsidian-border);">✓ <strong>T-Gold:</strong> Gold tokenization and trading platform</li>
+          <li style="padding: 0.5rem 0; border-bottom: 1px solid var(--obsidian-border);">✓ <strong>GIC Licensing:</strong> Licensee network with 25% revenue share</li>
+          <li style="padding: 0.5rem 0; border-bottom: 1px solid var(--obsidian-border);">✓ <strong>T-JR:</strong> Jewelry return with LBMA-benchmarked valuation</li>
+          <li style="padding: 0.5rem 0; border-bottom: 1px solid var(--obsidian-border);">✓ <strong>T-JDB:</strong> IPR-protected design marketplace</li>
+          <li style="padding: 0.5rem 0;">✓ <strong>Ombudsman:</strong> Independent dispute resolution</li>
+        </ul>
+        
+        <p style="margin-top: 1.5rem;"><em>Full whitepaper content to be added...</em></p>
+      </div>
+      
+      <div style="margin-top: 3rem; padding-top: 2rem; border-top: 1px solid var(--obsidian-border);">
+        <a href="../../index.html" class="btn btn-outline">← Back to Home</a>
+        <a href="taxonomy.html" class="btn btn-gold" style="margin-left: 0.5rem;">Asset Taxonomy →</a>
+      </div>
+    </div>
+  </section>
+  
+  <script src="../../js/shared.txt"></script>
+</body>
+</html>

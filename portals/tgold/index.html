@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="T-Gold - Tokenize your gold jewelry and access zero-fee trading">
+  <title>T-Gold · Gold Tokenization Platform</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  
+  <!-- Shared Styles -->
+  <link rel="stylesheet" href="../../css/shared.css">
+  
+  <style>
+    .hero-section {
+      background: radial-gradient(ellipse 80% 60% at 50% 30%, rgba(212, 175, 55, 0.12) 0%, transparent 60%);
+    }
+    
+    .process-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1.5rem;
+      margin-top: 2rem;
+    }
+    
+    .process-card {
+      background: var(--obsidian-light);
+      border: 1px solid var(--obsidian-border);
+      border-radius: var(--radius-lg);
+      padding: 1.5rem;
+      text-align: center;
+      position: relative;
+    }
+    
+    .process-card::after {
+      content: '→';
+      position: absolute;
+      right: -1.25rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--gold);
+      font-size: 1.25rem;
+    }
+    
+    .process-card:last-child::after {
+      display: none;
+    }
+    
+    .process-num {
+      width: 40px;
+      height: 40px;
+      background: var(--gold-muted);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 1rem;
+      font-family: var(--font-display);
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: var(--gold);
+    }
+    
+    .process-title {
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+    
+    .process-desc {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+    
+    .benefit-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1.5rem;
+    }
+    
+    .benefit-card {
+      background: var(--obsidian-light);
+      border: 1px solid var(--obsidian-border);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+    }
+    
+    .benefit-icon {
+      font-size: 2.5rem;
+      margin-bottom: 1rem;
+    }
+    
+    .benefit-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+    }
+    
+    .benefit-desc {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      line-height: 1.7;
+    }
+    
+    .rate-display {
+      background: var(--obsidian-light);
+      border: 1px solid var(--gold);
+      border-radius: var(--radius-xl);
+      padding: 2rem 3rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 2rem;
+      margin-top: 2rem;
+    }
+    
+    .rate-item {
+      text-align: center;
+    }
+    
+    .rate-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-bottom: 0.35rem;
+    }
+    
+    .rate-value {
+      font-family: var(--font-mono);
+      font-size: 1.75rem;
+      font-weight: 600;
+      color: var(--gold);
+    }
+    
+    .rate-divider {
+      width: 1px;
+      height: 50px;
+      background: var(--obsidian-border);
+    }
+    
+    @media (max-width: 1024px) {
+      .process-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+      .process-card::after {
+        display: none;
+      }
+      .benefit-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+    
+    @media (max-width: 768px) {
+      .process-grid {
+        grid-template-columns: 1fr;
+      }
+      .rate-display {
+        flex-direction: column;
+        padding: 1.5rem;
+      }
+      .rate-divider {
+        width: 80%;
+        height: 1px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-pattern"></div>
+  
+  <!-- Navigation -->
+  <nav class="landing-nav">
+    <div class="landing-nav-content">
+      <a href="../../index.html" class="landing-nav-logo-trot">
+        <img src="../../assets/images/trot-logo.jpg" alt="TROT®">
+        <span class="logo-text" style="color: var(--gold);">T-Gold</span>
+      </a>
+      <div class="landing-nav-links">
+        <a href="#how-it-works">How It Works</a>
+        <a href="#benefits">Benefits</a>
+        <a href="../../faq.html">FAQ</a>
+        <a href="dashboard.html" class="btn btn-gold">Dashboard</a>
+      </div>
+    </div>
+  </nav>
+  
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="hero-content">
+      <div class="hero-badge">LBMA Benchmark · Zero Fee · 164 Nations</div>
+      <h1 class="hero-title">Tokenize Your <em>Gold</em></h1>
+      <p class="hero-desc">
+        Transform your physical gold jewelry into digital TGDPs. Trade freely with zero platform fees, 
+        swap for Future Trade Rights, and unlock the true value of your gold across 164 nations.
+      </p>
+      
+      <div class="rate-display">
+        <div class="rate-item">
+          <div class="rate-label">LBMA Gold Rate</div>
+          <div class="rate-value" id="lbmaRate">₹7,342</div>
+        </div>
+        <div class="rate-divider"></div>
+        <div class="rate-item">
+          <div class="rate-label">TGDPs per Gram</div>
+          <div class="rate-value">10</div>
+        </div>
+        <div class="rate-divider"></div>
+        <div class="rate-item">
+          <div class="rate-label">Platform Fee</div>
+          <div class="rate-value" style="color: var(--success);">0%</div>
+        </div>
+      </div>
+      
+      <div class="cta-buttons" style="margin-top: 2.5rem;">
+        <a href="../../registration.html" class="btn btn-gold btn-lg">Start Minting</a>
+        <a href="#how-it-works" class="btn btn-outline-gold btn-lg">Learn More</a>
+      </div>
+    </div>
+  </section>
+  
+  <!-- How It Works -->
+  <section class="section" id="how-it-works" style="background: var(--obsidian-light);">
+    <div class="section-inner">
+      <div class="section-tag">Simple Process</div>
+      <h2 class="section-title">How <em>T-Gold</em> Works</h2>
+      <div class="gold-rule"></div>
+      
+      <div class="process-grid">
+        <div class="process-card">
+          <div class="process-num">1</div>
+          <div class="process-title">Register & KYC</div>
+          <p class="process-desc">Create your account as a Household and complete KYC verification</p>
+        </div>
+        <div class="process-card">
+          <div class="process-num">2</div>
+          <div class="process-title">Earmark Jewelry</div>
+          <p class="process-desc">Submit your gold jewelry details for valuation at LBMA benchmark</p>
+        </div>
+        <div class="process-card">
+          <div class="process-num">3</div>
+          <div class="process-title">Mint TGDPs</div>
+          <p class="process-desc">Receive 10 TGDPs for every gram of pure gold earmarked</p>
+        </div>
+        <div class="process-card">
+          <div class="process-num">4</div>
+          <div class="process-title">Trade & Swap</div>
+          <p class="process-desc">Trade TGDPs freely or swap for FTRs in hospitality, healthcare & more</p>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <!-- Benefits -->
+  <section class="section" id="benefits">
+    <div class="section-inner">
+      <div class="section-tag">Why Choose T-Gold</div>
+      <h2 class="section-title">Platform <em>Benefits</em></h2>
+      <div class="gold-rule"></div>
+      
+      <div class="benefit-grid">
+        <div class="benefit-card">
+          <div class="benefit-icon">💰</div>
+          <div class="benefit-title">Zero Platform Fee</div>
+          <p class="benefit-desc">
+            Trade T-Gold without any platform charges. No hidden fees, no transaction costs. 
+            Your gold's value stays with you.
+          </p>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-icon">📊</div>
+          <div class="benefit-title">LBMA Benchmark</div>
+          <p class="benefit-desc">
+            All valuations based on London Bullion Market Association pricing. 
+            Transparent, fair, and globally recognized rates.
+          </p>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-icon">🔄</div>
+          <div class="benefit-title">FTR Swaps</div>
+          <p class="benefit-desc">
+            Exchange T-Gold for Future Trade Rights in hospitality, healthcare, education, 
+            and more at just 4% commission.
+          </p>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-icon">⛓️</div>
+          <div class="benefit-title">Blockchain Security</div>
+          <p class="benefit-desc">
+            Every TGDP is recorded on an immutable blockchain ledger. 
+            Complete transparency and tamper-proof ownership.
+          </p>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-icon">🌍</div>
+          <div class="benefit-title">Global Reach</div>
+          <p class="benefit-desc">
+            IPR protection across 164 nations under TRIPS framework. 
+            Your gold has value wherever you go.
+          </p>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-icon">🏦</div>
+          <div class="benefit-title">Bank Settlement</div>
+          <p class="benefit-desc">
+            Direct bank settlements within 24 hours. 
+            Seamless integration with major Indian banks.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+  
+  <!-- CTA Section -->
+  <section class="section" style="background: linear-gradient(135deg, rgba(212, 175, 55, 0.1), rgba(212, 175, 55, 0.02)); border-top: 1px solid rgba(212, 175, 55, 0.2);">
+    <div class="section-inner" style="text-align: center;">
+      <h2 class="section-title">Ready to <em>Tokenize</em> Your Gold?</h2>
+      <p style="color: var(--text-secondary); max-width: 600px; margin: 1.5rem auto 2rem; font-size: 1.1rem;">
+        Join thousands of households who have already unlocked the value of their gold through T-Gold.
+      </p>
+      <div class="cta-buttons" style="justify-content: center;">
+        <a href="../../registration.html" class="btn btn-gold btn-lg">Create Account</a>
+        <a href="dashboard.html" class="btn btn-outline-gold btn-lg">View Dashboard</a>
+      </div>
+    </div>
+  </section>
+  
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div class="footer-bottom" style="border-top: none; padding-top: 0;">
+        © 2026 T-Gold · Part of TGDP Ecosystem · 
+        <a href="../../index.html" style="color: var(--gold);">Back to Ecosystem</a>
+      </div>
+    </div>
+  </footer>
+  
+  <!-- Shared JavaScript -->
+  <script src="../../js/shared.txt"></script>
+</body>
+</html>

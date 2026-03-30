@@ -1,0 +1,297 @@
+<!-- 
+  TGDP Unified Complaint Component
+  Include this in any portal dashboard to enable complaint filing
+  Usage: Include after shared.txt, then call initComplaintForm(portalType)
+-->
+
+<style>
+  .complaint-panel {
+    background: var(--obsidian-light);
+    border: 1px solid var(--obsidian-border);
+    border-radius: var(--radius-lg);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .complaint-protocol {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+    margin: 1rem 0;
+    border-top: 1px solid var(--obsidian-border);
+    border-bottom: 1px solid var(--obsidian-border);
+  }
+  
+  .protocol-step-mini {
+    flex: 1;
+    text-align: center;
+    position: relative;
+  }
+  
+  .protocol-step-mini::after {
+    content: '→';
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--gold);
+    font-size: 0.85rem;
+  }
+  
+  .protocol-step-mini:last-child::after {
+    display: none;
+  }
+  
+  .protocol-step-mini .step-num {
+    width: 24px;
+    height: 24px;
+    background: var(--gold-muted);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 0.35rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--gold);
+  }
+  
+  .protocol-step-mini .step-name {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+  }
+  
+  .complaint-history {
+    margin-top: 1.5rem;
+  }
+  
+  .complaint-item {
+    background: var(--obsidian);
+    border: 1px solid var(--obsidian-border);
+    border-radius: var(--radius-md);
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .complaint-item:hover {
+    border-color: var(--gold);
+  }
+  
+  .complaint-info {
+    flex: 1;
+  }
+  
+  .complaint-ref {
+    font-family: var(--font-mono);
+    font-size: 0.85rem;
+    color: var(--gold);
+    margin-bottom: 0.25rem;
+  }
+  
+  .complaint-subject {
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+  }
+  
+  .complaint-meta {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+  }
+</style>
+
+<script>
+// Complaint Categories by Portal Type
+const COMPLAINT_CATEGORIES = {
+  tgold: [
+    { value: 'minting', label: 'Minting Issue' },
+    { value: 'trading', label: 'Trading Dispute' },
+    { value: 'ftr', label: 'FTR Swap Problem' },
+    { value: 'withdrawal', label: 'Withdrawal Issue' },
+    { value: 'technical', label: 'Technical Problem' },
+    { value: 'other', label: 'Other' }
+  ],
+  gic: [
+    { value: 'gic_payment', label: 'GIC Payment Issue' },
+    { value: 'household', label: 'Household Dispute' },
+    { value: 'redemption', label: 'Redemption Problem' },
+    { value: 'license', label: 'License Issue' },
+    { value: 'technical', label: 'Technical Problem' },
+    { value: 'other', label: 'Other' }
+  ],
+  tjr: [
+    { value: 'valuation', label: 'Valuation Dispute' },
+    { value: 'payment', label: 'Payment Issue' },
+    { value: 'pickup', label: 'Pickup Problem' },
+    { value: 'jeweler', label: 'Jeweler Complaint' },
+    { value: 'technical', label: 'Technical Problem' },
+    { value: 'other', label: 'Other' }
+  ],
+  tjdb: [
+    { value: 'ipr', label: 'IPR Violation' },
+    { value: 'order', label: 'Order Dispute' },
+    { value: 'payment', label: 'Payment Issue' },
+    { value: 'designer', label: 'Designer Complaint' },
+    { value: 'quality', label: 'Quality Issue' },
+    { value: 'technical', label: 'Technical Problem' },
+    { value: 'other', label: 'Other' }
+  ]
+};
+
+const RESPONDENT_TYPES = {
+  tgold: [
+    { value: 'licensee', label: 'Licensee' },
+    { value: 'jeweler', label: 'Jeweler' },
+    { value: 'household', label: 'Another Household' },
+    { value: 'platform', label: 'Platform/Technical' }
+  ],
+  gic: [
+    { value: 'household', label: 'Household' },
+    { value: 'platform', label: 'Platform/Technical' },
+    { value: 'jeweler', label: 'Jeweler' }
+  ],
+  tjr: [
+    { value: 'jeweler', label: 'Jeweler' },
+    { value: 'platform', label: 'Platform/Technical' }
+  ],
+  tjdb: [
+    { value: 'designer', label: 'Designer' },
+    { value: 'jeweler', label: 'Jeweler' },
+    { value: 'platform', label: 'Platform/Technical' }
+  ]
+};
+
+// Initialize complaint form for a specific portal
+function initComplaintForm(portalType) {
+  const categories = COMPLAINT_CATEGORIES[portalType] || COMPLAINT_CATEGORIES.tgold;
+  const respondents = RESPONDENT_TYPES[portalType] || RESPONDENT_TYPES.tgold;
+  
+  // Populate category dropdown
+  const categorySelect = document.getElementById('complaintCategory');
+  if (categorySelect) {
+    categorySelect.innerHTML = '<option value="">Select Category</option>';
+    categories.forEach(cat => {
+      categorySelect.innerHTML += `<option value="${cat.value}">${cat.label}</option>`;
+    });
+  }
+  
+  // Populate respondent dropdown
+  const respondentSelect = document.getElementById('complaintAgainst');
+  if (respondentSelect) {
+    respondentSelect.innerHTML = '<option value="">Select Party</option>';
+    respondents.forEach(resp => {
+      respondentSelect.innerHTML += `<option value="${resp.value}">${resp.label}</option>`;
+    });
+  }
+}
+
+// Submit complaint
+function submitComplaint() {
+  const category = document.getElementById('complaintCategory')?.value;
+  const against = document.getElementById('complaintAgainst')?.value;
+  const subject = document.getElementById('complaintSubject')?.value;
+  const description = document.getElementById('complaintDescription')?.value;
+  
+  if (!category || !against || !subject || !description) {
+    showToast('Please fill all required fields', 'error');
+    return;
+  }
+  
+  showLoading('Submitting complaint...');
+  
+  setTimeout(() => {
+    hideLoading();
+    const refNo = 'OMB-2026-' + String(Math.floor(Math.random() * 90000) + 10000).padStart(5, '0');
+    showToast(`Complaint ${refNo} submitted successfully! You will receive acknowledgment within 24-48 hours.`, 'success');
+    
+    // Reset form
+    document.getElementById('complaintCategory').value = '';
+    document.getElementById('complaintAgainst').value = '';
+    document.getElementById('complaintSubject').value = '';
+    document.getElementById('complaintDescription').value = '';
+  }, 1500);
+}
+
+// View complaint details
+function viewComplaint(refNo) {
+  showToast(`Opening complaint ${refNo}...`, 'info');
+  // In production, this would open a modal with full complaint details
+}
+
+// Generate complaint form HTML
+function getComplaintFormHTML() {
+  return `
+    <div class="complaint-panel">
+      <h4 style="margin-bottom: 1rem;">Complaint Protocol</h4>
+      <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">
+        All complaints are reviewed by the TGDP Ombudsman. Resolution typically takes 7-14 business days.
+      </p>
+      
+      <div class="complaint-protocol">
+        <div class="protocol-step-mini">
+          <div class="step-num">1</div>
+          <div class="step-name">Filing</div>
+        </div>
+        <div class="protocol-step-mini">
+          <div class="step-num">2</div>
+          <div class="step-name">Acknowledgment</div>
+        </div>
+        <div class="protocol-step-mini">
+          <div class="step-num">3</div>
+          <div class="step-name">Investigation</div>
+        </div>
+        <div class="protocol-step-mini">
+          <div class="step-num">4</div>
+          <div class="step-name">Mediation</div>
+        </div>
+        <div class="protocol-step-mini">
+          <div class="step-num">5</div>
+          <div class="step-name">Resolution</div>
+        </div>
+      </div>
+    </div>
+    
+    <form id="complaintFormInline" onsubmit="event.preventDefault(); submitComplaint();">
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label required">Complaint Against</label>
+          <select class="form-select" id="complaintAgainst" required>
+            <option value="">Select Party</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label required">Category</label>
+          <select class="form-select" id="complaintCategory" required>
+            <option value="">Select Category</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label required">Subject</label>
+        <input type="text" class="form-input" id="complaintSubject" required placeholder="Brief description of the issue">
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label required">Description</label>
+        <textarea class="form-textarea" id="complaintDescription" required placeholder="Provide detailed information about your complaint" rows="5"></textarea>
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">Supporting Documents</label>
+        <div class="file-upload" onclick="document.getElementById('complaintDocs').click()">
+          <input type="file" id="complaintDocs" name="documents" accept=".jpg,.jpeg,.png,.pdf" multiple style="display: none;">
+          <div style="font-size: 2rem; margin-bottom: 0.5rem;">📎</div>
+          <div>Click to upload supporting documents</div>
+          <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.25rem;">JPG, PNG, PDF up to 5MB</div>
+        </div>
+      </div>
+      
+      <button type="submit" class="btn btn-gold btn-lg">Submit Complaint</button>
+    </form>
+  `;
+}
+</script>

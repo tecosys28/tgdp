@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Ombudsman Dashboard - Manage TGDP ecosystem complaints">
+  <title>Dashboard · Ombudsman</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  
+  <!-- Shared Styles -->
+  <link rel="stylesheet" href="../../css/shared.css">
+  
+  <style>
+    :root {
+      --ombudsman: #94a3b8;
+      --ombudsman-dark: #64748b;
+      --ombudsman-muted: rgba(148, 163, 184, 0.15);
+    }
+    
+    .sidebar-logo a { color: var(--ombudsman) !important; }
+    .nav-item.active { 
+      background: var(--ombudsman-muted) !important; 
+      color: var(--ombudsman) !important; 
+      border-left-color: var(--ombudsman) !important;
+    }
+    .nav-item:hover { background: var(--ombudsman-muted) !important; }
+    
+    .complaint-card {
+      background: var(--obsidian);
+      border: 1px solid var(--obsidian-border);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem;
+      margin-bottom: 1rem;
+      cursor: pointer;
+      transition: all var(--transition-base);
+    }
+    
+    .complaint-card:hover {
+      border-color: var(--ombudsman);
+    }
+    
+    .complaint-card.urgent {
+      border-left: 3px solid var(--danger);
+    }
+    
+    .complaint-card.high {
+      border-left: 3px solid var(--warning);
+    }
+    
+    .complaint-card.normal {
+      border-left: 3px solid var(--info);
+    }
+    
+    .complaint-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 0.75rem;
+    }
+    
+    .complaint-ref {
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: var(--ombudsman);
+    }
+    
+    .complaint-subject {
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+    
+    .complaint-meta {
+      display: flex;
+      gap: 1rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+    
+    .timeline-item {
+      display: flex;
+      gap: 1rem;
+      padding: 1rem 0;
+      border-bottom: 1px solid var(--obsidian-border);
+    }
+    
+    .timeline-item:last-child {
+      border-bottom: none;
+    }
+    
+    .timeline-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: var(--ombudsman);
+      flex-shrink: 0;
+      margin-top: 4px;
+    }
+    
+    .timeline-content {
+      flex: 1;
+    }
+    
+    .timeline-title {
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+    
+    .timeline-desc {
+      font-size: 0.85rem;
+      color: var(--text-secondary);
+    }
+    
+    .timeline-time {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard-layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-logo-trot">
+        <img src="../../assets/images/trot-logo.jpg" alt="TROT®">
+        <div class="logo-text">
+        <a href="index.html">⚖️ Ombudsman</a>
+        <span>Portal</span>
+      </div>
+      
+      <nav class="sidebar-nav">
+        <div class="nav-group">
+          <div class="nav-group-label">Dashboard</div>
+          <div class="nav-item active" onclick="showPanel('overview')">
+            <span class="nav-icon">📊</span>
+            <span>Overview</span>
+          </div>
+          <div class="nav-item" onclick="showPanel('pending')">
+            <span class="nav-icon">⏳</span>
+            <span>Pending Cases</span>
+            <span class="nav-badge">12</span>
+          </div>
+          <div class="nav-item" onclick="showPanel('investigation')">
+            <span class="nav-icon">🔍</span>
+            <span>Under Investigation</span>
+            <span class="nav-badge" style="background: var(--warning);">8</span>
+          </div>
+          <div class="nav-item" onclick="showPanel('resolved')">
+            <span class="nav-icon">✓</span>
+            <span>Resolved</span>
+          </div>
+        </div>
+        
+        <div class="nav-group">
+          <div class="nav-group-label">Tools</div>
+          <div class="nav-item" onclick="showPanel('mediation')">
+            <span class="nav-icon">🤝</span>
+            <span>Mediation</span>
+          </div>
+          <div class="nav-item" onclick="showPanel('reports')">
+            <span class="nav-icon">📄</span>
+            <span>Reports</span>
+          </div>
+        </div>
+        
+        <div class="nav-group">
+          <div class="nav-group-label">Account</div>
+          <div class="nav-item" onclick="showPanel('settings')">
+            <span class="nav-icon">⚙️</span>
+            <span>Settings</span>
+          </div>
+        </div>
+      </nav>
+      
+      <div class="sidebar-footer">
+        <div class="sidebar-user">
+          <div class="sidebar-avatar" style="background: linear-gradient(135deg, var(--ombudsman-dark), var(--ombudsman));">JT</div>
+          <div>
+            <div class="sidebar-name">Justice Tidke</div>
+            <div class="sidebar-id">OMB-IND-00001</div>
+          </div>
+        </div>
+        <a href="../../index.html" class="btn btn-outline btn-sm" style="width: 100%;">
+          ← Back to Ecosystem
+        </a>
+      </div>
+    </aside>
+    
+    <!-- Main Content -->
+    <main class="main-content">
+      <!-- Topbar -->
+      <header class="topbar">
+        <div>
+          <span class="topbar-title" id="pageTitle">Dashboard Overview</span>
+        </div>
+        <div class="topbar-right">
+          <div class="benchmark-pill" style="border-color: var(--ombudsman);">
+            <span style="color: var(--success);">●</span>
+            <span>Status: <strong style="color: var(--ombudsman);">Active</strong></span>
+          </div>
+        </div>
+      </header>
+      
+      <!-- Content Area -->
+      <div class="content">
+        <!-- Overview Panel -->
+        <div class="panel active" id="panel-overview">
+          <div class="stats-row">
+            <div class="stat-card" style="border-left-color: var(--danger);">
+              <div class="stat-label">Urgent Cases</div>
+              <div class="stat-value" style="color: var(--danger);">3</div>
+              <div class="stat-sub">Requires immediate attention</div>
+            </div>
+            <div class="stat-card" style="border-left-color: var(--warning);">
+              <div class="stat-label">Pending Review</div>
+              <div class="stat-value" style="color: var(--warning);">12</div>
+              <div class="stat-sub">Awaiting initial review</div>
+            </div>
+            <div class="stat-card" style="border-left-color: var(--info);">
+              <div class="stat-label">Under Investigation</div>
+              <div class="stat-value" style="color: var(--info);">8</div>
+              <div class="stat-sub">Active investigations</div>
+            </div>
+            <div class="stat-card" style="border-left-color: var(--success);">
+              <div class="stat-label">Resolved (This Month)</div>
+              <div class="stat-value" style="color: var(--success);">24</div>
+              <div class="stat-sub">Avg resolution: 9 days</div>
+            </div>
+          </div>
+          
+          <!-- Recent Cases -->
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Recent Cases Requiring Action</h3>
+              <button class="btn btn-outline btn-sm" onclick="showPanel('pending')">View All</button>
+            </div>
+            <div class="card-body">
+              <div class="complaint-card urgent" onclick="openModal('case-detail')">
+                <div class="complaint-header">
+                  <div>
+                    <span class="complaint-ref">OMB-2026-00156</span>
+                    <span class="badge badge-danger" style="margin-left: 0.5rem;">Urgent</span>
+                  </div>
+                  <span class="badge badge-warning">Pending Review</span>
+                </div>
+                <div class="complaint-subject">Suspected fraudulent gold earmarking</div>
+                <div class="complaint-meta">
+                  <span>Filed by: LIC-IND-12345</span>
+                  <span>Against: HH-IND-98765</span>
+                  <span>Category: Fraud</span>
+                  <span>Filed: 2 hours ago</span>
+                </div>
+              </div>
+              
+              <div class="complaint-card high">
+                <div class="complaint-header">
+                  <div>
+                    <span class="complaint-ref">OMB-2026-00155</span>
+                    <span class="badge badge-warning" style="margin-left: 0.5rem;">High</span>
+                  </div>
+                  <span class="badge badge-info">Investigation</span>
+                </div>
+                <div class="complaint-subject">GIC payment dispute - ₹45,000 not credited</div>
+                <div class="complaint-meta">
+                  <span>Filed by: LIC-IND-45678</span>
+                  <span>Against: Platform</span>
+                  <span>Category: Payment</span>
+                  <span>Filed: 1 day ago</span>
+                </div>
+              </div>
+              
+              <div class="complaint-card normal">
+                <div class="complaint-header">
+                  <div>
+                    <span class="complaint-ref">OMB-2026-00154</span>
+                    <span class="badge badge-info" style="margin-left: 0.5rem;">Normal</span>
+                  </div>
+                  <span class="badge badge-purple">Mediation</span>
+                </div>
+                <div class="complaint-subject">Design IPR dispute between designers</div>
+                <div class="complaint-meta">
+                  <span>Filed by: DES-IND-78901</span>
+                  <span>Against: DES-IND-23456</span>
+                  <span>Category: IPR</span>
+                  <span>Filed: 3 days ago</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Resolution Stats -->
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.5rem; margin-top: 1.5rem;">
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Cases by Category</h3>
+              </div>
+              <div class="card-body">
+                <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+                  <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span>Payment Disputes</span>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                      <div style="width: 100px; height: 8px; background: var(--obsidian-border); border-radius: 4px; overflow: hidden;">
+                        <div style="width: 65%; height: 100%; background: var(--gold);"></div>
+                      </div>
+                      <span class="mono" style="font-size: 0.85rem;">32</span>
+                    </div>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span>GIC Issues</span>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                      <div style="width: 100px; height: 8px; background: var(--obsidian-border); border-radius: 4px; overflow: hidden;">
+                        <div style="width: 45%; height: 100%; background: var(--purple);"></div>
+                      </div>
+                      <span class="mono" style="font-size: 0.85rem;">22</span>
+                    </div>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span>Fraud Reports</span>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                      <div style="width: 100px; height: 8px; background: var(--obsidian-border); border-radius: 4px; overflow: hidden;">
+                        <div style="width: 25%; height: 100%; background: var(--danger);"></div>
+                      </div>
+                      <span class="mono" style="font-size: 0.85rem;">12</span>
+                    </div>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span>KYC Issues</span>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                      <div style="width: 100px; height: 8px; background: var(--obsidian-border); border-radius: 4px; overflow: hidden;">
+                        <div style="width: 35%; height: 100%; background: var(--teal);"></div>
+                      </div>
+                      <span class="mono" style="font-size: 0.85rem;">17</span>
+                    </div>
+                  </div>
+                  <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span>IPR Disputes</span>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                      <div style="width: 100px; height: 8px; background: var(--obsidian-border); border-radius: 4px; overflow: hidden;">
+                        <div style="width: 15%; height: 100%; background: var(--rose);"></div>
+                      </div>
+                      <span class="mono" style="font-size: 0.85rem;">7</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="card">
+              <div class="card-header">
+                <h3 class="card-title">Resolution Timeline</h3>
+              </div>
+              <div class="card-body">
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; text-align: center;">
+                  <div style="padding: 1rem; background: var(--obsidian); border-radius: var(--radius-lg);">
+                    <div style="font-size: 2rem; font-weight: 700; color: var(--success);">85%</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted);">Resolved within SLA</div>
+                  </div>
+                  <div style="padding: 1rem; background: var(--obsidian); border-radius: var(--radius-lg);">
+                    <div style="font-size: 2rem; font-weight: 700; color: var(--gold);">9</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted);">Avg Days to Resolve</div>
+                  </div>
+                  <div style="padding: 1rem; background: var(--obsidian); border-radius: var(--radius-lg);">
+                    <div style="font-size: 2rem; font-weight: 700; color: var(--info);">92%</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted);">Satisfaction Rate</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Pending Cases Panel -->
+        <div class="panel" id="panel-pending">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Pending Cases</h3>
+              <div style="display: flex; gap: 0.5rem;">
+                <select class="form-select" style="width: auto; padding: 0.5rem 1rem; font-size: 0.85rem;">
+                  <option>All Priority</option>
+                  <option>Urgent</option>
+                  <option>High</option>
+                  <option>Normal</option>
+                </select>
+                <select class="form-select" style="width: auto; padding: 0.5rem 1rem; font-size: 0.85rem;">
+                  <option>All Categories</option>
+                  <option>Payment</option>
+                  <option>GIC</option>
+                  <option>Fraud</option>
+                  <option>KYC</option>
+                  <option>IPR</option>
+                </select>
+              </div>
+            </div>
+            <div class="card-body" style="padding: 0;">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Case ID</th>
+                    <th>Filed By</th>
+                    <th>Against</th>
+                    <th>Category</th>
+                    <th>Subject</th>
+                    <th>Priority</th>
+                    <th>Filed</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="mono">OMB-2026-00156</td>
+                    <td class="mono">LIC-IND-12345</td>
+                    <td class="mono">HH-IND-98765</td>
+                    <td><span class="badge badge-danger">Fraud</span></td>
+                    <td>Suspected fraudulent gold earmarking</td>
+                    <td><span class="badge badge-danger">Urgent</span></td>
+                    <td>2 hours ago</td>
+                    <td><button class="btn btn-sm" style="background: var(--ombudsman); color: var(--obsidian);">Review</button></td>
+                  </tr>
+                  <tr>
+                    <td class="mono">OMB-2026-00153</td>
+                    <td class="mono">HH-IND-54321</td>
+                    <td class="mono">JWL-IND-11111</td>
+                    <td><span class="badge badge-gold">Payment</span></td>
+                    <td>T-JR valuation dispute</td>
+                    <td><span class="badge badge-warning">High</span></td>
+                    <td>5 hours ago</td>
+                    <td><button class="btn btn-sm" style="background: var(--ombudsman); color: var(--obsidian);">Review</button></td>
+                  </tr>
+                  <tr>
+                    <td class="mono">OMB-2026-00152</td>
+                    <td class="mono">DES-IND-22222</td>
+                    <td class="mono">Platform</td>
+                    <td><span class="badge badge-info">Technical</span></td>
+                    <td>Design listing not appearing</td>
+                    <td><span class="badge badge-info">Normal</span></td>
+                    <td>1 day ago</td>
+                    <td><button class="btn btn-sm" style="background: var(--ombudsman); color: var(--obsidian);">Review</button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Investigation Panel -->
+        <div class="panel" id="panel-investigation">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Cases Under Investigation</h3>
+            </div>
+            <div class="card-body" style="padding: 0;">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Case ID</th>
+                    <th>Subject</th>
+                    <th>Started</th>
+                    <th>Days Open</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="mono">OMB-2026-00155</td>
+                    <td>GIC payment dispute - ₹45,000</td>
+                    <td>26 Mar 2026</td>
+                    <td class="mono">2</td>
+                    <td><span class="badge badge-info">Evidence Collection</span></td>
+                    <td><button class="btn btn-outline btn-sm">Update</button></td>
+                  </tr>
+                  <tr>
+                    <td class="mono">OMB-2026-00148</td>
+                    <td>Household registration fraud allegation</td>
+                    <td>22 Mar 2026</td>
+                    <td class="mono">6</td>
+                    <td><span class="badge badge-warning">Awaiting Response</span></td>
+                    <td><button class="btn btn-outline btn-sm">Update</button></td>
+                  </tr>
+                  <tr>
+                    <td class="mono">OMB-2026-00145</td>
+                    <td>Jewelry valuation discrepancy</td>
+                    <td>20 Mar 2026</td>
+                    <td class="mono">8</td>
+                    <td><span class="badge badge-purple">Expert Review</span></td>
+                    <td><button class="btn btn-outline btn-sm">Update</button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Resolved Panel -->
+        <div class="panel" id="panel-resolved">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Resolved Cases</h3>
+              <div style="display: flex; gap: 0.5rem;">
+                <select class="form-select" style="width: auto; padding: 0.5rem 1rem; font-size: 0.85rem;">
+                  <option>This Month</option>
+                  <option>Last Month</option>
+                  <option>Last 3 Months</option>
+                  <option>All Time</option>
+                </select>
+                <button class="btn btn-outline btn-sm">Export</button>
+              </div>
+            </div>
+            <div class="card-body" style="padding: 0;">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Case ID</th>
+                    <th>Subject</th>
+                    <th>Category</th>
+                    <th>Resolution</th>
+                    <th>Days Taken</th>
+                    <th>Resolved</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td class="mono">OMB-2026-00140</td>
+                    <td>FTR swap not processed</td>
+                    <td><span class="badge badge-gold">Payment</span></td>
+                    <td><span class="badge badge-success">Favor: Complainant</span></td>
+                    <td class="mono">7</td>
+                    <td>25 Mar 2026</td>
+                  </tr>
+                  <tr>
+                    <td class="mono">OMB-2026-00138</td>
+                    <td>GIC calculation error</td>
+                    <td><span class="badge badge-purple">GIC</span></td>
+                    <td><span class="badge badge-success">Favor: Complainant</span></td>
+                    <td class="mono">5</td>
+                    <td>23 Mar 2026</td>
+                  </tr>
+                  <tr>
+                    <td class="mono">OMB-2026-00135</td>
+                    <td>Design copyright claim</td>
+                    <td><span class="badge badge-rose">IPR</span></td>
+                    <td><span class="badge badge-muted">Dismissed</span></td>
+                    <td class="mono">12</td>
+                    <td>20 Mar 2026</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Mediation Panel -->
+        <div class="panel" id="panel-mediation">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Schedule Mediation</h3>
+            </div>
+            <div class="card-body">
+              <form id="mediationForm">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label required">Case ID</label>
+                    <select class="form-select" name="caseId" required>
+                      <option value="">Select Case</option>
+                      <option value="OMB-2026-00154">OMB-2026-00154 - Design IPR dispute</option>
+                      <option value="OMB-2026-00148">OMB-2026-00148 - Registration fraud</option>
+                    </select>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label required">Mediation Type</label>
+                    <select class="form-select" name="mediationType" required>
+                      <option value="">Select Type</option>
+                      <option value="video">Video Conference</option>
+                      <option value="phone">Phone Call</option>
+                      <option value="written">Written Submissions</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label required">Proposed Date</label>
+                    <input type="date" class="form-input" name="date" required>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label required">Proposed Time</label>
+                    <select class="form-select" name="time" required>
+                      <option value="">Select Time</option>
+                      <option value="10:00">10:00 AM</option>
+                      <option value="11:00">11:00 AM</option>
+                      <option value="14:00">2:00 PM</option>
+                      <option value="15:00">3:00 PM</option>
+                      <option value="16:00">4:00 PM</option>
+                    </select>
+                  </div>
+                </div>
+                
+                <div class="form-group">
+                  <label class="form-label">Notes for Parties</label>
+                  <textarea class="form-textarea" name="notes" rows="3" placeholder="Any preparation instructions or agenda items"></textarea>
+                </div>
+                
+                <button type="submit" class="btn btn-lg" style="background: var(--ombudsman); color: var(--obsidian);">Schedule Mediation</button>
+              </form>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Reports Panel -->
+        <div class="panel" id="panel-reports">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Generate Reports</h3>
+            </div>
+            <div class="card-body">
+              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem;">
+                <div class="report-card" onclick="generateReport('monthly-summary')">
+                  <div class="report-icon">📊</div>
+                  <div class="report-name">Monthly Summary</div>
+                  <div class="report-desc">Complete case statistics and outcomes</div>
+                  <div class="report-meta">
+                    <span class="report-freq">Monthly</span>
+                    <span class="report-action">Generate →</span>
+                  </div>
+                </div>
+                <div class="report-card" onclick="generateReport('resolution-analysis')">
+                  <div class="report-icon">📈</div>
+                  <div class="report-name">Resolution Analysis</div>
+                  <div class="report-desc">SLA compliance and timeline metrics</div>
+                  <div class="report-meta">
+                    <span class="report-freq">On-demand</span>
+                    <span class="report-action">Generate →</span>
+                  </div>
+                </div>
+                <div class="report-card" onclick="generateReport('category-breakdown')">
+                  <div class="report-icon">🗂️</div>
+                  <div class="report-name">Category Breakdown</div>
+                  <div class="report-desc">Cases by type and outcome</div>
+                  <div class="report-meta">
+                    <span class="report-freq">On-demand</span>
+                    <span class="report-action">Generate →</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Settings Panel -->
+        <div class="panel" id="panel-settings">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Ombudsman Profile</h3>
+            </div>
+            <div class="card-body">
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Full Name</label>
+                  <input type="text" class="form-input" value="Justice Rohit Jayant Tidke" disabled>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Ombudsman ID</label>
+                  <input type="text" class="form-input" value="OMB-IND-00001" disabled>
+                </div>
+              </div>
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label">Email</label>
+                  <input type="email" class="form-input" value="tidkejp@gmail.com" disabled>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Appointed</label>
+                  <input type="text" class="form-input" value="01 January 2026" disabled>
+                </div>
+              </div>
+              
+              <div class="alert alert-info" style="margin-top: 1.5rem;">
+                <span class="alert-icon">ℹ️</span>
+                <div>
+                  Ombudsman profiles are managed by TGDP Administration. 
+                  Contact <a href="mailto:admin@trot-gold.com" style="color: var(--gold);">admin@trot-gold.com</a> for any changes.
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+  
+  <!-- Case Detail Modal -->
+  <div class="modal-overlay" id="modal-case-detail">
+    <div class="modal" style="max-width: 700px;">
+      <div class="modal-header">
+        <h3 class="modal-title">Case: OMB-2026-00156</h3>
+        <button class="modal-close" onclick="closeModal('case-detail')">×</button>
+      </div>
+      <div class="modal-body">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 1.5rem;">
+          <div>
+            <span class="badge badge-danger">Urgent</span>
+            <span class="badge badge-warning" style="margin-left: 0.5rem;">Pending Review</span>
+          </div>
+          <span style="font-size: 0.85rem; color: var(--text-muted);">Filed: 28 Mar 2026, 10:45 AM</span>
+        </div>
+        
+        <div style="background: var(--obsidian); border-radius: var(--radius-lg); padding: 1.25rem; margin-bottom: 1.5rem;">
+          <h4 style="margin-bottom: 0.75rem;">Complaint Details</h4>
+          <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; font-size: 0.9rem;">
+            <div>
+              <span style="color: var(--text-muted);">Complainant:</span><br>
+              <span class="mono">LIC-IND-12345</span> (Suresh Kapoor)
+            </div>
+            <div>
+              <span style="color: var(--text-muted);">Respondent:</span><br>
+              <span class="mono">HH-IND-98765</span> (Priya Sharma)
+            </div>
+            <div>
+              <span style="color: var(--text-muted);">Category:</span><br>
+              Suspected Fraud
+            </div>
+            <div>
+              <span style="color: var(--text-muted);">Amount Involved:</span><br>
+              ₹5,25,000
+            </div>
+          </div>
+        </div>
+        
+        <h4 style="margin-bottom: 0.75rem;">Subject</h4>
+        <p style="color: var(--text-secondary); margin-bottom: 1.5rem;">
+          Suspected fraudulent gold earmarking - Complainant alleges that the household 
+          submitted false documentation for gold earmarking, including potentially fake 
+          purity certificates and inflated weight claims.
+        </p>
+        
+        <h4 style="margin-bottom: 0.75rem;">Evidence Attached</h4>
+        <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 1.5rem;">
+          <span style="padding: 0.5rem 1rem; background: var(--obsidian); border-radius: var(--radius-md); font-size: 0.85rem;">📄 purity_certificate.pdf</span>
+          <span style="padding: 0.5rem 1rem; background: var(--obsidian); border-radius: var(--radius-md); font-size: 0.85rem;">📷 item_photos.zip</span>
+          <span style="padding: 0.5rem 1rem; background: var(--obsidian); border-radius: var(--radius-md); font-size: 0.85rem;">📄 transaction_records.pdf</span>
+        </div>
+        
+        <h4 style="margin-bottom: 0.75rem;">Case Timeline</h4>
+        <div class="timeline-item">
+          <div class="timeline-dot" style="background: var(--success);"></div>
+          <div class="timeline-content">
+            <div class="timeline-title">Complaint Filed</div>
+            <div class="timeline-desc">Complaint received via GIC Licensing Portal</div>
+            <div class="timeline-time">28 Mar 2026, 10:45 AM</div>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot" style="background: var(--warning);"></div>
+          <div class="timeline-content">
+            <div class="timeline-title">Pending Review</div>
+            <div class="timeline-desc">Awaiting initial assessment by Ombudsman</div>
+            <div class="timeline-time">Current Status</div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="closeModal('case-detail')">Close</button>
+        <button class="btn btn-danger" onclick="showToast('Case escalated to urgent queue', 'warning'); closeModal('case-detail');">Escalate</button>
+        <button class="btn" style="background: var(--ombudsman); color: var(--obsidian);" onclick="showToast('Starting investigation...', 'info'); closeModal('case-detail');">Begin Investigation</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Shared JavaScript -->
+  <script src="../../js/shared.txt"></script>
+  
+  <script>
+    // Mediation form
+    document.getElementById('mediationForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      showLoading('Scheduling mediation...');
+      setTimeout(() => {
+        hideLoading();
+        showToast('Mediation scheduled! Both parties will be notified.', 'success');
+        this.reset();
+      }, 1500);
+    });
+  </script>
+</body>
+</html>
