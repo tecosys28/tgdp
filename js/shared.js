@@ -8,13 +8,13 @@
 // FIREBASE CONFIGURATION (Replace with your Firebase project details)
 // ═══════════════════════════════════════════════════════════════════════════
 const FIREBASE_CONFIG = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
-  projectId: "YOUR_PROJECT_ID",
-  storageBucket: "YOUR_PROJECT_ID.appspot.com",
-  messagingSenderId: "YOUR_SENDER_ID",
-  appId: "YOUR_APP_ID",
-  measurementId: "YOUR_MEASUREMENT_ID"
+  apiKey: "AIzaSyAsHHiCqvvlwzt3Zx7nwbKCnpmkWG-HPpc",
+  authDomain: "tgdp-d4a3d.firebaseapp.com",
+  projectId: "tgdp-d4a3d",
+  storageBucket: "tgdp-d4a3d.firebasestorage.app",
+  messagingSenderId: "399267274832",
+  appId: "1:399267274832:web:202956b9af788eb96ff155",
+  measurementId: "G-NHVPJS29MB"
 };
 
 // Firebase initialization (uncomment when Firebase SDK is loaded)
