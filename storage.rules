@@ -1,0 +1,26 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    // ── KYC documents ──────────────────────────────────────────────────────────
+    // Only the owner or an admin can read/write KYC files.
+    match /kyc/{userId}/{allPaths=**} {
+      allow read:  if request.auth != null && (request.auth.uid == userId || isAdmin());
+      allow write: if request.auth != null && request.auth.uid == userId
+                   && request.resource.size < 10 * 1024 * 1024  // 10 MB max
+                   && request.resource.contentType.matches('image/.*|application/pdf');
+    }
+
+    // ── Profile photos ─────────────────────────────────────────────────────────
+    match /profiles/{userId}/{allPaths=**} {
+      allow read:  if request.auth != null;
+      allow write: if request.auth != null && request.auth.uid == userId
+                   && request.resource.size < 5 * 1024 * 1024   // 5 MB max
+                   && request.resource.contentType.matches('image/.*');
+    }
+
+    function isAdmin() {
+      return firestore.get(/databases/(default)/documents/users/$(request.auth.uid)).data.roles.hasAny(['admin']);
+    }
+  }
+}

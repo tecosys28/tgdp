@@ -1,0 +1,142 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return request.auth.uid == userId;
+    }
+
+    function hasRole(role) {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.roles.hasAny([role]);
+    }
+
+    function isAdmin() {
+      return hasRole('admin');
+    }
+
+    function isOmbudsman() {
+      return hasRole('ombudsman');
+    }
+
+    // ── User profiles ──────────────────────────────────────────────────────────
+    // Authenticated users can create/read/update their own profile.
+    // Google sign-in creates the doc on first login, so allow create by owner.
+    match /users/{userId} {
+      allow read:   if isAuthenticated() && (isOwner(userId) || isAdmin());
+      allow create: if isAuthenticated() && isOwner(userId);
+      allow update: if isAuthenticated() && (isOwner(userId) || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    // ── KYC documents ──────────────────────────────────────────────────────────
+    match /kyc/{kycId} {
+      allow read:   if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // ── Balances (read-only from client; writes via Cloud Functions only) ──────
+    match /tgdp_balances/{userId} {
+      allow read:  if isAuthenticated() && (isOwner(userId) || isAdmin());
+      allow write: if false;
+    }
+
+    match /ftr_balances/{userId} {
+      allow read:  if isAuthenticated() && (isOwner(userId) || isAdmin());
+      allow write: if false;
+    }
+
+    match /gic_balances/{licenseeId} {
+      allow read:  if isAuthenticated() && (isOwner(licenseeId) || isAdmin());
+      allow write: if false;
+    }
+
+    // ── Transactions ───────────────────────────────────────────────────────────
+    match /tgdp_transactions/{txId} {
+      allow read: if isAuthenticated() && (
+        resource.data.fromUserId == request.auth.uid ||
+        resource.data.toUserId   == request.auth.uid ||
+        resource.data.userId     == request.auth.uid ||
+        isAdmin()
+      );
+      allow write: if false;
+    }
+
+    // ── Household-Licensee links ───────────────────────────────────────────────
+    match /household_links/{linkId} {
+      allow read: if isAuthenticated() && (
+        resource.data.householdId == request.auth.uid ||
+        resource.data.licenseeId  == request.auth.uid ||
+        isAdmin()
+      );
+      allow write: if false;
+    }
+
+    // ── Complaints ─────────────────────────────────────────────────────────────
+    match /complaints/{complaintId} {
+      allow read: if isAuthenticated() && (
+        resource.data.complainantId == request.auth.uid ||
+        isOmbudsman() ||
+        isAdmin()
+      );
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && (isOmbudsman() || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    // ── T-JR Returns ───────────────────────────────────────────────────────────
+    match /tjr_returns/{returnId} {
+      allow read: if isAuthenticated() && (
+        resource.data.userId    == request.auth.uid ||
+        resource.data.jewelerId == request.auth.uid ||
+        isAdmin()
+      );
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && (
+        resource.data.userId == request.auth.uid ||
+        hasRole('jeweler') ||
+        isAdmin()
+      );
+    }
+
+    // ── T-JDB Designs (public marketplace) ────────────────────────────────────
+    match /tjdb_designs/{designId} {
+      allow read:   if true;
+      allow create: if isAuthenticated() && hasRole('designer');
+      allow update: if isAuthenticated() && (resource.data.designerId == request.auth.uid || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    // ── Jewelers (public directory) ────────────────────────────────────────────
+    match /jewelers/{jewelerId} {
+      allow read:   if true;
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && (isOwner(jewelerId) || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    // ── Trading Orders ─────────────────────────────────────────────────────────
+    match /trading_orders/{orderId} {
+      allow read:   if isAuthenticated() && (resource.data.userId == request.auth.uid || isAdmin());
+      allow create: if isAuthenticated();
+      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+
+    // ── Audit Logs (admin only) ────────────────────────────────────────────────
+    match /audit_logs/{logId} {
+      allow read:  if isAdmin();
+      allow write: if false;
+    }
+
+    // ── Config ─────────────────────────────────────────────────────────────────
+    match /config/{configId} {
+      allow read:  if isAuthenticated();
+      allow write: if isAdmin();
+    }
+  }
+}

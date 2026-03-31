@@ -13,7 +13,11 @@
       "Bash(firebase appdistribution:testers:list --project tgdp-d4a3d)",
       "Bash(node -e \"const {loadRC}=require\\(''''firebase-tools/lib/rc''''\\); const store = require\\(''''firebase-tools/lib/api''''\\); \")",
       "Bash(node -e \"const c=require\\(require\\(''''path''''\\).join\\(require\\(''''os''''\\).homedir\\(\\), ''''AppData/Roaming/firebase-tools/credentials.json''''\\)\\); console.log\\(Object.keys\\(c\\)\\)\")",
-      "Bash(node -e \":*)"
+      "Bash(node -e \":*)",
+      "Bash(firebase deploy:*)",
+      "Bash(git pull:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)"
     ]
   }
 }

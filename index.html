@@ -5,226 +5,617 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="TGDP Ecosystem - Tokenize Gold, Trade Freely, Unlock Value">
   <title>TGDP · Gold Tokenization Ecosystem</title>
-  
-  <!-- Fonts -->
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  
-  <!-- Shared Styles -->
   <link rel="stylesheet" href="css/shared.css">
-  
+
   <style>
-    .portal-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 1.5rem;
-      margin-top: 2rem;
+    /* ── Reset overrides ──────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ── Navbar ───────────────────────────────────────────────────────────── */
+    .nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      padding: 0 2rem;
+      height: 68px;
+      display: flex; align-items: center; justify-content: space-between;
+      background: rgba(10,10,15,0.6);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid rgba(212,175,55,0.08);
+      transition: background .3s;
     }
-    
+    .nav.scrolled { background: rgba(10,10,15,0.92); }
+    .nav-logo { display: flex; align-items: center; gap: .65rem; text-decoration: none; }
+    .nav-logo img { width: 34px; height: 34px; border-radius: 8px; object-fit: cover; }
+    .nav-logo-text { font-family: var(--font-display); font-size: 1.25rem; font-weight: 700; color: var(--gold); letter-spacing: .04em; }
+    .nav-links { display: flex; align-items: center; gap: 2rem; }
+    .nav-links a { color: var(--text-secondary); font-size: .9rem; font-weight: 500; text-decoration: none; transition: color .2s; }
+    .nav-links a:hover { color: #fff; }
+    .nav-cta {
+      padding: .55rem 1.4rem; background: var(--gold); color: #000;
+      border-radius: 50px; font-weight: 600; font-size: .9rem;
+      text-decoration: none; transition: all .2s;
+    }
+    .nav-cta:hover { background: var(--gold-light); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(212,175,55,.35); }
+    .nav-hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 4px; }
+    .nav-hamburger span { width: 24px; height: 2px; background: var(--text-primary); border-radius: 2px; transition: .3s; }
+
+    /* ── Gold ticker bar ──────────────────────────────────────────────────── */
+    .ticker {
+      position: fixed; top: 68px; left: 0; right: 0; z-index: 99;
+      background: rgba(212,175,55,.08);
+      border-bottom: 1px solid rgba(212,175,55,.12);
+      padding: .4rem 0;
+      overflow: hidden;
+    }
+    .ticker-track {
+      display: flex; gap: 4rem; white-space: nowrap;
+      animation: ticker-scroll 28s linear infinite;
+    }
+    .ticker-item { font-size: .78rem; font-family: var(--font-mono); color: var(--gold); display: flex; align-items: center; gap: .5rem; }
+    .ticker-item .up { color: #4ade80; }
+    .ticker-item .dn { color: #f87171; }
+    @keyframes ticker-scroll { 0%{transform:translateX(0)} 100%{transform:translateX(-50%)} }
+
+    /* ── Hero ─────────────────────────────────────────────────────────────── */
+    .hero {
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      text-align: center;
+      padding: 130px 2rem 4rem;
+      position: relative; overflow: hidden;
+    }
+    /* Animated background orbs */
+    .orb {
+      position: absolute; border-radius: 50%;
+      filter: blur(80px); pointer-events: none; animation: float 8s ease-in-out infinite;
+    }
+    .orb-1 { width: 500px; height: 500px; background: rgba(212,175,55,.12); top: -100px; left: -100px; animation-delay: 0s; }
+    .orb-2 { width: 350px; height: 350px; background: rgba(167,139,250,.08); top: 30%; right: -80px; animation-delay: 2s; }
+    .orb-3 { width: 280px; height: 280px; background: rgba(45,212,191,.06); bottom: 10%; left: 20%; animation-delay: 4s; }
+    @keyframes float {
+      0%,100% { transform: translateY(0) scale(1); }
+      50%      { transform: translateY(-30px) scale(1.05); }
+    }
+    /* Grid overlay */
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background-image: linear-gradient(rgba(212,175,55,.04) 1px, transparent 1px),
+                        linear-gradient(90deg, rgba(212,175,55,.04) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 40%, transparent 100%);
+    }
+    .hero-inner { position: relative; max-width: 860px; }
+    .hero-eyebrow {
+      display: inline-flex; align-items: center; gap: .6rem;
+      padding: .4rem 1.1rem; border-radius: 50px;
+      background: rgba(212,175,55,.1); border: 1px solid rgba(212,175,55,.25);
+      font-size: .8rem; font-weight: 500; color: var(--gold);
+      letter-spacing: .06em; text-transform: uppercase;
+      margin-bottom: 1.75rem;
+    }
+    .hero-eyebrow .dot { width: 6px; height: 6px; background: var(--gold); border-radius: 50%; animation: pulse-dot 2s infinite; }
+    @keyframes pulse-dot { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(.8)} }
+    .hero-title {
+      font-family: var(--font-display);
+      font-size: clamp(2.8rem, 6vw, 5rem);
+      font-weight: 700; line-height: 1.1;
+      color: #fff; margin-bottom: 1.5rem;
+    }
+    .hero-title em { color: var(--gold); font-style: italic; }
+    .hero-subtitle {
+      font-size: 1.15rem; color: var(--text-secondary);
+      max-width: 620px; margin: 0 auto 2.5rem;
+      line-height: 1.75;
+    }
+    .hero-cta { display: flex; align-items: center; justify-content: center; gap: 1rem; flex-wrap: wrap; margin-bottom: 4rem; }
+    .btn-hero-primary {
+      padding: .85rem 2.2rem; background: var(--gold); color: #000;
+      border-radius: 50px; font-weight: 700; font-size: 1rem;
+      text-decoration: none; transition: all .25s;
+      box-shadow: 0 0 30px rgba(212,175,55,.3);
+    }
+    .btn-hero-primary:hover { background: var(--gold-light); transform: translateY(-2px); box-shadow: 0 0 50px rgba(212,175,55,.5); }
+    .btn-hero-secondary {
+      padding: .85rem 2.2rem; background: transparent; color: #fff;
+      border: 1px solid rgba(255,255,255,.2); border-radius: 50px;
+      font-weight: 500; font-size: 1rem; text-decoration: none;
+      backdrop-filter: blur(8px); transition: all .25s;
+    }
+    .btn-hero-secondary:hover { border-color: rgba(255,255,255,.5); background: rgba(255,255,255,.05); }
+
+    /* ── Stat strip ───────────────────────────────────────────────────────── */
+    .stat-strip {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 1px; background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.06); border-radius: 20px;
+      overflow: hidden; backdrop-filter: blur(10px);
+    }
+    .stat-cell {
+      padding: 1.5rem 1rem; text-align: center;
+      background: rgba(255,255,255,.03);
+    }
+    .stat-value { font-family: var(--font-display); font-size: 2rem; font-weight: 700; color: var(--gold); }
+    .stat-label { font-size: .78rem; color: var(--text-muted); margin-top: .25rem; text-transform: uppercase; letter-spacing: .05em; }
+
+    /* ── Section base ─────────────────────────────────────────────────────── */
+    .sec { padding: 6rem 2rem; }
+    .sec-inner { max-width: 1200px; margin: 0 auto; }
+    .sec-tag {
+      display: inline-block; padding: .3rem .9rem;
+      background: rgba(212,175,55,.1); border: 1px solid rgba(212,175,55,.2);
+      border-radius: 50px; font-size: .75rem; font-weight: 600;
+      color: var(--gold); letter-spacing: .08em; text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+    .sec-title { font-family: var(--font-display); font-size: clamp(2rem, 4vw, 3rem); color: #fff; margin-bottom: .5rem; }
+    .sec-title em { color: var(--gold); font-style: italic; }
+    .sec-divider { width: 48px; height: 3px; background: var(--gold); border-radius: 2px; margin: 1rem 0 2.5rem; }
+    .sec-center { text-align: center; }
+    .sec-center .sec-divider { margin-left: auto; margin-right: auto; }
+
+    /* ── Portal cards ─────────────────────────────────────────────────────── */
+    .portals-bg { background: var(--obsidian-light); }
+    .portal-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.25rem; }
     .portal-card {
-      background: var(--obsidian-light);
-      border: 2px solid var(--obsidian-border);
-      border-radius: var(--radius-xl);
-      padding: 2rem;
-      transition: all var(--transition-base);
-      text-decoration: none;
-      color: inherit;
-      display: block;
+      position: relative; overflow: hidden;
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(255,255,255,.07);
+      border-radius: 20px; padding: 2rem;
+      text-decoration: none; color: inherit;
+      transition: all .3s; display: block;
+      backdrop-filter: blur(6px);
     }
-    
-    .portal-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
+    .portal-card::before {
+      content: ''; position: absolute; inset: 0; border-radius: 20px;
+      opacity: 0; transition: opacity .3s;
     }
-    
-    .portal-card.gold:hover { border-color: var(--gold); }
-    .portal-card.purple:hover { border-color: var(--purple); }
-    .portal-card.teal:hover { border-color: var(--teal); }
-    .portal-card.rose:hover { border-color: var(--rose); }
-    .portal-card.slate:hover { border-color: #94a3b8; }
-    
-    .portal-icon { font-size: 3rem; margin-bottom: 1rem; }
-    .portal-name { font-family: var(--font-display); font-size: 1.5rem; font-weight: 600; margin-bottom: 0.5rem; }
-    .portal-card.gold .portal-name { color: var(--gold); }
-    .portal-card.purple .portal-name { color: var(--purple); }
-    .portal-card.teal .portal-name { color: var(--teal); }
-    .portal-card.rose .portal-name { color: var(--rose); }
-    .portal-card.slate .portal-name { color: #94a3b8; }
-    .portal-desc { color: var(--text-secondary); font-size: 0.95rem; line-height: 1.6; margin-bottom: 1rem; }
-    .portal-features { display: flex; flex-wrap: wrap; gap: 0.5rem; }
-    .portal-feature { padding: 0.35rem 0.75rem; background: var(--obsidian); border-radius: var(--radius-full); font-size: 0.75rem; color: var(--text-muted); }
-    
-    .ecosystem-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-top: 3rem; }
-    .eco-stat { text-align: center; padding: 2rem; background: var(--obsidian-light); border: 1px solid var(--obsidian-border); border-radius: var(--radius-lg); }
-    .eco-stat-value { font-family: var(--font-display); font-size: 2.5rem; font-weight: 700; color: var(--gold); margin-bottom: 0.5rem; }
-    .eco-stat-label { font-size: 0.85rem; color: var(--text-muted); }
-    
-    .role-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-top: 2rem; }
-    .role-card { background: var(--obsidian-light); border: 1px solid var(--obsidian-border); border-radius: var(--radius-lg); padding: 1.5rem; text-align: center; transition: all var(--transition-base); }
-    .role-card:hover { border-color: var(--gold); transform: translateY(-2px); }
-    .role-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
-    .role-name { font-weight: 600; margin-bottom: 0.35rem; }
-    .role-desc { font-size: 0.8rem; color: var(--text-muted); }
-    
-    .protocol-preview { display: flex; justify-content: space-between; align-items: center; padding: 2rem 0; margin-top: 1rem; }
-    .protocol-step { flex: 1; text-align: center; position: relative; }
-    .protocol-step::after { content: '→'; position: absolute; right: -5px; top: 50%; transform: translateY(-50%); color: var(--gold); font-size: 1.25rem; }
-    .protocol-step:last-child::after { display: none; }
-    .protocol-num { width: 40px; height: 40px; background: var(--gold-muted); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 0.75rem; font-weight: 600; color: var(--gold); }
-    .protocol-title { font-weight: 600; font-size: 0.9rem; margin-bottom: 0.25rem; }
-    .protocol-time { font-size: 0.75rem; color: var(--text-muted); }
-    
+    .portal-card.gold::before  { background: radial-gradient(circle at 30% 30%, rgba(212,175,55,.12), transparent 70%); }
+    .portal-card.purple::before { background: radial-gradient(circle at 30% 30%, rgba(167,139,250,.12), transparent 70%); }
+    .portal-card.teal::before  { background: radial-gradient(circle at 30% 30%, rgba(45,212,191,.12), transparent 70%); }
+    .portal-card.rose::before  { background: radial-gradient(circle at 30% 30%, rgba(251,113,133,.12), transparent 70%); }
+    .portal-card:hover::before { opacity: 1; }
+    .portal-card:hover { transform: translateY(-6px); border-color: rgba(255,255,255,.15); }
+    .portal-card.gold:hover  { border-color: rgba(212,175,55,.4);  box-shadow: 0 20px 50px rgba(212,175,55,.12); }
+    .portal-card.purple:hover{ border-color: rgba(167,139,250,.4); box-shadow: 0 20px 50px rgba(167,139,250,.12); }
+    .portal-card.teal:hover  { border-color: rgba(45,212,191,.4);  box-shadow: 0 20px 50px rgba(45,212,191,.12); }
+    .portal-card.rose:hover  { border-color: rgba(251,113,133,.4); box-shadow: 0 20px 50px rgba(251,113,133,.12); }
+    .portal-card-icon {
+      width: 52px; height: 52px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem; margin-bottom: 1.25rem;
+    }
+    .portal-card.gold   .portal-card-icon { background: rgba(212,175,55,.15); }
+    .portal-card.purple .portal-card-icon { background: rgba(167,139,250,.15); }
+    .portal-card.teal   .portal-card-icon { background: rgba(45,212,191,.15); }
+    .portal-card.rose   .portal-card-icon { background: rgba(251,113,133,.15); }
+    .portal-card-name { font-family: var(--font-display); font-size: 1.3rem; font-weight: 600; margin-bottom: .5rem; }
+    .portal-card.gold   .portal-card-name { color: var(--gold); }
+    .portal-card.purple .portal-card-name { color: var(--purple); }
+    .portal-card.teal   .portal-card-name { color: var(--teal); }
+    .portal-card.rose   .portal-card-name { color: var(--rose); }
+    .portal-card-desc { color: var(--text-secondary); font-size: .9rem; line-height: 1.65; margin-bottom: 1.25rem; }
+    .portal-chips { display: flex; flex-wrap: wrap; gap: .5rem; }
+    .portal-chip {
+      padding: .3rem .75rem; border-radius: 50px;
+      font-size: .72rem; font-weight: 500;
+    }
+    .portal-card.gold   .portal-chip { background: rgba(212,175,55,.12);  color: var(--gold); }
+    .portal-card.purple .portal-chip { background: rgba(167,139,250,.12); color: var(--purple); }
+    .portal-card.teal   .portal-chip { background: rgba(45,212,191,.12);  color: var(--teal); }
+    .portal-card.rose   .portal-chip { background: rgba(251,113,133,.12); color: var(--rose); }
+    .portal-arrow {
+      position: absolute; top: 1.75rem; right: 1.75rem;
+      width: 32px; height: 32px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      background: rgba(255,255,255,.06); color: var(--text-muted);
+      font-size: .9rem; transition: all .3s;
+    }
+    .portal-card:hover .portal-arrow { background: rgba(255,255,255,.12); color: #fff; transform: translate(2px, -2px); }
+
+    /* Ombudsman wide card */
+    .portal-card-wide {
+      display: flex; align-items: center; gap: 2rem;
+      margin-top: 1.25rem;
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(148,163,184,.15);
+      border-radius: 20px; padding: 1.75rem 2rem;
+      text-decoration: none; color: inherit;
+      transition: all .3s;
+    }
+    .portal-card-wide:hover { border-color: rgba(148,163,184,.4); transform: translateY(-4px); box-shadow: 0 20px 50px rgba(0,0,0,.2); }
+    .portal-card-wide .portal-card-icon { background: rgba(148,163,184,.1); margin-bottom: 0; flex-shrink: 0; }
+    .portal-card-wide .portal-card-name { color: #94a3b8; }
+    .portal-card-wide .portal-card-desc { margin-bottom: 0; }
+    .portal-card-wide .portal-chips { margin-top: .75rem; }
+    .portal-card-wide .portal-chip { background: rgba(148,163,184,.1); color: #94a3b8; }
+
+    /* ── Roles ────────────────────────────────────────────────────────────── */
+    .roles-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+    .role-card {
+      background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.07);
+      border-radius: 16px; padding: 1.5rem; text-align: center;
+      transition: all .25s; cursor: default;
+    }
+    .role-card:hover { border-color: rgba(212,175,55,.3); transform: translateY(-3px); background: rgba(212,175,55,.04); }
+    .role-icon { font-size: 2.2rem; margin-bottom: .75rem; }
+    .role-name { font-weight: 600; font-size: .95rem; margin-bottom: .35rem; color: #fff; }
+    .role-desc { font-size: .78rem; color: var(--text-muted); line-height: 1.5; }
+    .roles-cta { text-align: center; margin-top: 2.5rem; }
+
+    /* ── Protocol timeline ────────────────────────────────────────────────── */
+    .timeline-bg { background: var(--obsidian-light); }
+    .protocol-track { display: flex; align-items: flex-start; justify-content: center; gap: 0; margin-top: 3rem; position: relative; }
+    .protocol-track::before {
+      content: ''; position: absolute; top: 20px; left: 10%; right: 10%; height: 2px;
+      background: linear-gradient(90deg, transparent, rgba(212,175,55,.3), rgba(212,175,55,.6), rgba(212,175,55,.3), transparent);
+    }
+    .proto-step { flex: 1; text-align: center; position: relative; padding: 0 .5rem; }
+    .proto-num {
+      width: 42px; height: 42px; border-radius: 50%;
+      background: var(--obsidian); border: 2px solid rgba(212,175,55,.4);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 1rem; font-weight: 700; font-size: .85rem;
+      color: var(--gold); position: relative; z-index: 1;
+      transition: all .3s;
+    }
+    .proto-step:hover .proto-num { background: var(--gold); color: #000; border-color: var(--gold); box-shadow: 0 0 20px rgba(212,175,55,.4); }
+    .proto-title { font-weight: 600; font-size: .875rem; color: #fff; margin-bottom: .25rem; }
+    .proto-time  { font-size: .75rem; color: var(--text-muted); font-family: var(--font-mono); }
+
+    /* ── CTA Banner ───────────────────────────────────────────────────────── */
+    .cta-banner {
+      background: linear-gradient(135deg, rgba(212,175,55,.1) 0%, rgba(212,175,55,.03) 50%, rgba(167,139,250,.06) 100%);
+      border-top: 1px solid rgba(212,175,55,.1);
+      border-bottom: 1px solid rgba(212,175,55,.1);
+    }
+    .cta-inner { text-align: center; max-width: 680px; margin: 0 auto; }
+    .cta-title { font-family: var(--font-display); font-size: clamp(2rem, 4vw, 3rem); color: #fff; margin-bottom: 1rem; }
+    .cta-title em { color: var(--gold); }
+    .cta-sub { color: var(--text-secondary); margin-bottom: 2rem; line-height: 1.7; }
+    .cta-btns { display: flex; align-items: center; justify-content: center; gap: 1rem; flex-wrap: wrap; }
+
+    /* ── Footer ───────────────────────────────────────────────────────────── */
+    .footer {
+      background: #07070d; border-top: 1px solid rgba(255,255,255,.06);
+      padding: 4rem 2rem 2rem;
+    }
+    .footer-inner { max-width: 1200px; margin: 0 auto; }
+    .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 3rem; padding-bottom: 3rem; border-bottom: 1px solid rgba(255,255,255,.06); }
+    .footer-brand .nav-logo { margin-bottom: 1rem; }
+    .footer-brand p { color: var(--text-muted); font-size: .875rem; line-height: 1.7; max-width: 260px; }
+    .footer-col h5 { font-size: .8rem; font-weight: 600; color: var(--gold); letter-spacing: .08em; text-transform: uppercase; margin-bottom: 1.1rem; }
+    .footer-col a { display: block; color: var(--text-muted); font-size: .875rem; text-decoration: none; margin-bottom: .6rem; transition: color .2s; }
+    .footer-col a:hover { color: #fff; }
+    .footer-bottom { display: flex; align-items: center; justify-content: space-between; padding-top: 1.75rem; font-size: .8rem; color: var(--text-muted); flex-wrap: wrap; gap: .5rem; }
+
+    /* ── Reveal animations ────────────────────────────────────────────────── */
+    .reveal { opacity: 0; transform: translateY(30px); transition: opacity .7s ease, transform .7s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-delay-1 { transition-delay: .1s; }
+    .reveal-delay-2 { transition-delay: .2s; }
+    .reveal-delay-3 { transition-delay: .3s; }
+
+    /* ── Responsive ───────────────────────────────────────────────────────── */
     @media (max-width: 1024px) {
       .portal-grid { grid-template-columns: 1fr; }
-      .ecosystem-stats { grid-template-columns: repeat(2, 1fr); }
-      .role-grid { grid-template-columns: repeat(2, 1fr); }
+      .roles-grid  { grid-template-columns: repeat(2, 1fr); }
+      .footer-grid { grid-template-columns: 1fr 1fr; gap: 2rem; }
     }
     @media (max-width: 768px) {
-      .ecosystem-stats { grid-template-columns: 1fr; }
-      .role-grid { grid-template-columns: 1fr; }
-      .protocol-preview { flex-direction: column; gap: 1rem; }
-      .protocol-step::after { display: none; }
+      .nav-links { display: none; }
+      .nav-links.open { display: flex; flex-direction: column; position: fixed; top: 68px; left: 0; right: 0; background: rgba(10,10,15,.97); padding: 2rem; gap: 1.5rem; border-bottom: 1px solid rgba(255,255,255,.08); }
+      .nav-hamburger { display: flex; }
+      .stat-strip { grid-template-columns: repeat(2, 1fr); }
+      .roles-grid { grid-template-columns: repeat(2, 1fr); }
+      .protocol-track { flex-direction: column; align-items: center; gap: 1.5rem; }
+      .protocol-track::before { display: none; }
+      .portal-card-wide { flex-direction: column; text-align: center; }
+      .footer-grid { grid-template-columns: 1fr; gap: 2rem; }
+      .footer-bottom { flex-direction: column; text-align: center; }
+    }
+    @media (max-width: 480px) {
+      .stat-strip { grid-template-columns: 1fr 1fr; }
+      .roles-grid  { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
-  <div class="bg-pattern"></div>
-  
-  <nav class="landing-nav">
-    <div class="landing-nav-content">
-      <a href="index.html" class="landing-nav-logo-trot">
-        <img src="assets/images/trot-logo.jpg" alt="TROT®">
-        <span class="logo-text">TGDP</span>
-      </a>
-      <div class="landing-nav-links">
-        <a href="#portals">Portals</a>
-        <a href="#roles">Roles</a>
-        <a href="faq.html">FAQ</a>
-        <a href="#protocol">Complaints</a>
-        <a href="registration.html" class="btn btn-gold">Register</a>
-      </div>
+
+  <!-- ── Navbar ─────────────────────────────────────────────────────────── -->
+  <nav class="nav" id="mainNav">
+    <a href="index.html" class="nav-logo">
+      <img src="assets/images/trot-logo.jpg" alt="TROT">
+      <span class="nav-logo-text">TGDP</span>
+    </a>
+    <div class="nav-links" id="navLinks">
+      <a href="#portals">Portals</a>
+      <a href="#roles">Roles</a>
+      <a href="faq.html">FAQ</a>
+      <a href="#protocol">Resolution</a>
+      <a href="registration.html" class="nav-cta">Get Started</a>
+    </div>
+    <div class="nav-hamburger" id="hamburger" onclick="toggleMenu()">
+      <span></span><span></span><span></span>
     </div>
   </nav>
-  
-  <section class="hero-section">
-    <div class="hero-content">
-      <div class="hero-badge">LBMA Benchmark · Zero Fee · 164 Nations</div>
-      <h1 class="hero-title">The Gold <em>Tokenization</em> Ecosystem</h1>
-      <p class="hero-desc">Transform your physical gold into digital assets. Trade freely across borders, earn through licensing, design jewelry, and resolve disputes — all in one unified ecosystem.</p>
-      <div class="cta-buttons">
-        <a href="registration.html" class="btn btn-gold btn-lg">Join Ecosystem</a>
-        <a href="#portals" class="btn btn-outline-gold btn-lg">Explore Portals</a>
+
+  <!-- ── Live ticker ────────────────────────────────────────────────────── -->
+  <div class="ticker">
+    <div class="ticker-track" id="tickerTrack">
+      <span class="ticker-item">TGDP/INR <strong>₹734.20</strong> <span class="up">▲ 0.4%</span></span>
+      <span class="ticker-item">Gold/g (LBMA) <strong>₹7,342</strong> <span class="up">▲ 0.2%</span></span>
+      <span class="ticker-item">FTR <strong>₹1,840</strong> <span class="dn">▼ 0.1%</span></span>
+      <span class="ticker-item">GIC <strong>$300/unit</strong> <span class="up">▲ 1.2%</span></span>
+      <span class="ticker-item">USD/INR <strong>₹83.42</strong></span>
+      <span class="ticker-item">Platform Fee <strong>0%</strong></span>
+      <span class="ticker-item">Nations <strong>164</strong></span>
+      <!-- duplicate for infinite loop -->
+      <span class="ticker-item">TGDP/INR <strong>₹734.20</strong> <span class="up">▲ 0.4%</span></span>
+      <span class="ticker-item">Gold/g (LBMA) <strong>₹7,342</strong> <span class="up">▲ 0.2%</span></span>
+      <span class="ticker-item">FTR <strong>₹1,840</strong> <span class="dn">▼ 0.1%</span></span>
+      <span class="ticker-item">GIC <strong>$300/unit</strong> <span class="up">▲ 1.2%</span></span>
+      <span class="ticker-item">USD/INR <strong>₹83.42</strong></span>
+      <span class="ticker-item">Platform Fee <strong>0%</strong></span>
+      <span class="ticker-item">Nations <strong>164</strong></span>
+    </div>
+  </div>
+
+  <!-- ── Hero ───────────────────────────────────────────────────────────── -->
+  <section class="hero">
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+    <div class="hero-inner">
+      <div class="hero-eyebrow"><span class="dot"></span> LBMA Benchmark · Zero Fee · 164 Nations</div>
+      <h1 class="hero-title">The Gold <em>Tokenization</em><br>Ecosystem</h1>
+      <p class="hero-subtitle">Transform your physical gold into digital assets. Trade freely across borders, earn through licensing, design jewelry, and resolve disputes — all in one unified platform.</p>
+      <div class="hero-cta">
+        <a href="registration.html" class="btn-hero-primary">Join Ecosystem →</a>
+        <a href="#portals" class="btn-hero-secondary">Explore Portals</a>
       </div>
-      <div class="ecosystem-stats">
-        <div class="eco-stat"><div class="eco-stat-value">₹734</div><div class="eco-stat-label">LBMA Rate/gram</div></div>
-        <div class="eco-stat"><div class="eco-stat-value">0%</div><div class="eco-stat-label">Platform Fee</div></div>
-        <div class="eco-stat"><div class="eco-stat-value">164</div><div class="eco-stat-label">Nations Covered</div></div>
-        <div class="eco-stat"><div class="eco-stat-value">24hr</div><div class="eco-stat-label">Settlement Time</div></div>
+      <div class="stat-strip">
+        <div class="stat-cell">
+          <div class="stat-value" data-count="734" data-prefix="₹">₹734</div>
+          <div class="stat-label">LBMA Rate / gram</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-value">0%</div>
+          <div class="stat-label">Platform Fee</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-value" data-count="164">164</div>
+          <div class="stat-label">Nations Covered</div>
+        </div>
+        <div class="stat-cell">
+          <div class="stat-value">24h</div>
+          <div class="stat-label">Settlement Time</div>
+        </div>
       </div>
     </div>
   </section>
-  
-  <section class="section" id="portals" style="background: var(--obsidian-light);">
-    <div class="section-inner">
-      <div class="section-tag">Ecosystem Portals</div>
-      <h2 class="section-title">Access Your <em>Portal</em></h2>
-      <div class="gold-rule"></div>
+
+  <!-- ── Portals ────────────────────────────────────────────────────────── -->
+  <section class="sec portals-bg" id="portals">
+    <div class="sec-inner">
+      <div class="sec-tag reveal">Ecosystem Portals</div>
+      <h2 class="sec-title reveal">Access Your <em>Portal</em></h2>
+      <div class="sec-divider reveal"></div>
+
       <div class="portal-grid">
-        <a href="portals/tgold/index.html" class="portal-card gold">
-          <div class="portal-icon">💰</div>
-          <div class="portal-name">T-Gold</div>
-          <p class="portal-desc">Tokenize your gold jewelry into TGDPs. Trade freely with zero platform fees, swap for Future Trade Rights.</p>
-          <div class="portal-features"><span class="portal-feature">Mint TGDPs</span><span class="portal-feature">Zero Fee Trading</span><span class="portal-feature">FTR Swaps</span></div>
+        <a href="portals/tgold/index.html" class="portal-card gold reveal reveal-delay-1">
+          <div class="portal-arrow">↗</div>
+          <div class="portal-card-icon">💰</div>
+          <div class="portal-card-name">T-Gold</div>
+          <p class="portal-card-desc">Tokenize your gold jewelry into TGDPs. Trade freely with zero platform fees across 164 nations and swap for Future Trade Rights.</p>
+          <div class="portal-chips">
+            <span class="portal-chip">Mint TGDPs</span>
+            <span class="portal-chip">Zero Fee Trading</span>
+            <span class="portal-chip">FTR Swaps</span>
+          </div>
         </a>
-        <a href="portals/gic/index.html" class="portal-card purple">
-          <div class="portal-icon">📜</div>
-          <div class="portal-name">GIC Licensing</div>
-          <p class="portal-desc">Become a TGDP Licensee. Register households and earn three streams of recurring GIC income at 25% share.</p>
-          <div class="portal-features"><span class="portal-feature">$300/Household</span><span class="portal-feature">25% Revenue Share</span><span class="portal-feature">Three Streams</span></div>
+
+        <a href="portals/gic/index.html" class="portal-card purple reveal reveal-delay-2">
+          <div class="portal-arrow">↗</div>
+          <div class="portal-card-icon">📜</div>
+          <div class="portal-card-name">GIC Licensing</div>
+          <p class="portal-card-desc">Become a TGDP Licensee. Register households and earn three streams of recurring GIC income with a 25% revenue share.</p>
+          <div class="portal-chips">
+            <span class="portal-chip">$300/Household</span>
+            <span class="portal-chip">25% Revenue Share</span>
+            <span class="portal-chip">Three Streams</span>
+          </div>
         </a>
-        <a href="portals/tjr/index.html" class="portal-card teal">
-          <div class="portal-icon">🔄</div>
-          <div class="portal-name">T-JR Jewelry Return</div>
-          <p class="portal-desc">Return old gold jewelry at fair LBMA-benchmarked value. Instant T-Gold credits or bank transfer.</p>
-          <div class="portal-features"><span class="portal-feature">Fair Valuation</span><span class="portal-feature">Instant Credits</span><span class="portal-feature">Home Pickup</span></div>
+
+        <a href="portals/tjr/index.html" class="portal-card teal reveal reveal-delay-1">
+          <div class="portal-arrow">↗</div>
+          <div class="portal-card-icon">🔄</div>
+          <div class="portal-card-name">T-JR Jewelry Return</div>
+          <p class="portal-card-desc">Return old gold jewelry at fair LBMA-benchmarked value. Receive instant T-Gold credits or direct bank transfer with home pickup.</p>
+          <div class="portal-chips">
+            <span class="portal-chip">Fair Valuation</span>
+            <span class="portal-chip">Instant Credits</span>
+            <span class="portal-chip">Home Pickup</span>
+          </div>
         </a>
-        <a href="portals/tjdb/index.html" class="portal-card rose">
-          <div class="portal-icon">🎨</div>
-          <div class="portal-name">T-JDB Design Bank</div>
-          <p class="portal-desc">Discover exclusive jewelry designs from India's artisans. Commission custom pieces, pay with T-Gold.</p>
-          <div class="portal-features"><span class="portal-feature">IPR Protected</span><span class="portal-feature">Pay with T-Gold</span><span class="portal-feature">Custom Orders</span></div>
+
+        <a href="portals/tjdb/index.html" class="portal-card rose reveal reveal-delay-2">
+          <div class="portal-arrow">↗</div>
+          <div class="portal-card-icon">🎨</div>
+          <div class="portal-card-name">T-JDB Design Bank</div>
+          <p class="portal-card-desc">Discover exclusive jewelry designs from India's artisans. Commission custom pieces, pay with T-Gold, and own IPR-protected originals.</p>
+          <div class="portal-chips">
+            <span class="portal-chip">IPR Protected</span>
+            <span class="portal-chip">Pay with T-Gold</span>
+            <span class="portal-chip">Custom Orders</span>
+          </div>
         </a>
       </div>
-      <a href="portals/ombudsman/index.html" class="portal-card slate" style="margin-top: 1.5rem;">
-        <div style="display: flex; align-items: center; gap: 2rem;">
-          <div class="portal-icon" style="margin-bottom: 0;">⚖️</div>
-          <div style="flex: 1;">
-            <div class="portal-name">Ombudsman Portal</div>
-            <p class="portal-desc" style="margin-bottom: 0;">Independent dispute resolution for all ecosystem participants. Fair, impartial, and binding arbitration.</p>
+
+      <a href="portals/ombudsman/index.html" class="portal-card-wide reveal">
+        <div class="portal-card-icon" style="width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;">⚖️</div>
+        <div style="flex:1;">
+          <div class="portal-card-name" style="font-family:var(--font-display);font-size:1.2rem;font-weight:600;margin-bottom:.4rem;">Ombudsman Portal</div>
+          <p class="portal-card-desc" style="margin-bottom:.75rem;">Independent dispute resolution for all ecosystem participants. Fair, impartial, and binding arbitration within 14 days.</p>
+          <div class="portal-chips">
+            <span class="portal-chip">File Complaints</span>
+            <span class="portal-chip">Track Cases</span>
+            <span class="portal-chip">Mediation</span>
           </div>
-          <div class="portal-features" style="flex-direction: column;"><span class="portal-feature">File Complaints</span><span class="portal-feature">Track Cases</span><span class="portal-feature">Mediation</span></div>
         </div>
+        <div style="color:#94a3b8;font-size:1.5rem;flex-shrink:0;">→</div>
       </a>
     </div>
   </section>
-  
-  <section class="section" id="roles">
-    <div class="section-inner">
-      <div class="section-tag">Participant Roles</div>
-      <h2 class="section-title">Choose Your <em>Role</em></h2>
-      <div class="gold-rule"></div>
-      <div class="role-grid">
-        <div class="role-card"><div class="role-icon">🏠</div><div class="role-name">Household</div><p class="role-desc">Earmark gold and mint TGDPs</p></div>
-        <div class="role-card"><div class="role-icon">📜</div><div class="role-name">Licensee</div><p class="role-desc">Register households, earn GIC</p></div>
-        <div class="role-card"><div class="role-icon">💎</div><div class="role-name">Jeweler</div><p class="role-desc">Accept T-Gold payments</p></div>
-        <div class="role-card"><div class="role-icon">🎨</div><div class="role-name">Designer</div><p class="role-desc">List IPR-protected designs</p></div>
-        <div class="role-card"><div class="role-icon">🔄</div><div class="role-name">Returnee</div><p class="role-desc">Return jewelry via T-JR</p></div>
-        <div class="role-card"><div class="role-icon">💼</div><div class="role-name">Consultant</div><p class="role-desc">Advisory & referral income</p></div>
-        <div class="role-card"><div class="role-icon">📢</div><div class="role-name">Advertiser</div><p class="role-desc">Promote to community</p></div>
-        <div class="role-card"><div class="role-icon">⚖️</div><div class="role-name">Ombudsman</div><p class="role-desc">Resolve disputes (exclusive)</p></div>
+
+  <!-- ── Roles ──────────────────────────────────────────────────────────── -->
+  <section class="sec" id="roles">
+    <div class="sec-inner">
+      <div class="sec-tag reveal">Participant Roles</div>
+      <h2 class="sec-title reveal">Choose Your <em>Role</em></h2>
+      <div class="sec-divider reveal"></div>
+      <div class="roles-grid">
+        <div class="role-card reveal reveal-delay-1"><div class="role-icon">🏠</div><div class="role-name">Household</div><p class="role-desc">Earmark gold and mint TGDPs from home</p></div>
+        <div class="role-card reveal reveal-delay-2"><div class="role-icon">📜</div><div class="role-name">Licensee</div><p class="role-desc">Register households and earn GIC income</p></div>
+        <div class="role-card reveal reveal-delay-3"><div class="role-icon">💎</div><div class="role-name">Jeweler</div><p class="role-desc">Accept T-Gold payments, grow your shop</p></div>
+        <div class="role-card reveal reveal-delay-1"><div class="role-icon">🎨</div><div class="role-name">Designer</div><p class="role-desc">List IPR-protected designs on the marketplace</p></div>
+        <div class="role-card reveal reveal-delay-2"><div class="role-icon">🔄</div><div class="role-name">Returnee</div><p class="role-desc">Return jewelry via T-JR for fair value</p></div>
+        <div class="role-card reveal reveal-delay-3"><div class="role-icon">💼</div><div class="role-name">Consultant</div><p class="role-desc">Advisory services and referral income</p></div>
+        <div class="role-card reveal reveal-delay-1"><div class="role-icon">📢</div><div class="role-name">Advertiser</div><p class="role-desc">Promote products to the TGDP community</p></div>
+        <div class="role-card reveal reveal-delay-2"><div class="role-icon">⚖️</div><div class="role-name">Ombudsman</div><p class="role-desc">Resolve disputes — exclusive role</p></div>
       </div>
-      <div style="text-align: center; margin-top: 2rem;"><a href="registration.html" class="btn btn-gold btn-lg">Register Now →</a></div>
-    </div>
-  </section>
-  
-  <section class="section" id="protocol" style="background: var(--obsidian-light);">
-    <div class="section-inner">
-      <div class="section-tag">Dispute Resolution</div>
-      <h2 class="section-title">Complaint <em>Protocol</em></h2>
-      <div class="gold-rule"></div>
-      <p style="text-align: center; color: var(--text-secondary); max-width: 700px; margin: 0 auto;">All ecosystem participants can file complaints through their portals. The Ombudsman ensures fair resolution within 14 days.</p>
-      <div class="protocol-preview">
-        <div class="protocol-step"><div class="protocol-num">1</div><div class="protocol-title">Filing</div><p class="protocol-time">Day 0</p></div>
-        <div class="protocol-step"><div class="protocol-num">2</div><div class="protocol-title">Acknowledgment</div><p class="protocol-time">24-48 hours</p></div>
-        <div class="protocol-step"><div class="protocol-num">3</div><div class="protocol-title">Investigation</div><p class="protocol-time">3-7 days</p></div>
-        <div class="protocol-step"><div class="protocol-num">4</div><div class="protocol-title">Mediation</div><p class="protocol-time">7-10 days</p></div>
-        <div class="protocol-step"><div class="protocol-num">5</div><div class="protocol-title">Resolution</div><p class="protocol-time">10-14 days</p></div>
+      <div class="roles-cta reveal">
+        <a href="registration.html" class="btn-hero-primary">Register Now →</a>
       </div>
-      <div style="text-align: center; margin-top: 1rem;"><a href="portals/ombudsman/index.html" class="btn btn-outline btn-lg" style="border-color: #94a3b8; color: #94a3b8;">Learn More About Complaints →</a></div>
     </div>
   </section>
-  
-  <section class="section" style="background: linear-gradient(135deg, rgba(212, 175, 55, 0.1), rgba(212, 175, 55, 0.02));">
-    <div class="section-inner" style="text-align: center;">
-      <h2 class="section-title">Ready to <em>Join</em>?</h2>
-      <p style="color: var(--text-secondary); max-width: 600px; margin: 1.5rem auto 2rem;">Create your account, complete KYC, and start participating in the TGDP ecosystem today.</p>
-      <a href="registration.html" class="btn btn-gold btn-lg">Create Account</a>
+
+  <!-- ── Protocol ───────────────────────────────────────────────────────── -->
+  <section class="sec timeline-bg" id="protocol">
+    <div class="sec-inner sec-center">
+      <div class="sec-tag reveal">Dispute Resolution</div>
+      <h2 class="sec-title reveal">Complaint <em>Protocol</em></h2>
+      <div class="sec-divider reveal"></div>
+      <p style="color:var(--text-secondary);max-width:640px;margin:0 auto 1rem;line-height:1.75;" class="reveal">
+        All ecosystem participants can file complaints through their portals. The Ombudsman ensures fair resolution within 14 days.
+      </p>
+      <div class="protocol-track reveal">
+        <div class="proto-step"><div class="proto-num">1</div><div class="proto-title">Filing</div><div class="proto-time">Day 0</div></div>
+        <div class="proto-step"><div class="proto-num">2</div><div class="proto-title">Acknowledgment</div><div class="proto-time">24–48 hrs</div></div>
+        <div class="proto-step"><div class="proto-num">3</div><div class="proto-title">Investigation</div><div class="proto-time">3–7 days</div></div>
+        <div class="proto-step"><div class="proto-num">4</div><div class="proto-title">Mediation</div><div class="proto-time">7–10 days</div></div>
+        <div class="proto-step"><div class="proto-num">5</div><div class="proto-title">Resolution</div><div class="proto-time">10–14 days</div></div>
+      </div>
+      <div style="margin-top:2.5rem;" class="reveal">
+        <a href="portals/ombudsman/index.html" style="display:inline-flex;align-items:center;gap:.5rem;padding:.75rem 1.75rem;border:1px solid rgba(148,163,184,.3);border-radius:50px;color:#94a3b8;font-size:.9rem;text-decoration:none;transition:all .25s;" onmouseover="this.style.borderColor='rgba(148,163,184,.7)';this.style.color='#fff'" onmouseout="this.style.borderColor='rgba(148,163,184,.3)';this.style.color='#94a3b8'">
+          Learn About Complaints →
+        </a>
+      </div>
     </div>
   </section>
-  
+
+  <!-- ── CTA Banner ─────────────────────────────────────────────────────── -->
+  <section class="sec cta-banner">
+    <div class="sec-inner">
+      <div class="cta-inner reveal">
+        <h2 class="cta-title">Ready to <em>Join</em>?</h2>
+        <p class="cta-sub">Create your account, complete KYC, and start participating in the TGDP ecosystem today. It only takes a few minutes.</p>
+        <div class="cta-btns">
+          <a href="registration.html" class="btn-hero-primary">Create Account</a>
+          <a href="docs/whitepaper/index.html" class="btn-hero-secondary">Read Whitepaper</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Footer ─────────────────────────────────────────────────────────── -->
   <footer class="footer">
     <div class="footer-inner">
-      <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 2rem; padding-bottom: 2rem; border-bottom: 1px solid var(--obsidian-border);">
-        <div><h4 style="color: var(--gold); margin-bottom: 1rem;">Portals</h4><a href="portals/tgold/index.html" style="display: block; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.5rem;">T-Gold</a><a href="portals/gic/index.html" style="display: block; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.5rem;">GIC Licensing</a><a href="portals/tjr/index.html" style="display: block; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.5rem;">T-JR</a><a href="portals/tjdb/index.html" style="display: block; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.5rem;">T-JDB</a><a href="portals/ombudsman/index.html" style="display: block; color: var(--text-muted); font-size: 0.9rem;">Ombudsman</a></div>
-        <div><h4 style="color: var(--gold); margin-bottom: 1rem;">Resources</h4><a href="docs/whitepaper/index.html" style="display: block; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.5rem;">Whitepaper</a><a href="docs/whitepaper/taxonomy.html" style="display: block; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.5rem;">Asset Taxonomy</a><a href="docs/whitepaper/roadmap.html" style="display: block; color: var(--text-muted); font-size: 0.9rem;">Roadmap</a></div>
-        <div><h4 style="color: var(--gold); margin-bottom: 1rem;">Legal</h4><a href="docs/agreements/terms.html" style="display: block; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.5rem;">Terms of Service</a><a href="docs/agreements/privacy.html" style="display: block; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.5rem;">Privacy Policy</a><a href="docs/agreements/disclaimer.html" style="display: block; color: var(--text-muted); font-size: 0.9rem;">Disclaimer</a></div>
-        <div><h4 style="color: var(--gold); margin-bottom: 1rem;">Contact</h4><span style="display: block; color: var(--text-muted); font-size: 0.9rem; margin-bottom: 0.5rem;">support@trot-gold.com</span><span style="display: block; color: var(--text-muted); font-size: 0.9rem;">Mumbai, India</span></div>
+      <div class="footer-grid">
+        <div class="footer-brand">
+          <a href="index.html" class="nav-logo" style="display:inline-flex;margin-bottom:1rem;">
+            <img src="assets/images/trot-logo.jpg" alt="TROT" style="width:32px;height:32px;border-radius:8px;">
+            <span class="nav-logo-text" style="margin-left:.6rem;">TGDP</span>
+          </a>
+          <p>Transforming physical gold into digital assets — securely, transparently, and at zero platform cost.</p>
+        </div>
+        <div class="footer-col">
+          <h5>Portals</h5>
+          <a href="portals/tgold/index.html">T-Gold</a>
+          <a href="portals/gic/index.html">GIC Licensing</a>
+          <a href="portals/tjr/index.html">T-JR</a>
+          <a href="portals/tjdb/index.html">T-JDB</a>
+          <a href="portals/ombudsman/index.html">Ombudsman</a>
+        </div>
+        <div class="footer-col">
+          <h5>Resources</h5>
+          <a href="docs/whitepaper/index.html">Whitepaper</a>
+          <a href="docs/whitepaper/taxonomy.html">Asset Taxonomy</a>
+          <a href="docs/whitepaper/roadmap.html">Roadmap</a>
+          <a href="faq.html">FAQ</a>
+        </div>
+        <div class="footer-col">
+          <h5>Legal</h5>
+          <a href="docs/agreements/terms.html">Terms of Service</a>
+          <a href="docs/agreements/privacy.html">Privacy Policy</a>
+          <a href="docs/agreements/disclaimer.html">Disclaimer</a>
+          <a href="registration.html" style="color:var(--gold);margin-top:.5rem;font-weight:500;">Register →</a>
+        </div>
       </div>
-      <div class="footer-bottom">© 2026 TGDP Ecosystem · www.trot-gold.com</div>
+      <div class="footer-bottom">
+        <span>© 2026 TGDP Ecosystem · www.trot-gold.com</span>
+        <span style="display:flex;gap:1.5rem;">
+          <a href="docs/agreements/terms.html" style="color:var(--text-muted);text-decoration:none;">Terms</a>
+          <a href="docs/agreements/privacy.html" style="color:var(--text-muted);text-decoration:none;">Privacy</a>
+        </span>
+      </div>
     </div>
   </footer>
-  
-  <script src="js/shared.txt"></script>
+
+  <script src="js/shared.js"></script>
+  <script>
+    // Navbar scroll effect
+    const nav = document.getElementById('mainNav');
+    window.addEventListener('scroll', () => nav.classList.toggle('scrolled', window.scrollY > 40));
+
+    // Mobile menu
+    function toggleMenu() {
+      document.getElementById('navLinks').classList.toggle('open');
+    }
+    // Close menu on link click
+    document.querySelectorAll('#navLinks a').forEach(a => a.addEventListener('click', () => document.getElementById('navLinks').classList.remove('open')));
+
+    // Reveal on scroll
+    const revealObserver = new IntersectionObserver((entries) => {
+      entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); revealObserver.unobserve(e.target); } });
+    }, { threshold: 0.12 });
+    document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+    // Animated counters
+    function animateCount(el, target, prefix = '') {
+      let start = 0; const duration = 1800;
+      const step = timestamp => {
+        if (!start) start = timestamp;
+        const progress = Math.min((timestamp - start) / duration, 1);
+        const val = Math.floor(progress * target);
+        el.textContent = prefix + val.toLocaleString('en-IN');
+        if (progress < 1) requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    }
+    const counterObserver = new IntersectionObserver(entries => {
+      entries.forEach(e => {
+        if (e.isIntersecting) {
+          const el = e.target;
+          animateCount(el, parseInt(el.dataset.count), el.dataset.prefix || '');
+          counterObserver.unobserve(el);
+        }
+      });
+    }, { threshold: 0.5 });
+    document.querySelectorAll('[data-count]').forEach(el => counterObserver.observe(el));
+  </script>
 </body>
 </html>

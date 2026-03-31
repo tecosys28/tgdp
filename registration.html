@@ -5,1038 +5,431 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="Register for TGDP Ecosystem - Create your account and select your roles">
   <title>Register · TGDP Ecosystem</title>
-  
-  <!-- Fonts -->
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-  
-  <!-- Shared Styles -->
   <link rel="stylesheet" href="css/shared.css">
-  
+
   <style>
-    .register-page {
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ── Layout ───────────────────────────────────────────────────────────── */
+    .reg-wrap {
+      display: grid;
+      grid-template-columns: 420px 1fr;
       min-height: 100vh;
-      display: flex;
-      flex-direction: column;
     }
-    
-    .register-header {
-      padding: 1.5rem 2rem;
-      border-bottom: 1px solid var(--obsidian-border);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+
+    /* ── Left panel ───────────────────────────────────────────────────────── */
+    .reg-left {
+      position: sticky; top: 0; height: 100vh;
+      background: linear-gradient(160deg, #0e0e16 0%, #12121f 60%, #0a0a0f 100%);
+      border-right: 1px solid rgba(212,175,55,.1);
+      display: flex; flex-direction: column;
+      padding: 2.5rem 2rem;
+      overflow: hidden;
     }
-    
-    .register-logo {
+    .reg-left-orb {
+      position: absolute; border-radius: 50%; filter: blur(70px); pointer-events: none;
+    }
+    .reg-left-orb-1 { width: 300px; height: 300px; background: rgba(212,175,55,.12); top: -80px; left: -80px; }
+    .reg-left-orb-2 { width: 200px; height: 200px; background: rgba(167,139,250,.08); bottom: 60px; right: -60px; }
+
+    .reg-logo { display: flex; align-items: center; gap: .65rem; text-decoration: none; position: relative; z-index:1; }
+    .reg-logo img { width: 36px; height: 36px; border-radius: 10px; object-fit: cover; }
+    .reg-logo-text { font-family: var(--font-display); font-size: 1.35rem; font-weight: 700; color: var(--gold); }
+
+    .reg-left-body { flex: 1; display: flex; flex-direction: column; justify-content: center; position: relative; z-index:1; }
+    .reg-left-tag {
+      display: inline-flex; align-items: center; gap: .5rem;
+      padding: .3rem .85rem; border-radius: 50px;
+      background: rgba(212,175,55,.1); border: 1px solid rgba(212,175,55,.2);
+      font-size: .72rem; font-weight: 600; color: var(--gold);
+      letter-spacing: .08em; text-transform: uppercase;
+      margin-bottom: 1.5rem; width: fit-content;
+    }
+    .reg-left-tag .dot { width: 5px; height: 5px; background: var(--gold); border-radius: 50%; animation: blink 2s infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+    .reg-left-title {
       font-family: var(--font-display);
-      font-size: 1.5rem;
-      font-weight: 700;
-      color: var(--gold);
+      font-size: 2.1rem; font-weight: 700; line-height: 1.2;
+      color: #fff; margin-bottom: 1rem;
     }
-    
-    .register-main {
-      flex: 1;
-      display: flex;
-      justify-content: center;
-      padding: 2rem;
+    .reg-left-title em { color: var(--gold); font-style: italic; }
+    .reg-left-sub { color: var(--text-secondary); font-size: .9rem; line-height: 1.7; margin-bottom: 2rem; }
+
+    .reg-features { display: flex; flex-direction: column; gap: .85rem; }
+    .reg-feature {
+      display: flex; align-items: flex-start; gap: .85rem;
+      background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.06);
+      border-radius: 12px; padding: .85rem 1rem;
     }
-    
-    .register-container {
-      width: 100%;
-      max-width: 900px;
+    .reg-feature-icon {
+      width: 36px; height: 36px; border-radius: 10px;
+      background: rgba(212,175,55,.12); display: flex; align-items: center;
+      justify-content: center; font-size: 1rem; flex-shrink: 0;
     }
-    
-    .register-title {
-      text-align: center;
-      margin-bottom: 0.5rem;
+    .reg-feature-name { font-weight: 600; font-size: .875rem; color: #fff; margin-bottom: .15rem; }
+    .reg-feature-desc { font-size: .78rem; color: var(--text-muted); line-height: 1.5; }
+
+    .reg-left-footer { position: relative; z-index:1; margin-top: auto; padding-top: 2rem; border-top: 1px solid rgba(255,255,255,.06); }
+    .reg-left-footer p { font-size: .78rem; color: var(--text-muted); }
+    .reg-left-footer a { color: var(--gold); text-decoration: none; }
+
+    /* ── Right panel ──────────────────────────────────────────────────────── */
+    .reg-right {
+      background: #0a0a0f;
+      display: flex; flex-direction: column;
     }
-    
-    .register-subtitle {
-      text-align: center;
-      color: var(--text-secondary);
-      font-size: 1rem;
-      margin-bottom: 2rem;
+
+    .reg-topbar {
+      padding: 1.25rem 2.5rem;
+      display: flex; align-items: center; justify-content: space-between;
+      border-bottom: 1px solid rgba(255,255,255,.05);
+      background: rgba(10,10,15,.8); backdrop-filter: blur(10px);
+      position: sticky; top: 0; z-index: 10;
     }
-    
-    /* Role Selection */
+    .reg-topbar-step { font-size: .82rem; color: var(--text-muted); font-family: var(--font-mono); }
+    .reg-topbar-signin { font-size: .875rem; color: var(--text-muted); }
+    .reg-topbar-signin a { color: var(--gold); text-decoration: none; font-weight: 500; }
+
+    .reg-main { flex: 1; padding: 2.5rem; max-width: 700px; width: 100%; margin: 0 auto; }
+
+    /* ── Progress bar ─────────────────────────────────────────────────────── */
+    .progress-wrap { margin-bottom: 2.5rem; }
+    .progress-steps { display: flex; align-items: center; margin-bottom: 1rem; }
+    .progress-step {
+      display: flex; align-items: center; gap: .5rem;
+      font-size: .8rem; font-weight: 500; color: var(--text-muted);
+      cursor: pointer; transition: color .2s; flex-shrink: 0;
+    }
+    .progress-step.active { color: var(--gold); }
+    .progress-step.done   { color: var(--success); cursor: pointer; }
+    .progress-num {
+      width: 28px; height: 28px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: .75rem; font-weight: 700;
+      background: rgba(255,255,255,.06); border: 1px solid rgba(255,255,255,.1);
+      color: var(--text-muted); transition: all .3s;
+    }
+    .progress-step.active .progress-num { background: var(--gold); border-color: var(--gold); color: #000; box-shadow: 0 0 16px rgba(212,175,55,.4); }
+    .progress-step.done   .progress-num { background: var(--success); border-color: var(--success); color: #000; }
+    .progress-line { flex: 1; height: 1px; background: rgba(255,255,255,.08); margin: 0 .75rem; transition: background .3s; }
+    .progress-line.done { background: var(--success); }
+    .progress-bar-track { height: 3px; background: rgba(255,255,255,.06); border-radius: 2px; overflow: hidden; }
+    .progress-bar-fill  { height: 100%; background: linear-gradient(90deg, var(--gold-dark), var(--gold)); border-radius: 2px; transition: width .5s ease; }
+
+    /* ── Section headings ─────────────────────────────────────────────────── */
+    .step-title { font-family: var(--font-display); font-size: 1.6rem; font-weight: 700; color: #fff; margin-bottom: .35rem; }
+    .step-title em { color: var(--gold); font-style: italic; }
+    .step-sub   { font-size: .875rem; color: var(--text-muted); margin-bottom: 2rem; line-height: 1.6; }
+
+    /* ── Google button ────────────────────────────────────────────────────── */
+    .google-btn {
+      width: 100%; display: flex; align-items: center; justify-content: center; gap: .65rem;
+      padding: .8rem 1.25rem;
+      background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.12);
+      border-radius: 12px; color: #fff; font-size: .95rem; font-family: inherit;
+      font-weight: 500; cursor: pointer; transition: all .25s; margin-bottom: 1.5rem;
+    }
+    .google-btn:hover { background: rgba(255,255,255,.09); border-color: rgba(255,255,255,.22); }
+    .or-divider {
+      display: flex; align-items: center; gap: 1rem;
+      color: var(--text-muted); font-size: .8rem; margin-bottom: 1.75rem;
+    }
+    .or-divider::before, .or-divider::after { content: ''; flex: 1; height: 1px; background: rgba(255,255,255,.08); }
+
+    /* ── Role cards ───────────────────────────────────────────────────────── */
     .role-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 1rem;
-      margin-bottom: 1rem;
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: .85rem; margin-bottom: 1rem;
     }
-    
     .role-card {
-      background: var(--obsidian);
-      border: 2px solid var(--obsidian-border);
-      border-radius: var(--radius-lg);
-      padding: 1.25rem;
-      cursor: pointer;
-      transition: all var(--transition-base);
-      position: relative;
+      background: rgba(255,255,255,.03); border: 1.5px solid rgba(255,255,255,.08);
+      border-radius: 14px; padding: 1.1rem; cursor: pointer;
+      transition: all .25s; position: relative; display: block;
     }
-    
-    .role-card:hover:not(.disabled) {
-      border-color: var(--gold);
-    }
-    
-    .role-card.selected {
-      border-color: var(--gold);
-      background: var(--gold-muted);
-    }
-    
-    .role-card.disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-    }
-    
-    .role-card input {
-      position: absolute;
-      opacity: 0;
-    }
-    
-    .role-icon {
-      font-size: 1.75rem;
-      margin-bottom: 0.75rem;
-    }
-    
-    .role-name {
-      font-weight: 600;
-      margin-bottom: 0.35rem;
-    }
-    
-    .role-desc {
-      font-size: 0.8rem;
-      color: var(--text-muted);
-      line-height: 1.5;
-    }
-    
+    .role-card:hover:not(.disabled) { border-color: rgba(212,175,55,.35); background: rgba(212,175,55,.04); }
+    .role-card.selected { border-color: var(--gold); background: rgba(212,175,55,.08); }
+    .role-card.disabled { opacity: .35; cursor: not-allowed; pointer-events: none; }
+    .role-card input { position: absolute; opacity: 0; pointer-events: none; }
     .role-check {
-      position: absolute;
-      top: 0.75rem;
-      right: 0.75rem;
-      width: 22px;
-      height: 22px;
-      background: var(--obsidian-border);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 0.8rem;
-      color: transparent;
+      position: absolute; top: .75rem; right: .75rem;
+      width: 20px; height: 20px; border-radius: 50%;
+      background: rgba(255,255,255,.08); border: 1.5px solid rgba(255,255,255,.15);
+      display: flex; align-items: center; justify-content: center;
+      font-size: .65rem; color: transparent; transition: all .25s;
     }
-    
-    .role-card.selected .role-check {
-      background: var(--gold);
-      color: var(--obsidian);
+    .role-card.selected .role-check { background: var(--gold); border-color: var(--gold); color: #000; }
+    .role-icon { font-size: 1.6rem; margin-bottom: .6rem; }
+    .role-name { font-weight: 600; font-size: .9rem; color: #fff; margin-bottom: .25rem; }
+    .role-desc { font-size: .75rem; color: var(--text-muted); line-height: 1.5; }
+
+    .role-warning {
+      display: none; align-items: center; gap: .6rem;
+      background: rgba(251,191,36,.08); border: 1px solid rgba(251,191,36,.25);
+      border-radius: 10px; padding: .75rem 1rem;
+      font-size: .82rem; color: #fbbf24; margin-top: .5rem;
     }
-    
-    .exclusive-warning {
-      background: var(--warning-muted);
-      border: 1px solid rgba(251, 191, 36, 0.3);
-      border-radius: var(--radius-md);
-      padding: 0.75rem 1rem;
-      font-size: 0.85rem;
-      color: var(--warning);
-      margin-top: 1rem;
-      display: none;
+    .role-warning.visible { display: flex; }
+
+    /* ── Form inputs ──────────────────────────────────────────────────────── */
+    .form-section { margin-bottom: 1.5rem; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+    .form-row.single { grid-template-columns: 1fr; }
+    .form-group { display: flex; flex-direction: column; gap: .4rem; }
+    .form-label {
+      font-size: .78rem; font-weight: 600; color: var(--text-secondary);
+      letter-spacing: .03em; text-transform: uppercase;
     }
-    
-    .exclusive-warning.visible {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
+    .form-label .req { color: var(--gold); margin-left: 2px; }
+    .form-input, .form-select, .form-textarea {
+      background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.1);
+      border-radius: 10px; padding: .7rem 1rem; color: #fff;
+      font-size: .925rem; font-family: inherit;
+      transition: border-color .2s, background .2s;
+      width: 100%;
     }
-    
-    /* KYC Documents */
-    .kyc-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 1rem;
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+      outline: none; border-color: rgba(212,175,55,.5);
+      background: rgba(212,175,55,.04);
     }
-    
+    .form-input::placeholder { color: var(--text-muted); }
+    .form-select { appearance: none; cursor: pointer; }
+    .form-select option { background: #1a1a25; }
+    .form-textarea { resize: vertical; min-height: 90px; }
+    .form-hint { font-size: .72rem; color: var(--text-muted); margin-top: .2rem; }
+
+    /* ── KYC upload ───────────────────────────────────────────────────────── */
+    .kyc-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
     .kyc-upload {
-      background: var(--obsidian);
-      border: 2px dashed var(--obsidian-border);
-      border-radius: var(--radius-lg);
-      padding: 1.5rem;
-      text-align: center;
-      transition: all var(--transition-base);
+      background: rgba(255,255,255,.03); border: 1.5px dashed rgba(255,255,255,.12);
+      border-radius: 14px; padding: 1.5rem 1rem; text-align: center;
+      cursor: pointer; transition: all .25s; display: block; position: relative;
+    }
+    .kyc-upload:hover { border-color: rgba(212,175,55,.4); background: rgba(212,175,55,.04); }
+    .kyc-upload.uploaded { border-style: solid; border-color: var(--success); background: rgba(74,222,128,.05); }
+    .kyc-upload input { display: none; }
+    .kyc-icon { font-size: 1.75rem; margin-bottom: .6rem; }
+    .kyc-label { font-weight: 600; font-size: .875rem; color: #fff; margin-bottom: .2rem; }
+    .kyc-hint  { font-size: .72rem; color: var(--text-muted); }
+    .kyc-filename { font-size: .72rem; color: var(--success); margin-top: .5rem; display: none; }
+    .kyc-upload.uploaded .kyc-filename { display: block; }
+
+    .kyc-info {
+      display: flex; align-items: flex-start; gap: .75rem;
+      background: rgba(96,165,250,.08); border: 1px solid rgba(96,165,250,.2);
+      border-radius: 12px; padding: 1rem 1.1rem;
+      font-size: .82rem; color: #93c5fd; line-height: 1.6;
+    }
+
+    /* ── Review ───────────────────────────────────────────────────────────── */
+    .review-card {
+      background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.08);
+      border-radius: 14px; padding: 1.25rem; margin-bottom: 1rem;
+    }
+    .review-card-title {
+      font-size: .72rem; font-weight: 700; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: .1em;
+      margin-bottom: 1rem; padding-bottom: .6rem;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+    }
+    .review-row { display: flex; justify-content: space-between; align-items: center; padding: .45rem 0; }
+    .review-key   { font-size: .82rem; color: var(--text-muted); }
+    .review-val   { font-size: .875rem; font-weight: 500; color: #fff; }
+    .review-success { color: var(--success) !important; }
+
+    /* ── Terms ────────────────────────────────────────────────────────────── */
+    .terms-scroll {
+      background: rgba(255,255,255,.03); border: 1px solid rgba(255,255,255,.08);
+      border-radius: 12px; padding: 1.1rem; max-height: 180px; overflow-y: auto;
+      font-size: .82rem; color: var(--text-secondary); line-height: 1.8;
+      margin-bottom: 1.25rem;
+    }
+    .terms-scroll a { color: var(--gold); }
+    .check-row {
+      display: flex; align-items: flex-start; gap: .75rem;
+      padding: .75rem 0; border-top: 1px solid rgba(255,255,255,.05);
+      font-size: .855rem; color: var(--text-secondary); line-height: 1.5;
       cursor: pointer;
     }
-    
-    .kyc-upload:hover {
-      border-color: var(--gold);
-      background: var(--gold-muted);
+    .check-row input[type="checkbox"] {
+      width: 18px; height: 18px; flex-shrink: 0; cursor: pointer;
+      accent-color: var(--gold); margin-top: 2px;
     }
-    
-    .kyc-upload.uploaded {
-      border-color: var(--success);
-      border-style: solid;
+
+    /* ── Wizard nav ───────────────────────────────────────────────────────── */
+    .wiz-nav {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-top: 2.5rem; padding-top: 1.5rem;
+      border-top: 1px solid rgba(255,255,255,.07);
     }
-    
-    .kyc-upload input {
-      display: none;
+    .btn-prev {
+      display: flex; align-items: center; gap: .5rem;
+      padding: .7rem 1.4rem; border-radius: 50px;
+      background: transparent; border: 1px solid rgba(255,255,255,.12);
+      color: var(--text-secondary); font-size: .9rem; font-family: inherit;
+      cursor: pointer; transition: all .2s;
     }
-    
-    .kyc-icon {
-      font-size: 2rem;
-      margin-bottom: 0.75rem;
+    .btn-prev:hover { border-color: rgba(255,255,255,.3); color: #fff; }
+    .btn-next, .btn-submit {
+      display: flex; align-items: center; gap: .5rem;
+      padding: .75rem 1.75rem; border-radius: 50px;
+      background: var(--gold); border: none; color: #000;
+      font-size: .95rem; font-weight: 700; font-family: inherit;
+      cursor: pointer; transition: all .25s;
+      box-shadow: 0 0 24px rgba(212,175,55,.25);
     }
-    
-    .kyc-label {
-      font-weight: 600;
-      margin-bottom: 0.25rem;
+    .btn-next:hover, .btn-submit:hover { background: var(--gold-light); transform: translateY(-1px); box-shadow: 0 0 36px rgba(212,175,55,.4); }
+
+    /* ── Login Modal ──────────────────────────────────────────────────────── */
+    .modal-backdrop {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.96);
+      z-index: 9999; align-items: center; justify-content: center; padding: 1rem;
     }
-    
-    .kyc-hint {
-      font-size: 0.75rem;
-      color: var(--text-muted);
+    .modal-backdrop.open { display: flex; }
+    .modal-box {
+      background: #13131e; border: 1px solid rgba(255,255,255,.1);
+      border-radius: 20px; padding: 2rem; width: 100%; max-width: 420px;
+      animation: modal-in .25s ease;
     }
-    
-    .kyc-filename {
-      font-size: 0.8rem;
-      color: var(--success);
-      margin-top: 0.5rem;
-      display: none;
+    @keyframes modal-in { from{opacity:0;transform:scale(.95)} to{opacity:1;transform:scale(1)} }
+    .modal-title { font-family: var(--font-display); font-size: 1.6rem; color: var(--gold); margin-bottom: .25rem; }
+    .modal-sub   { font-size: .875rem; color: var(--text-muted); margin-bottom: 1.5rem; }
+    .modal-input-label { display: block; font-size: .75rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: .04em; margin-bottom: .4rem; }
+    .modal-input {
+      width: 100%; padding: .7rem 1rem;
+      background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.1);
+      border-radius: 10px; color: #fff; font-size: .95rem; font-family: inherit;
+      margin-bottom: 1rem; transition: border-color .2s;
     }
-    
-    .kyc-upload.uploaded .kyc-filename {
-      display: block;
+    .modal-input:focus { outline: none; border-color: rgba(212,175,55,.5); }
+    .btn-modal-primary {
+      width: 100%; padding: .8rem; background: var(--gold); color: #000;
+      border: none; border-radius: 10px; font-size: 1rem; font-weight: 700;
+      font-family: inherit; cursor: pointer; margin-bottom: .75rem;
+      transition: background .2s;
     }
-    
-    /* Review Section */
-    .review-section {
-      background: var(--obsidian);
-      border: 1px solid var(--obsidian-border);
-      border-radius: var(--radius-lg);
-      padding: 1.5rem;
-      margin-bottom: 1.5rem;
+    .btn-modal-primary:hover { background: var(--gold-light); }
+    .btn-modal-cancel {
+      width: 100%; padding: .7rem; background: transparent; color: var(--text-muted);
+      border: 1px solid rgba(255,255,255,.1); border-radius: 10px; font-size: .9rem;
+      font-family: inherit; cursor: pointer; transition: border-color .2s;
     }
-    
-    .review-title {
-      font-size: 0.75rem;
-      font-weight: 600;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.1em;
-      margin-bottom: 1rem;
-      padding-bottom: 0.5rem;
-      border-bottom: 1px solid var(--obsidian-border);
+    .btn-modal-cancel:hover { border-color: rgba(255,255,255,.25); color: #fff; }
+
+    /* ── Responsive ───────────────────────────────────────────────────────── */
+    @media (max-width: 900px) {
+      .reg-wrap { grid-template-columns: 1fr; }
+      .reg-left { display: none; }
     }
-    
-    .review-row {
-      display: flex;
-      justify-content: space-between;
-      padding: 0.5rem 0;
-    }
-    
-    .review-label {
-      color: var(--text-muted);
-    }
-    
-    .review-value {
-      font-weight: 500;
-    }
-    
-    /* Terms Agreement */
-    .terms-box {
-      background: var(--obsidian);
-      border: 1px solid var(--obsidian-border);
-      border-radius: var(--radius-lg);
-      padding: 1.5rem;
-      margin-bottom: 1.5rem;
-      max-height: 200px;
-      overflow-y: auto;
-    }
-    
-    .terms-text {
-      font-size: 0.85rem;
-      color: var(--text-secondary);
-      line-height: 1.8;
-    }
-    
-    /* Wizard Navigation */
-    .wizard-nav {
-      display: flex;
-      justify-content: space-between;
-      margin-top: 2rem;
-      padding-top: 1.5rem;
-      border-top: 1px solid var(--obsidian-border);
-    }
-    
-    @media (max-width: 768px) {
-      .role-grid, .kyc-grid {
-        grid-template-columns: 1fr;
-      }
+    @media (max-width: 600px) {
+      .role-grid { grid-template-columns: 1fr; }
+      .kyc-grid  { grid-template-columns: 1fr; }
+      .form-row  { grid-template-columns: 1fr; }
+      .reg-main  { padding: 1.5rem 1rem; }
     }
   </style>
 </head>
 <body>
-  <div class="bg-pattern"></div>
-  
-  <div class="register-page">
-    <!-- Header -->
-    <header class="register-header">
-      <a href="index.html" class="landing-nav-logo-trot" style="text-decoration: none;">
-        <img src="assets/images/trot-logo.jpg" alt="TROT®">
-        <span class="logo-text">TGDP</span>
-      </a>
-      <span style="color: var(--text-muted); font-size: 0.9rem;">Already registered? <a href="#" onclick="openLoginModal(); return false;" style="color: var(--gold);">Sign In</a></span>
-    </header>
-    
-    <!-- Main Content -->
-    <main class="register-main">
-      <div class="register-container">
-        <h1 class="register-title">Create Your <em>Account</em></h1>
-        <p class="register-subtitle">Join the TGDP ecosystem and unlock the value of your gold</p>
 
-        <!-- Google Sign-In -->
-        <div style="margin-bottom: 1.5rem; text-align: center;">
-          <button type="button" id="googleSignInBtn" onclick="handleGoogleSignIn()" style="display: inline-flex; align-items: center; gap: 0.6rem; padding: 0.65rem 1.5rem; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--text-primary); font-size: 0.95rem; font-family: inherit; cursor: pointer; transition: background 0.2s;">
-            <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
-              <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
-              <path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/>
-              <path d="M3.964 10.707A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332z" fill="#FBBC05"/>
-              <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.961L3.964 6.293C4.672 4.166 6.656 3.58 9 3.58z" fill="#EA4335"/>
-            </svg>
-            Continue with Google
-          </button>
-          <div style="display: flex; align-items: center; gap: 0.75rem; margin-top: 1.25rem; color: var(--text-muted); font-size: 0.85rem;">
-            <div style="flex:1; height:1px; background: var(--border);"></div>
-            or register with email below
-            <div style="flex:1; height:1px; background: var(--border);"></div>
+<div class="reg-wrap">
+
+  <!-- ── Left branding panel ──────────────────────────────────────────── -->
+  <aside class="reg-left">
+    <div class="reg-left-orb reg-left-orb-1"></div>
+    <div class="reg-left-orb reg-left-orb-2"></div>
+
+    <a href="index.html" class="reg-logo">
+      <img src="assets/images/trot-logo.jpg" alt="TROT">
+      <span class="reg-logo-text">TGDP</span>
+    </a>
+
+    <div class="reg-left-body">
+      <div class="reg-left-tag"><span class="dot"></span>Join 164 Nations</div>
+      <h2 class="reg-left-title">Unlock the Value<br>of Your <em>Gold</em></h2>
+      <p class="reg-left-sub">Create an account in minutes. Complete KYC and start participating in the TGDP ecosystem immediately.</p>
+
+      <div class="reg-features">
+        <div class="reg-feature">
+          <div class="reg-feature-icon">💰</div>
+          <div>
+            <div class="reg-feature-name">Zero Platform Fee</div>
+            <div class="reg-feature-desc">Trade tokenized gold with absolutely no platform charges</div>
           </div>
         </div>
-
-        <!-- Wizard Steps -->
-        <div class="wizard-steps">
-          <div class="wizard-step active" onclick="goToStep(1)">
-            <span class="wizard-step-num">1</span>
-            <span>Select Roles</span>
-          </div>
-          <div class="wizard-connector"></div>
-          <div class="wizard-step" onclick="goToStep(2)">
-            <span class="wizard-step-num">2</span>
-            <span>Personal Info</span>
-          </div>
-          <div class="wizard-connector"></div>
-          <div class="wizard-step" onclick="goToStep(3)">
-            <span class="wizard-step-num">3</span>
-            <span>KYC Documents</span>
-          </div>
-          <div class="wizard-connector"></div>
-          <div class="wizard-step" onclick="goToStep(4)">
-            <span class="wizard-step-num">4</span>
-            <span>Review & Submit</span>
+        <div class="reg-feature">
+          <div class="reg-feature-icon">🔒</div>
+          <div>
+            <div class="reg-feature-name">KYC Protected</div>
+            <div class="reg-feature-desc">Your documents are encrypted and stored securely on Firebase</div>
           </div>
         </div>
-        
-        <form id="registrationForm">
-          <!-- Step 1: Role Selection -->
-          <div class="wizard-content" id="step1">
-            <div class="card">
-              <div class="card-header">
-                <h3 class="card-title">Select Your Role(s)</h3>
-                <span class="badge badge-info">Multi-select allowed</span>
-              </div>
-              <div class="card-body">
-                <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem;">
-                  Choose one or more roles based on how you wish to participate in the TGDP ecosystem. 
-                  Some roles have restrictions and cannot be combined.
-                </p>
-                
-                <div class="role-grid">
-                  <!-- Household -->
-                  <label class="role-card" id="role-household">
-                    <input type="checkbox" name="roles" value="household" onchange="updateRoleSelection()">
-                    <div class="role-check">✓</div>
-                    <div class="role-icon">🏠</div>
-                    <div class="role-name">Household</div>
-                    <div class="role-desc">Earmark your gold jewelry and mint TGDPs. Access T-Gold platform and earn through tokenization.</div>
-                  </label>
-                  
-                  <!-- TGDP Licensee -->
-                  <label class="role-card" id="role-licensee">
-                    <input type="checkbox" name="roles" value="licensee" onchange="updateRoleSelection()">
-                    <div class="role-check">✓</div>
-                    <div class="role-icon">📜</div>
-                    <div class="role-name">TGDP Licensee</div>
-                    <div class="role-desc">Register gold-holding households and earn three streams of GIC income. $300 USD per household capacity.</div>
-                  </label>
-                  
-                  <!-- Jeweler -->
-                  <label class="role-card" id="role-jeweler">
-                    <input type="checkbox" name="roles" value="jeweler" onchange="updateRoleSelection()">
-                    <div class="role-check">✓</div>
-                    <div class="role-icon">💎</div>
-                    <div class="role-name">Registered Jeweler</div>
-                    <div class="role-desc">Accept T-Gold payments, fulfill design orders, and participate in jewelry return programs.</div>
-                  </label>
-                  
-                  <!-- Designer -->
-                  <label class="role-card" id="role-designer">
-                    <input type="checkbox" name="roles" value="designer" onchange="updateRoleSelection()">
-                    <div class="role-check">✓</div>
-                    <div class="role-icon">🎨</div>
-                    <div class="role-name">Jewelry Designer</div>
-                    <div class="role-desc">List your designs on T-JDB marketplace. IPR protected. Earn from design licensing and sales.</div>
-                  </label>
-                  
-                  <!-- Returnee -->
-                  <label class="role-card" id="role-returnee">
-                    <input type="checkbox" name="roles" value="returnee" onchange="updateRoleSelection()">
-                    <div class="role-check">✓</div>
-                    <div class="role-icon">🔄</div>
-                    <div class="role-name">Jewelry Returnee</div>
-                    <div class="role-desc">Return old gold jewelry through T-JR portal at fair LBMA-benchmarked valuation.</div>
-                  </label>
-                  
-                  <!-- Consultant -->
-                  <label class="role-card" id="role-consultant">
-                    <input type="checkbox" name="roles" value="consultant" onchange="updateRoleSelection()">
-                    <div class="role-check">✓</div>
-                    <div class="role-icon">💼</div>
-                    <div class="role-name">Gold Consultant</div>
-                    <div class="role-desc">Provide advisory services to households and earn referral income from platform activities.</div>
-                  </label>
-                  
-                  <!-- Advertiser -->
-                  <label class="role-card" id="role-advertiser">
-                    <input type="checkbox" name="roles" value="advertiser" onchange="updateRoleSelection()">
-                    <div class="role-check">✓</div>
-                    <div class="role-icon">📢</div>
-                    <div class="role-name">Advertiser</div>
-                    <div class="role-desc">Advertise your business to the TGDP ecosystem community. Promote products and services.</div>
-                  </label>
-                  
-                  <!-- Ombudsman -->
-                  <label class="role-card" id="role-ombudsman">
-                    <input type="checkbox" name="roles" value="ombudsman" onchange="updateRoleSelection()">
-                    <div class="role-check">✓</div>
-                    <div class="role-icon">⚖️</div>
-                    <div class="role-name">Ombudsman</div>
-                    <div class="role-desc">Resolve disputes between ecosystem participants. Requires legal/arbitration experience. Exclusive role.</div>
-                  </label>
-                </div>
-                
-                <div class="exclusive-warning" id="roleWarning">
-                  <span>⚠️</span>
-                  <span id="roleWarningText">Some selected roles cannot be combined. Please adjust your selection.</span>
-                </div>
-              </div>
-            </div>
+        <div class="reg-feature">
+          <div class="reg-feature-icon">⚡</div>
+          <div>
+            <div class="reg-feature-name">24h Settlement</div>
+            <div class="reg-feature-desc">Fast KYC verification and near-instant transaction settlement</div>
           </div>
-          
-          <!-- Step 2: Personal Information -->
-          <div class="wizard-content" id="step2" style="display: none;">
-            <div class="card">
-              <div class="card-header">
-                <h3 class="card-title">Personal Information</h3>
-              </div>
-              <div class="card-body">
-                <div class="form-row">
-                  <div class="form-group">
-                    <label class="form-label required">First Name</label>
-                    <input type="text" class="form-input" name="firstName" required placeholder="Enter first name">
-                  </div>
-                  <div class="form-group">
-                    <label class="form-label required">Last Name</label>
-                    <input type="text" class="form-input" name="lastName" required placeholder="Enter last name">
-                  </div>
-                </div>
-                
-                <div class="form-row">
-                  <div class="form-group">
-                    <label class="form-label required">Email Address</label>
-                    <input type="email" class="form-input" name="email" required placeholder="your.email@example.com">
-                  </div>
-                  <div class="form-group">
-                    <label class="form-label required">Mobile Number</label>
-                    <input type="tel" class="form-input" name="phone" required data-validate="phone" placeholder="+91 98765 43210">
-                  </div>
-                </div>
-                
-                <div class="form-row">
-                  <div class="form-group">
-                    <label class="form-label required">PAN Number</label>
-                    <input type="text" class="form-input" name="pan" required data-validate="pan" placeholder="ABCDE1234F" style="text-transform: uppercase;">
-                  </div>
-                  <div class="form-group">
-                    <label class="form-label required">Aadhaar Number</label>
-                    <input type="text" class="form-input" name="aadhaar" id="aadhaar-input" required data-validate="aadhaar" data-soft-keyboard="numeric" placeholder="1234 5678 9012">
-                  </div>
-                </div>
-                
-                <div class="form-group">
-                  <label class="form-label required">Address</label>
-                  <textarea class="form-textarea" name="address" required placeholder="Enter your full address" rows="3"></textarea>
-                </div>
-                
-                <div class="form-row">
-                  <div class="form-group">
-                    <label class="form-label required">City</label>
-                    <input type="text" class="form-input" name="city" required placeholder="City">
-                  </div>
-                  <div class="form-group">
-                    <label class="form-label required">State</label>
-                    <select class="form-select" name="state" required>
-                      <option value="">Select State</option>
-                      <option value="AP">Andhra Pradesh</option>
-                      <option value="AR">Arunachal Pradesh</option>
-                      <option value="AS">Assam</option>
-                      <option value="BR">Bihar</option>
-                      <option value="CT">Chhattisgarh</option>
-                      <option value="GA">Goa</option>
-                      <option value="GJ">Gujarat</option>
-                      <option value="HR">Haryana</option>
-                      <option value="HP">Himachal Pradesh</option>
-                      <option value="JH">Jharkhand</option>
-                      <option value="KA">Karnataka</option>
-                      <option value="KL">Kerala</option>
-                      <option value="MP">Madhya Pradesh</option>
-                      <option value="MH">Maharashtra</option>
-                      <option value="MN">Manipur</option>
-                      <option value="ML">Meghalaya</option>
-                      <option value="MZ">Mizoram</option>
-                      <option value="NL">Nagaland</option>
-                      <option value="OR">Odisha</option>
-                      <option value="PB">Punjab</option>
-                      <option value="RJ">Rajasthan</option>
-                      <option value="SK">Sikkim</option>
-                      <option value="TN">Tamil Nadu</option>
-                      <option value="TG">Telangana</option>
-                      <option value="TR">Tripura</option>
-                      <option value="UP">Uttar Pradesh</option>
-                      <option value="UK">Uttarakhand</option>
-                      <option value="WB">West Bengal</option>
-                      <option value="AN">Andaman and Nicobar Islands</option>
-                      <option value="CH">Chandigarh</option>
-                      <option value="DN">Dadra and Nagar Haveli</option>
-                      <option value="DD">Daman and Diu</option>
-                      <option value="DL">Delhi</option>
-                      <option value="LD">Lakshadweep</option>
-                      <option value="PY">Puducherry</option>
-                    </select>
-                  </div>
-                </div>
-                
-                <div class="form-row">
-                  <div class="form-group">
-                    <label class="form-label required">PIN Code</label>
-                    <input type="text" class="form-input" name="pincode" id="pincode-input" required placeholder="400001" maxlength="6" data-soft-keyboard="numeric">
-                  </div>
-                  <div class="form-group">
-                    <label class="form-label">GST Number (if applicable)</label>
-                    <input type="text" class="form-input" name="gst" id="gst-input" data-validate="gst" data-soft-keyboard="alpha" placeholder="22AAAAA0000A1Z5" style="text-transform: uppercase;">
-                  </div>
-                </div>
-                
-                <div class="form-row">
-                  <div class="form-group">
-                    <label class="form-label required">Create Password</label>
-                    <input type="password" class="form-input" name="password" required placeholder="Min 8 chars, 1 upper, 1 number, 1 special">
-                    <span class="form-hint">Minimum 8 characters with uppercase, number, and special character</span>
-                  </div>
-                  <div class="form-group">
-                    <label class="form-label required">Confirm Password</label>
-                    <input type="password" class="form-input" name="confirmPassword" required placeholder="Re-enter password">
-                  </div>
-                </div>
-              </div>
-            </div>
+        </div>
+        <div class="reg-feature">
+          <div class="reg-feature-icon">📊</div>
+          <div>
+            <div class="reg-feature-name">LBMA Benchmark</div>
+            <div class="reg-feature-desc">All gold priced at the international LBMA standard rate</div>
           </div>
-          
-          <!-- Step 3: KYC Documents -->
-          <div class="wizard-content" id="step3" style="display: none;">
-            <div class="card">
-              <div class="card-header">
-                <h3 class="card-title">Upload KYC Documents</h3>
-                <span class="badge badge-muted">Max 5MB per file</span>
-              </div>
-              <div class="card-body">
-                <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 1.5rem;">
-                  Upload clear scans or photos of the following documents. Accepted formats: JPG, PNG, PDF.
-                </p>
-                
-                <div class="kyc-grid">
-                  <label class="kyc-upload" id="upload-pan">
-                    <input type="file" name="panDoc" accept=".jpg,.jpeg,.png,.pdf" onchange="handleKYCUpload(this, 'pan')">
-                    <div class="kyc-icon">📄</div>
-                    <div class="kyc-label">PAN Card</div>
-                    <div class="kyc-hint">Front side clearly visible</div>
-                    <div class="kyc-filename" id="filename-pan"></div>
-                  </label>
-                  
-                  <label class="kyc-upload" id="upload-aadhaar">
-                    <input type="file" name="aadhaarDoc" accept=".jpg,.jpeg,.png,.pdf" onchange="handleKYCUpload(this, 'aadhaar')">
-                    <div class="kyc-icon">📄</div>
-                    <div class="kyc-label">Aadhaar Card</div>
-                    <div class="kyc-hint">Front and back both sides</div>
-                    <div class="kyc-filename" id="filename-aadhaar"></div>
-                  </label>
-                  
-                  <label class="kyc-upload" id="upload-photo">
-                    <input type="file" name="photoDoc" accept=".jpg,.jpeg,.png" onchange="handleKYCUpload(this, 'photo')">
-                    <div class="kyc-icon">📷</div>
-                    <div class="kyc-label">Passport Photo</div>
-                    <div class="kyc-hint">Recent passport-size photograph</div>
-                    <div class="kyc-filename" id="filename-photo"></div>
-                  </label>
-                  
-                  <label class="kyc-upload" id="upload-address">
-                    <input type="file" name="addressDoc" accept=".jpg,.jpeg,.png,.pdf" onchange="handleKYCUpload(this, 'address')">
-                    <div class="kyc-icon">📄</div>
-                    <div class="kyc-label">Address Proof</div>
-                    <div class="kyc-hint">Utility bill, bank statement, etc.</div>
-                    <div class="kyc-filename" id="filename-address"></div>
-                  </label>
-                </div>
-                
-                <div class="alert alert-info" style="margin-top: 1.5rem;">
-                  <span class="alert-icon">ℹ️</span>
-                  <div>
-                    <strong>KYC Verification</strong><br>
-                    Documents will be verified within 24-48 hours. You will receive an email/SMS notification once verification is complete.
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <!-- Step 4: Review & Submit -->
-          <div class="wizard-content" id="step4" style="display: none;">
-            <div class="card">
-              <div class="card-header">
-                <h3 class="card-title">Review & Submit</h3>
-              </div>
-              <div class="card-body">
-                <div class="review-section">
-                  <div class="review-title">Selected Roles</div>
-                  <div id="reviewRoles">
-                    <!-- Populated dynamically -->
-                  </div>
-                </div>
-                
-                <div class="review-section">
-                  <div class="review-title">Personal Information</div>
-                  <div class="review-row">
-                    <span class="review-label">Full Name</span>
-                    <span class="review-value" id="reviewName">-</span>
-                  </div>
-                  <div class="review-row">
-                    <span class="review-label">Email</span>
-                    <span class="review-value" id="reviewEmail">-</span>
-                  </div>
-                  <div class="review-row">
-                    <span class="review-label">Mobile</span>
-                    <span class="review-value" id="reviewPhone">-</span>
-                  </div>
-                  <div class="review-row">
-                    <span class="review-label">PAN</span>
-                    <span class="review-value" id="reviewPan">-</span>
-                  </div>
-                  <div class="review-row">
-                    <span class="review-label">Location</span>
-                    <span class="review-value" id="reviewLocation">-</span>
-                  </div>
-                </div>
-                
-                <div class="review-section">
-                  <div class="review-title">Documents Uploaded</div>
-                  <div id="reviewDocs">
-                    <!-- Populated dynamically -->
-                  </div>
-                </div>
-                
-                <div class="terms-box">
-                  <div class="terms-text">
-                    <strong>Terms & Conditions</strong><br><br>
-                    By registering on the TGDP platform, you agree to:
-                    <br><br>
-                    1. Provide accurate and truthful information during registration
-                    <br>2. Complete KYC verification as required by applicable laws
-                    <br>3. Abide by the platform's Terms of Service and Privacy Policy
-                    <br>4. Accept that all transactions are subject to LBMA benchmark pricing
-                    <br>5. Acknowledge that GIC earnings are subject to applicable TDS deductions
-                    <br>6. Understand that role-specific agreements will be presented upon approval
-                    <br><br>
-                    For complete terms, please refer to our <a href="docs/agreements/terms.html" style="color: var(--gold);">Terms of Service</a> and <a href="docs/agreements/privacy.html" style="color: var(--gold);">Privacy Policy</a>.
-                  </div>
-                </div>
-                
-                <div class="form-check" style="margin-top: 1rem;">
-                  <input type="checkbox" id="agreeTerms" name="agreeTerms" required>
-                  <label for="agreeTerms">I have read and agree to the Terms of Service and Privacy Policy</label>
-                </div>
-                
-                <div class="form-check" style="margin-top: 0.75rem;">
-                  <input type="checkbox" id="agreeKYC" name="agreeKYC" required>
-                  <label for="agreeKYC">I confirm that all information and documents provided are accurate and authentic</label>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <!-- Wizard Navigation -->
-          <div class="wizard-nav">
-            <button type="button" class="btn btn-outline" id="wizardPrev" onclick="prevStep()" style="display: none;">
-              ← Previous
-            </button>
-            <div style="flex: 1;"></div>
-            <button type="button" class="btn btn-gold" id="wizardNext" onclick="nextStep()">
-              Continue →
-            </button>
-            <button type="submit" class="btn btn-gold" id="wizardSubmit" style="display: none;">
-              Submit Registration
-            </button>
-          </div>
-        </form>
+        </div>
       </div>
-    </main>
-  </div>
-  
-  <!-- Shared JavaScript -->
-  <script src="js/shared.js"></script>
-  <!-- Firebase Backend -->
-  <script type="module" src="js/firebase-backend.js"></script>
-  
-  <script>
-    let currentWizardStep = 1;
-    const totalWizardSteps = 4;
-    let selectedRoles = [];
-    
-    // Role selection handling
-    function updateRoleSelection() {
-      const checkboxes = document.querySelectorAll('input[name="roles"]');
-      selectedRoles = [];
-      
-      checkboxes.forEach(cb => {
-        if (cb.checked) {
-          selectedRoles.push(cb.value);
-        }
-      });
-      
-      // Update visual selection
-      document.querySelectorAll('.role-card').forEach(card => {
-        const input = card.querySelector('input');
-        card.classList.toggle('selected', input.checked);
-      });
-      
-      // Check role compatibility
-      const incompatible = getIncompatibleRoles(selectedRoles);
-      const hasConflict = !isRoleCombinationValid(selectedRoles);
-      
-      // Disable incompatible roles
-      document.querySelectorAll('.role-card').forEach(card => {
-        const input = card.querySelector('input');
-        const isDisabled = incompatible.includes(input.value) && !input.checked;
-        card.classList.toggle('disabled', isDisabled);
-        if (isDisabled) {
-          input.disabled = true;
-        } else {
-          input.disabled = false;
-        }
-      });
-      
-      // Show warning if conflict
-      const warning = document.getElementById('roleWarning');
-      if (hasConflict) {
-        warning.classList.add('visible');
-        document.getElementById('roleWarningText').textContent = 
-          'Selected roles cannot be combined. Please remove one of the conflicting roles.';
-      } else if (selectedRoles.includes('ombudsman')) {
-        warning.classList.add('visible');
-        document.getElementById('roleWarningText').textContent = 
-          'Ombudsman is an exclusive role and cannot be combined with any other role.';
-      } else {
-        warning.classList.remove('visible');
-      }
-    }
-    
-    // KYC upload handling
-    function handleKYCUpload(input, docType) {
-      const file = input.files[0];
-      if (!file) return;
-      
-      const maxSize = 5 * 1024 * 1024; // 5MB
-      if (file.size > maxSize) {
-        showToast('File size must be less than 5MB', 'error');
-        input.value = '';
-        return;
-      }
-      
-      const validTypes = ['image/jpeg', 'image/png', 'application/pdf'];
-      if (!validTypes.includes(file.type)) {
-        showToast('Only JPG, PNG, and PDF files are allowed', 'error');
-        input.value = '';
-        return;
-      }
-      
-      const uploadBox = document.getElementById(`upload-${docType}`);
-      const filename = document.getElementById(`filename-${docType}`);
-      
-      uploadBox.classList.add('uploaded');
-      filename.textContent = `✓ ${file.name}`;
-      
-      showToast(`${docType.toUpperCase()} document uploaded`, 'success');
-    }
-    
-    // Wizard navigation
-    function nextStep() {
-      const validation = validateCurrentStep();
-      if (!validation.valid) {
-        showToast(validation.errors[0], 'error');
-        return;
-      }
-      
-      if (currentWizardStep < totalWizardSteps) {
-        currentWizardStep++;
-        updateWizardUI();
-        
-        if (currentWizardStep === 4) {
-          populateReview();
-        }
-      }
-    }
-    
-    function prevStep() {
-      if (currentWizardStep > 1) {
-        currentWizardStep--;
-        updateWizardUI();
-      }
-    }
-    
-    function goToStep(step) {
-      if (step >= 1 && step <= currentWizardStep) {
-        currentWizardStep = step;
-        updateWizardUI();
-      }
-    }
-    
-    function updateWizardUI() {
-      // Update step indicators
-      document.querySelectorAll('.wizard-step').forEach((el, index) => {
-        el.classList.remove('active', 'completed');
-        if (index + 1 < currentWizardStep) {
-          el.classList.add('completed');
-        } else if (index + 1 === currentWizardStep) {
-          el.classList.add('active');
-        }
-      });
-      
-      // Update connectors
-      document.querySelectorAll('.wizard-connector').forEach((el, index) => {
-        el.classList.toggle('completed', index + 1 < currentWizardStep);
-      });
-      
-      // Show/hide step content
-      for (let i = 1; i <= totalWizardSteps; i++) {
-        const step = document.getElementById(`step${i}`);
-        if (step) {
-          step.style.display = (i === currentWizardStep) ? 'block' : 'none';
-        }
-      }
-      
-      // Update navigation buttons
-      document.getElementById('wizardPrev').style.display = currentWizardStep > 1 ? 'inline-flex' : 'none';
-      document.getElementById('wizardNext').style.display = currentWizardStep < totalWizardSteps ? 'inline-flex' : 'none';
-      document.getElementById('wizardSubmit').style.display = currentWizardStep === totalWizardSteps ? 'inline-flex' : 'none';
-      
-      // Scroll to top
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
-    
-    function validateCurrentStep() {
-      if (currentWizardStep === 1) {
-        if (selectedRoles.length === 0) {
-          return { valid: false, errors: ['Please select at least one role'] };
-        }
-        if (!isRoleCombinationValid(selectedRoles)) {
-          return { valid: false, errors: ['Selected roles cannot be combined. Please adjust your selection.'] };
-        }
-      }
-      
-      if (currentWizardStep === 2) {
-        const form = document.getElementById('registrationForm');
-        const step2Inputs = document.querySelectorAll('#step2 [required]');
-        
-        for (const input of step2Inputs) {
-          if (!input.value.trim()) {
-            const label = input.previousElementSibling?.textContent || input.name;
-            return { valid: false, errors: [`${label.replace(' *', '')} is required`] };
-          }
-          
-          if (input.type === 'email' && !isValidEmail(input.value)) {
-            return { valid: false, errors: ['Please enter a valid email address'] };
-          }
-          
-          if (input.dataset.validate === 'phone' && !isValidPhone(input.value)) {
-            return { valid: false, errors: ['Please enter a valid 10-digit mobile number'] };
-          }
-          
-          if (input.dataset.validate === 'pan' && !isValidPAN(input.value)) {
-            return { valid: false, errors: ['Please enter a valid PAN number (e.g., ABCDE1234F)'] };
-          }
-          
-          if (input.dataset.validate === 'aadhaar' && !isValidAadhaar(input.value)) {
-            return { valid: false, errors: ['Please enter a valid 12-digit Aadhaar number'] };
-          }
-        }
-        
-        const password = form.querySelector('[name="password"]').value;
-        const confirmPassword = form.querySelector('[name="confirmPassword"]').value;
-        
-        if (!isStrongPassword(password)) {
-          return { valid: false, errors: ['Password must be at least 8 characters with uppercase, number, and special character'] };
-        }
-        
-        if (password !== confirmPassword) {
-          return { valid: false, errors: ['Passwords do not match'] };
-        }
-      }
-      
-      if (currentWizardStep === 3) {
-        const panDoc = document.querySelector('[name="panDoc"]').files.length;
-        const aadhaarDoc = document.querySelector('[name="aadhaarDoc"]').files.length;
-        const photoDoc = document.querySelector('[name="photoDoc"]').files.length;
-        
-        if (!panDoc) return { valid: false, errors: ['Please upload your PAN card'] };
-        if (!aadhaarDoc) return { valid: false, errors: ['Please upload your Aadhaar card'] };
-        if (!photoDoc) return { valid: false, errors: ['Please upload your passport photo'] };
-      }
-      
-      return { valid: true, errors: [] };
-    }
-    
-    function populateReview() {
-      // Roles
-      const rolesContainer = document.getElementById('reviewRoles');
-      rolesContainer.innerHTML = selectedRoles.map(role => 
-        `<span class="badge badge-gold" style="margin-right: 0.5rem; margin-bottom: 0.5rem;">${getRoleDisplayName(role)}</span>`
-      ).join('');
-      
-      // Personal info
-      const form = document.getElementById('registrationForm');
-      document.getElementById('reviewName').textContent = 
-        `${form.querySelector('[name="firstName"]').value} ${form.querySelector('[name="lastName"]').value}`;
-      document.getElementById('reviewEmail').textContent = form.querySelector('[name="email"]').value;
-      document.getElementById('reviewPhone').textContent = form.querySelector('[name="phone"]').value;
-      document.getElementById('reviewPan').textContent = form.querySelector('[name="pan"]').value.toUpperCase();
-      document.getElementById('reviewLocation').textContent = 
-        `${form.querySelector('[name="city"]').value}, ${form.querySelector('[name="state"]').value} - ${form.querySelector('[name="pincode"]').value}`;
-      
-      // Documents
-      const docsContainer = document.getElementById('reviewDocs');
-      const docs = [];
-      if (document.querySelector('[name="panDoc"]').files.length) docs.push('PAN Card');
-      if (document.querySelector('[name="aadhaarDoc"]').files.length) docs.push('Aadhaar Card');
-      if (document.querySelector('[name="photoDoc"]').files.length) docs.push('Passport Photo');
-      if (document.querySelector('[name="addressDoc"]').files.length) docs.push('Address Proof');
-      
-      docsContainer.innerHTML = docs.map(doc => 
-        `<div class="review-row"><span class="review-label">${doc}</span><span class="review-value" style="color: var(--success);">✓ Uploaded</span></div>`
-      ).join('');
-    }
-    
-    // Form submission
-    document.getElementById('registrationForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      
-      const agreeTerms = document.getElementById('agreeTerms').checked;
-      const agreeKYC = document.getElementById('agreeKYC').checked;
-      
-      if (!agreeTerms || !agreeKYC) {
-        showToast('Please agree to the terms and confirm your information is accurate', 'error');
-        return;
-      }
-      
-      showLoading('Creating your account...');
+    </div>
 
-      const form = document.getElementById('registrationForm');
-      const formData = {
-        email:       form.querySelector('[name="email"]').value.trim(),
-        password:    form.querySelector('[name="password"]').value,
-        firstName:   form.querySelector('[name="firstName"]').value.trim(),
-        lastName:    form.querySelector('[name="lastName"]').value.trim(),
-        phone:       form.querySelector('[name="phone"]').value.trim(),
-        pan:         form.querySelector('[name="pan"]').value.trim(),
-        aadhaar:     form.querySelector('[name="aadhaar"]').value.replace(/\s/g, ''),
-        address:     form.querySelector('[name="address"]').value.trim(),
-        city:        form.querySelector('[name="city"]').value.trim(),
-        state:       form.querySelector('[name="state"]').value.trim(),
-        pincode:     form.querySelector('[name="pincode"]').value.trim(),
-        roles:       selectedRoles,
-        panDoc:      form.querySelector('[name="panDoc"]').files[0]     || null,
-        aadhaarDoc:  form.querySelector('[name="aadhaarDoc"]').files[0] || null,
-        photoDoc:    form.querySelector('[name="photoDoc"]').files[0]   || null,
-        addressDoc:  form.querySelector('[name="addressDoc"]').files[0] || null,
-      };
+    <div class="reg-left-footer">
+      <p>By registering you agree to our <a href="docs/agreements/terms.html">Terms</a> and <a href="docs/agreements/privacy.html">Privacy Policy</a>.</p>
+    </div>
+  </aside>
 
-      // Wait for firebase-backend.js module to load then register
-      const waitForFirebase = setInterval(() => {
-        if (typeof window.firebaseRegisterUser === 'function') {
-          clearInterval(waitForFirebase);
-          window.firebaseRegisterUser(formData)
-            .then(({ uid, primaryRole }) => {
-              hideLoading();
-              showToast('Registration successful! Please verify your email. Redirecting...', 'success');
-              const dashboards = {
-                household:  'portals/tgold/dashboard.html',
-                licensee:   'portals/gic/dashboard.html',
-                jeweler:    'portals/tjr/dashboard.html',
-                designer:   'portals/tjdb/dashboard.html',
-                returnee:   'portals/tjr/dashboard.html',
-                consultant: 'portals/tgold/dashboard.html',
-                advertiser: 'portals/tgold/dashboard.html',
-                ombudsman:  'portals/ombudsman/dashboard.html'
-              };
-              setTimeout(() => {
-                window.location.href = dashboards[primaryRole] || 'portals/tgold/dashboard.html';
-              }, 2000);
-            })
-            .catch((err) => {
-              hideLoading();
-              const msg = err.code === 'auth/email-already-in-use'
-                ? 'This email is already registered. Please log in.'
-                : err.code === 'auth/weak-password'
-                ? 'Password is too weak. Use at least 8 characters.'
-                : err.message || 'Registration failed. Please try again.';
-              showToast(msg, 'error');
-            });
-        }
-      }, 100);
-      }, 2000);
-    });
-    
-    // Initialize
-    document.addEventListener('DOMContentLoaded', function() {
-      updateWizardUI();
-      // Handle Google redirect sign-in return
-      waitForFn('checkGoogleRedirect', () => {
-        window.checkGoogleRedirect().then((result) => {
-          if (!result) return;
-          if (result.isNewUser) {
-            showToast('Google account linked! Please complete your profile & KYC.', 'success');
-          } else {
-            showToast('Welcome back! Redirecting\u2026', 'success');
-            setTimeout(() => redirectByRole(result), 1500);
-          }
-        });
-      });
-    });
-  </script>
+  <!-- ── Right form panel ──────────────────────────────────────────────── -->
+  <div class="reg-right">
 
-  <!-- ── Login Modal ─────────────────────────────────────────────────────── -->
-  <div id="loginModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:1000; align-items:center; justify-content:center;">
-    <div style="background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:2rem; width:100%; max-width:420px; margin:1rem;">
-      <h2 style="color:var(--gold); margin:0 0 0.25rem;">Sign In</h2>
-      <p style="color:var(--text-muted); font-size:0.9rem; margin:0 0 1.5rem;">Welcome back to TGDP</p>
+    <!-- Topbar -->
+    <div class="reg-topbar">
+      <span class="reg-topbar-step" id="topbarStepLabel">Step 1 of 4</span>
+      <span class="reg-topbar-signin">Already registered? <a href="#" onclick="openLoginModal(); return false;">Sign In</a></span>
+    </div>
 
-      <!-- Google login -->
-      <button type="button" onclick="handleGoogleSignIn()" style="width:100%; display:flex; align-items:center; justify-content:center; gap:0.6rem; padding:0.65rem 1rem; border:1px solid var(--border); border-radius:8px; background:var(--surface); color:var(--text-primary); font-size:0.95rem; font-family:inherit; cursor:pointer; margin-bottom:1.25rem;">
+    <div class="reg-main">
+
+      <!-- Progress -->
+      <div class="progress-wrap">
+        <div class="progress-steps" id="progressSteps">
+          <div class="progress-step active" data-step="1" onclick="goToStep(1)">
+            <div class="progress-num">1</div>
+            <span>Roles</span>
+          </div>
+          <div class="progress-line" id="line1"></div>
+          <div class="progress-step" data-step="2" onclick="goToStep(2)">
+            <div class="progress-num">2</div>
+            <span>Personal</span>
+          </div>
+          <div class="progress-line" id="line2"></div>
+          <div class="progress-step" data-step="3" onclick="goToStep(3)">
+            <div class="progress-num">3</div>
+            <span>KYC</span>
+          </div>
+          <div class="progress-line" id="line3"></div>
+          <div class="progress-step" data-step="4" onclick="goToStep(4)">
+            <div class="progress-num">4</div>
+            <span>Review</span>
+          </div>
+        </div>
+        <div class="progress-bar-track">
+          <div class="progress-bar-fill" id="progressFill" style="width:25%"></div>
+        </div>
+      </div>
+
+      <!-- Google Sign-In -->
+      <button type="button" class="google-btn" onclick="handleGoogleSignIn()">
         <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
           <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
           <path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/>
@@ -1045,106 +438,560 @@
         </svg>
         Continue with Google
       </button>
+      <div class="or-divider">or register with email below</div>
 
-      <div style="display:flex; align-items:center; gap:0.75rem; color:var(--text-muted); font-size:0.85rem; margin-bottom:1.25rem;">
-        <div style="flex:1; height:1px; background:var(--border);"></div>or<div style="flex:1; height:1px; background:var(--border);"></div>
-      </div>
+      <form id="registrationForm">
 
-      <!-- Email / password login -->
-      <div style="margin-bottom:1rem;">
-        <label style="display:block; color:var(--text-secondary); font-size:0.85rem; margin-bottom:0.4rem;">Email</label>
-        <input type="email" id="loginEmail" placeholder="you@example.com" style="width:100%; padding:0.6rem 0.8rem; background:var(--bg-primary); border:1px solid var(--border); border-radius:8px; color:var(--text-primary); font-size:0.95rem; box-sizing:border-box;">
-      </div>
-      <div style="margin-bottom:1.5rem;">
-        <label style="display:block; color:var(--text-secondary); font-size:0.85rem; margin-bottom:0.4rem;">Password</label>
-        <input type="password" id="loginPassword" placeholder="••••••••" style="width:100%; padding:0.6rem 0.8rem; background:var(--bg-primary); border:1px solid var(--border); border-radius:8px; color:var(--text-primary); font-size:0.95rem; box-sizing:border-box;">
-      </div>
-      <button type="button" onclick="handleEmailLogin()" style="width:100%; padding:0.75rem; background:var(--gold); color:#000; border:none; border-radius:8px; font-size:1rem; font-weight:600; cursor:pointer; margin-bottom:1rem;">Sign In</button>
-      <button type="button" onclick="closeLoginModal()" style="width:100%; padding:0.65rem; background:transparent; color:var(--text-muted); border:1px solid var(--border); border-radius:8px; font-size:0.9rem; cursor:pointer;">Cancel</button>
-    </div>
+        <!-- ── Step 1: Roles ────────────────────────────────────────────── -->
+        <div id="step1">
+          <h2 class="step-title">Select Your <em>Role(s)</em></h2>
+          <p class="step-sub">Choose one or more roles based on how you wish to participate. Some roles have restrictions and cannot be combined.</p>
+
+          <div class="role-grid">
+            <label class="role-card" id="role-household">
+              <input type="checkbox" name="roles" value="household" onchange="updateRoleSelection()">
+              <div class="role-check">✓</div>
+              <div class="role-icon">🏠</div>
+              <div class="role-name">Household</div>
+              <div class="role-desc">Earmark gold jewelry and mint TGDPs</div>
+            </label>
+            <label class="role-card" id="role-licensee">
+              <input type="checkbox" name="roles" value="licensee" onchange="updateRoleSelection()">
+              <div class="role-check">✓</div>
+              <div class="role-icon">📜</div>
+              <div class="role-name">TGDP Licensee</div>
+              <div class="role-desc">Register households, earn GIC income</div>
+            </label>
+            <label class="role-card" id="role-jeweler">
+              <input type="checkbox" name="roles" value="jeweler" onchange="updateRoleSelection()">
+              <div class="role-check">✓</div>
+              <div class="role-icon">💎</div>
+              <div class="role-name">Registered Jeweler</div>
+              <div class="role-desc">Accept T-Gold, fulfill design orders</div>
+            </label>
+            <label class="role-card" id="role-designer">
+              <input type="checkbox" name="roles" value="designer" onchange="updateRoleSelection()">
+              <div class="role-check">✓</div>
+              <div class="role-icon">🎨</div>
+              <div class="role-name">Jewelry Designer</div>
+              <div class="role-desc">List IPR-protected designs on T-JDB</div>
+            </label>
+            <label class="role-card" id="role-returnee">
+              <input type="checkbox" name="roles" value="returnee" onchange="updateRoleSelection()">
+              <div class="role-check">✓</div>
+              <div class="role-icon">🔄</div>
+              <div class="role-name">Jewelry Returnee</div>
+              <div class="role-desc">Return old gold via T-JR at LBMA value</div>
+            </label>
+            <label class="role-card" id="role-consultant">
+              <input type="checkbox" name="roles" value="consultant" onchange="updateRoleSelection()">
+              <div class="role-check">✓</div>
+              <div class="role-icon">💼</div>
+              <div class="role-name">Gold Consultant</div>
+              <div class="role-desc">Advisory services and referral income</div>
+            </label>
+            <label class="role-card" id="role-advertiser">
+              <input type="checkbox" name="roles" value="advertiser" onchange="updateRoleSelection()">
+              <div class="role-check">✓</div>
+              <div class="role-icon">📢</div>
+              <div class="role-name">Advertiser</div>
+              <div class="role-desc">Promote products to TGDP community</div>
+            </label>
+            <label class="role-card" id="role-ombudsman">
+              <input type="checkbox" name="roles" value="ombudsman" onchange="updateRoleSelection()">
+              <div class="role-check">✓</div>
+              <div class="role-icon">⚖️</div>
+              <div class="role-name">Ombudsman</div>
+              <div class="role-desc">Resolve disputes — exclusive role</div>
+            </label>
+          </div>
+
+          <div class="role-warning" id="roleWarning">
+            <span>⚠️</span>
+            <span id="roleWarningText">Some selected roles cannot be combined.</span>
+          </div>
+        </div>
+
+        <!-- ── Step 2: Personal Info ─────────────────────────────────────── -->
+        <div id="step2" style="display:none;">
+          <h2 class="step-title">Personal <em>Information</em></h2>
+          <p class="step-sub">Please enter your details exactly as they appear on your government-issued ID.</p>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">First Name <span class="req">*</span></label>
+              <input type="text" class="form-input" name="firstName" required placeholder="Enter first name">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Last Name <span class="req">*</span></label>
+              <input type="text" class="form-input" name="lastName" required placeholder="Enter last name">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Email Address <span class="req">*</span></label>
+              <input type="email" class="form-input" name="email" required placeholder="you@example.com">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Mobile Number <span class="req">*</span></label>
+              <input type="tel" class="form-input" name="phone" required data-validate="phone" placeholder="+91 98765 43210">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">PAN Number <span class="req">*</span></label>
+              <input type="text" class="form-input" name="pan" required data-validate="pan" placeholder="ABCDE1234F" style="text-transform:uppercase;">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Aadhaar Number <span class="req">*</span></label>
+              <input type="text" class="form-input" name="aadhaar" id="aadhaar-input" required data-validate="aadhaar" placeholder="1234 5678 9012">
+            </div>
+          </div>
+
+          <div class="form-row single">
+            <div class="form-group">
+              <label class="form-label">Full Address <span class="req">*</span></label>
+              <textarea class="form-textarea" name="address" required placeholder="House / Flat, Street, Area"></textarea>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">City <span class="req">*</span></label>
+              <input type="text" class="form-input" name="city" required placeholder="City">
+            </div>
+            <div class="form-group">
+              <label class="form-label">State <span class="req">*</span></label>
+              <select class="form-select" name="state" required>
+                <option value="">Select State</option>
+                <option value="AP">Andhra Pradesh</option><option value="AR">Arunachal Pradesh</option>
+                <option value="AS">Assam</option><option value="BR">Bihar</option>
+                <option value="CT">Chhattisgarh</option><option value="GA">Goa</option>
+                <option value="GJ">Gujarat</option><option value="HR">Haryana</option>
+                <option value="HP">Himachal Pradesh</option><option value="JH">Jharkhand</option>
+                <option value="KA">Karnataka</option><option value="KL">Kerala</option>
+                <option value="MP">Madhya Pradesh</option><option value="MH">Maharashtra</option>
+                <option value="MN">Manipur</option><option value="ML">Meghalaya</option>
+                <option value="MZ">Mizoram</option><option value="NL">Nagaland</option>
+                <option value="OR">Odisha</option><option value="PB">Punjab</option>
+                <option value="RJ">Rajasthan</option><option value="SK">Sikkim</option>
+                <option value="TN">Tamil Nadu</option><option value="TG">Telangana</option>
+                <option value="TR">Tripura</option><option value="UP">Uttar Pradesh</option>
+                <option value="UK">Uttarakhand</option><option value="WB">West Bengal</option>
+                <option value="DL">Delhi</option><option value="PY">Puducherry</option>
+                <option value="CH">Chandigarh</option><option value="AN">Andaman &amp; Nicobar</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">PIN Code <span class="req">*</span></label>
+              <input type="text" class="form-input" name="pincode" id="pincode-input" required placeholder="400001" maxlength="6">
+            </div>
+            <div class="form-group">
+              <label class="form-label">GST Number <span style="color:var(--text-muted);font-weight:400;">(optional)</span></label>
+              <input type="text" class="form-input" name="gst" id="gst-input" placeholder="22AAAAA0000A1Z5" style="text-transform:uppercase;">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Password <span class="req">*</span></label>
+              <input type="password" class="form-input" name="password" required placeholder="Min 8 chars, 1 upper, 1 number">
+              <span class="form-hint">Must include uppercase, number, and special character</span>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Confirm Password <span class="req">*</span></label>
+              <input type="password" class="form-input" name="confirmPassword" required placeholder="Re-enter password">
+            </div>
+          </div>
+        </div>
+
+        <!-- ── Step 3: KYC ──────────────────────────────────────────────── -->
+        <div id="step3" style="display:none;">
+          <h2 class="step-title">KYC <em>Documents</em></h2>
+          <p class="step-sub">Upload clear scans or photos. Accepted formats: JPG, PNG, PDF. Max 5 MB per file.</p>
+
+          <div class="kyc-grid">
+            <label class="kyc-upload" id="upload-pan">
+              <input type="file" name="panDoc" accept=".jpg,.jpeg,.png,.pdf" onchange="handleKYCUpload(this,'pan')">
+              <div class="kyc-icon">📄</div>
+              <div class="kyc-label">PAN Card</div>
+              <div class="kyc-hint">Front side clearly visible</div>
+              <div class="kyc-filename" id="filename-pan"></div>
+            </label>
+            <label class="kyc-upload" id="upload-aadhaar">
+              <input type="file" name="aadhaarDoc" accept=".jpg,.jpeg,.png,.pdf" onchange="handleKYCUpload(this,'aadhaar')">
+              <div class="kyc-icon">📄</div>
+              <div class="kyc-label">Aadhaar Card</div>
+              <div class="kyc-hint">Both sides required</div>
+              <div class="kyc-filename" id="filename-aadhaar"></div>
+            </label>
+            <label class="kyc-upload" id="upload-photo">
+              <input type="file" name="photoDoc" accept=".jpg,.jpeg,.png" onchange="handleKYCUpload(this,'photo')">
+              <div class="kyc-icon">📷</div>
+              <div class="kyc-label">Passport Photo</div>
+              <div class="kyc-hint">Recent passport-size, clear background</div>
+              <div class="kyc-filename" id="filename-photo"></div>
+            </label>
+            <label class="kyc-upload" id="upload-address">
+              <input type="file" name="addressDoc" accept=".jpg,.jpeg,.png,.pdf" onchange="handleKYCUpload(this,'address')">
+              <div class="kyc-icon">📄</div>
+              <div class="kyc-label">Address Proof</div>
+              <div class="kyc-hint">Utility bill, bank statement</div>
+              <div class="kyc-filename" id="filename-address"></div>
+            </label>
+          </div>
+
+          <div class="kyc-info">
+            <span>ℹ️</span>
+            <div><strong>KYC Verification</strong><br>Documents are verified within 24–48 hours. You'll receive an email and SMS once complete.</div>
+          </div>
+        </div>
+
+        <!-- ── Step 4: Review ────────────────────────────────────────────── -->
+        <div id="step4" style="display:none;">
+          <h2 class="step-title">Review &amp; <em>Submit</em></h2>
+          <p class="step-sub">Please verify your details before submitting. Once submitted, KYC review begins automatically.</p>
+
+          <div class="review-card">
+            <div class="review-card-title">Selected Roles</div>
+            <div id="reviewRoles"></div>
+          </div>
+
+          <div class="review-card">
+            <div class="review-card-title">Personal Information</div>
+            <div class="review-row"><span class="review-key">Full Name</span><span class="review-val" id="reviewName">—</span></div>
+            <div class="review-row"><span class="review-key">Email</span><span class="review-val" id="reviewEmail">—</span></div>
+            <div class="review-row"><span class="review-key">Mobile</span><span class="review-val" id="reviewPhone">—</span></div>
+            <div class="review-row"><span class="review-key">PAN</span><span class="review-val" id="reviewPan">—</span></div>
+            <div class="review-row"><span class="review-key">Location</span><span class="review-val" id="reviewLocation">—</span></div>
+          </div>
+
+          <div class="review-card">
+            <div class="review-card-title">Documents Uploaded</div>
+            <div id="reviewDocs"></div>
+          </div>
+
+          <div class="terms-scroll">
+            <strong>Terms &amp; Conditions</strong><br><br>
+            By registering on the TGDP platform, you agree to:<br><br>
+            1. Provide accurate and truthful information during registration<br>
+            2. Complete KYC verification as required by applicable laws<br>
+            3. Abide by the platform's Terms of Service and Privacy Policy<br>
+            4. Accept that all transactions are subject to LBMA benchmark pricing<br>
+            5. Acknowledge that GIC earnings are subject to applicable TDS deductions<br>
+            6. Understand that role-specific agreements will be presented upon approval<br><br>
+            For complete terms see our <a href="docs/agreements/terms.html" target="_blank">Terms of Service</a> and <a href="docs/agreements/privacy.html" target="_blank">Privacy Policy</a>.
+          </div>
+
+          <label class="check-row">
+            <input type="checkbox" id="agreeTerms" name="agreeTerms" required>
+            <span>I have read and agree to the Terms of Service and Privacy Policy</span>
+          </label>
+          <label class="check-row">
+            <input type="checkbox" id="agreeKYC" name="agreeKYC" required>
+            <span>I confirm that all information and documents provided are accurate and authentic</span>
+          </label>
+        </div>
+
+        <!-- Wizard navigation -->
+        <div class="wiz-nav">
+          <button type="button" class="btn-prev" id="wizardPrev" onclick="prevStep()" style="display:none;">← Back</button>
+          <div style="flex:1;"></div>
+          <button type="button" class="btn-next" id="wizardNext" onclick="nextStep()">Continue →</button>
+          <button type="submit" class="btn-submit" id="wizardSubmit" style="display:none;">Submit Registration ✓</button>
+        </div>
+
+      </form>
+    </div><!-- /.reg-main -->
+  </div><!-- /.reg-right -->
+</div><!-- /.reg-wrap -->
+
+<!-- ── Login Modal ──────────────────────────────────────────────────────── -->
+<div class="modal-backdrop" id="loginModal">
+  <div class="modal-box">
+    <div class="modal-title">Sign In</div>
+    <div class="modal-sub">Welcome back to TGDP</div>
+
+    <button type="button" class="google-btn" onclick="handleGoogleSignIn()" style="margin-bottom:1.25rem;">
+      <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+        <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
+        <path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/>
+        <path d="M3.964 10.707A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332z" fill="#FBBC05"/>
+        <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.961L3.964 6.293C4.672 4.166 6.656 3.58 9 3.58z" fill="#EA4335"/>
+      </svg>
+      Continue with Google
+    </button>
+    <div class="or-divider">or sign in with email</div>
+
+    <label class="modal-input-label">Email</label>
+    <input type="email" id="loginEmail" class="modal-input" placeholder="you@example.com">
+    <label class="modal-input-label">Password</label>
+    <input type="password" id="loginPassword" class="modal-input" placeholder="••••••••">
+
+    <button type="button" class="btn-modal-primary" onclick="handleEmailLogin()">Sign In</button>
+    <button type="button" class="btn-modal-cancel" onclick="closeLoginModal()">Cancel</button>
   </div>
+</div>
 
-  <script>
-    const DASHBOARDS = {
-      household:  'portals/tgold/dashboard.html',
-      licensee:   'portals/gic/dashboard.html',
-      jeweler:    'portals/tjr/dashboard.html',
-      designer:   'portals/tjdb/dashboard.html',
-      returnee:   'portals/tjr/dashboard.html',
-      consultant: 'portals/tgold/dashboard.html',
-      advertiser: 'portals/tgold/dashboard.html',
-      ombudsman:  'portals/ombudsman/dashboard.html'
+<script src="js/shared.js"></script>
+<script type="module" src="js/firebase-backend.js"></script>
+
+<script>
+  /* ── State ──────────────────────────────────────────────────────────────── */
+  let currentWizardStep = 1;
+  const totalWizardSteps = 4;
+  let selectedRoles = [];
+
+  const DASHBOARDS = {
+    household:'portals/tgold/dashboard.html', licensee:'portals/gic/dashboard.html',
+    jeweler:'portals/tjr/dashboard.html',     designer:'portals/tjdb/dashboard.html',
+    returnee:'portals/tjr/dashboard.html',    consultant:'portals/tgold/dashboard.html',
+    advertiser:'portals/tgold/dashboard.html',ombudsman:'portals/ombudsman/dashboard.html'
+  };
+
+  /* ── Helpers ────────────────────────────────────────────────────────────── */
+  function waitForFn(name, cb) {
+    const t = setInterval(() => { if (typeof window[name] === 'function') { clearInterval(t); cb(); } }, 100);
+  }
+  function redirectByRole(profile) {
+    const r = profile.primaryRole;
+    window.location.href = (r && DASHBOARDS[r]) ? DASHBOARDS[r] : 'portals/tgold/dashboard.html';
+  }
+
+  /* ── Wizard UI ──────────────────────────────────────────────────────────── */
+  function updateWizardUI() {
+    document.querySelectorAll('.progress-step').forEach((el, i) => {
+      el.classList.remove('active','done');
+      if (i + 1 < currentWizardStep) el.classList.add('done');
+      else if (i + 1 === currentWizardStep) el.classList.add('active');
+    });
+    [1,2,3].forEach(i => {
+      const line = document.getElementById('line' + i);
+      if (line) line.classList.toggle('done', i < currentWizardStep);
+    });
+    document.getElementById('progressFill').style.width = (currentWizardStep / totalWizardSteps * 100) + '%';
+    document.getElementById('topbarStepLabel').textContent = `Step ${currentWizardStep} of ${totalWizardSteps}`;
+
+    for (let i = 1; i <= totalWizardSteps; i++) {
+      const el = document.getElementById('step' + i);
+      if (el) el.style.display = i === currentWizardStep ? 'block' : 'none';
+    }
+    document.getElementById('wizardPrev').style.display   = currentWizardStep > 1 ? 'inline-flex' : 'none';
+    document.getElementById('wizardNext').style.display   = currentWizardStep < totalWizardSteps ? 'inline-flex' : 'none';
+    document.getElementById('wizardSubmit').style.display = currentWizardStep === totalWizardSteps ? 'inline-flex' : 'none';
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+
+  function nextStep() {
+    const v = validateCurrentStep();
+    if (!v.valid) { showToast(v.errors[0], 'error'); return; }
+    if (currentWizardStep < totalWizardSteps) {
+      currentWizardStep++;
+      updateWizardUI();
+      if (currentWizardStep === 4) populateReview();
+    }
+  }
+  function prevStep() { if (currentWizardStep > 1) { currentWizardStep--; updateWizardUI(); } }
+  function goToStep(s) { if (s >= 1 && s <= currentWizardStep) { currentWizardStep = s; updateWizardUI(); } }
+
+  /* ── Role selection ─────────────────────────────────────────────────────── */
+  function updateRoleSelection() {
+    selectedRoles = [...document.querySelectorAll('input[name="roles"]:checked')].map(c => c.value);
+    document.querySelectorAll('.role-card').forEach(card => {
+      card.classList.toggle('selected', card.querySelector('input').checked);
+    });
+    const incompatible = typeof getIncompatibleRoles === 'function' ? getIncompatibleRoles(selectedRoles) : [];
+    const hasConflict  = typeof isRoleCombinationValid === 'function' ? !isRoleCombinationValid(selectedRoles) : false;
+    document.querySelectorAll('.role-card').forEach(card => {
+      const inp = card.querySelector('input');
+      const dis = incompatible.includes(inp.value) && !inp.checked;
+      card.classList.toggle('disabled', dis);
+      inp.disabled = dis;
+    });
+    const warn = document.getElementById('roleWarning');
+    if (hasConflict) {
+      warn.classList.add('visible');
+      document.getElementById('roleWarningText').textContent = 'Selected roles cannot be combined. Please remove a conflicting role.';
+    } else if (selectedRoles.includes('ombudsman') && selectedRoles.length > 1) {
+      warn.classList.add('visible');
+      document.getElementById('roleWarningText').textContent = 'Ombudsman is an exclusive role and cannot be combined with others.';
+    } else {
+      warn.classList.remove('visible');
+    }
+  }
+
+  /* ── KYC upload ─────────────────────────────────────────────────────────── */
+  function handleKYCUpload(input, docType) {
+    const file = input.files[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { showToast('File must be under 5 MB', 'error'); input.value = ''; return; }
+    if (!['image/jpeg','image/png','application/pdf'].includes(file.type)) {
+      showToast('Only JPG, PNG and PDF files are allowed', 'error'); input.value = ''; return;
+    }
+    document.getElementById('upload-' + docType).classList.add('uploaded');
+    const fn = document.getElementById('filename-' + docType);
+    fn.textContent = '✓ ' + file.name;
+    showToast(docType.toUpperCase() + ' document uploaded', 'success');
+  }
+
+  /* ── Step validation ────────────────────────────────────────────────────── */
+  function validateCurrentStep() {
+    if (currentWizardStep === 1) {
+      if (!selectedRoles.length) return { valid:false, errors:['Please select at least one role'] };
+      if (typeof isRoleCombinationValid === 'function' && !isRoleCombinationValid(selectedRoles))
+        return { valid:false, errors:['Selected roles cannot be combined. Please adjust your selection.'] };
+    }
+    if (currentWizardStep === 2) {
+      for (const inp of document.querySelectorAll('#step2 [required]')) {
+        if (!inp.value.trim()) return { valid:false, errors:[(inp.placeholder || inp.name) + ' is required'] };
+        if (inp.type === 'email' && typeof isValidEmail === 'function' && !isValidEmail(inp.value))
+          return { valid:false, errors:['Please enter a valid email address'] };
+        if (inp.dataset.validate === 'phone' && typeof isValidPhone === 'function' && !isValidPhone(inp.value))
+          return { valid:false, errors:['Please enter a valid 10-digit mobile number'] };
+        if (inp.dataset.validate === 'pan' && typeof isValidPAN === 'function' && !isValidPAN(inp.value))
+          return { valid:false, errors:['Please enter a valid PAN (e.g. ABCDE1234F)'] };
+        if (inp.dataset.validate === 'aadhaar' && typeof isValidAadhaar === 'function' && !isValidAadhaar(inp.value))
+          return { valid:false, errors:['Please enter a valid 12-digit Aadhaar number'] };
+      }
+      const form = document.getElementById('registrationForm');
+      const pwd  = form.querySelector('[name="password"]').value;
+      const cpwd = form.querySelector('[name="confirmPassword"]').value;
+      if (typeof isStrongPassword === 'function' && !isStrongPassword(pwd))
+        return { valid:false, errors:['Password must be 8+ chars with uppercase, number and special character'] };
+      if (pwd !== cpwd) return { valid:false, errors:['Passwords do not match'] };
+    }
+    if (currentWizardStep === 3) {
+      if (!document.querySelector('[name="panDoc"]').files.length)    return { valid:false, errors:['Please upload your PAN card'] };
+      if (!document.querySelector('[name="aadhaarDoc"]').files.length) return { valid:false, errors:['Please upload your Aadhaar card'] };
+      if (!document.querySelector('[name="photoDoc"]').files.length)   return { valid:false, errors:['Please upload your passport photo'] };
+    }
+    return { valid:true, errors:[] };
+  }
+
+  /* ── Review ─────────────────────────────────────────────────────────────── */
+  function populateReview() {
+    const rn = typeof getRoleDisplayName === 'function' ? getRoleDisplayName : r => r;
+    document.getElementById('reviewRoles').innerHTML = selectedRoles.map(r =>
+      `<span style="display:inline-block;padding:.25rem .75rem;background:rgba(212,175,55,.12);color:var(--gold);border-radius:50px;font-size:.78rem;font-weight:600;margin:.2rem .2rem .2rem 0;">${rn(r)}</span>`
+    ).join('');
+    const form = document.getElementById('registrationForm');
+    document.getElementById('reviewName').textContent     = form.querySelector('[name="firstName"]').value + ' ' + form.querySelector('[name="lastName"]').value;
+    document.getElementById('reviewEmail').textContent    = form.querySelector('[name="email"]').value;
+    document.getElementById('reviewPhone').textContent    = form.querySelector('[name="phone"]').value;
+    document.getElementById('reviewPan').textContent      = form.querySelector('[name="pan"]').value.toUpperCase();
+    document.getElementById('reviewLocation').textContent = `${form.querySelector('[name="city"]').value}, ${form.querySelector('[name="state"]').value} – ${form.querySelector('[name="pincode"]').value}`;
+    const docs = [];
+    if (document.querySelector('[name="panDoc"]').files.length)    docs.push('PAN Card');
+    if (document.querySelector('[name="aadhaarDoc"]').files.length) docs.push('Aadhaar Card');
+    if (document.querySelector('[name="photoDoc"]').files.length)   docs.push('Passport Photo');
+    if (document.querySelector('[name="addressDoc"]').files.length) docs.push('Address Proof');
+    document.getElementById('reviewDocs').innerHTML = docs.map(d =>
+      `<div class="review-row"><span class="review-key">${d}</span><span class="review-val review-success">✓ Uploaded</span></div>`
+    ).join('');
+  }
+
+  /* ── Form submit ─────────────────────────────────────────────────────────── */
+  document.getElementById('registrationForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    if (!document.getElementById('agreeTerms').checked || !document.getElementById('agreeKYC').checked) {
+      showToast('Please agree to the terms and confirm your information is accurate', 'error'); return;
+    }
+    showLoading('Creating your account…');
+    const form = document.getElementById('registrationForm');
+    const fd = {
+      email:      form.querySelector('[name="email"]').value.trim(),
+      password:   form.querySelector('[name="password"]').value,
+      firstName:  form.querySelector('[name="firstName"]').value.trim(),
+      lastName:   form.querySelector('[name="lastName"]').value.trim(),
+      phone:      form.querySelector('[name="phone"]').value.trim(),
+      pan:        form.querySelector('[name="pan"]').value.trim(),
+      aadhaar:    form.querySelector('[name="aadhaar"]').value.replace(/\s/g,''),
+      address:    form.querySelector('[name="address"]').value.trim(),
+      city:       form.querySelector('[name="city"]').value.trim(),
+      state:      form.querySelector('[name="state"]').value.trim(),
+      pincode:    form.querySelector('[name="pincode"]').value.trim(),
+      roles:      selectedRoles,
+      panDoc:     form.querySelector('[name="panDoc"]').files[0]     || null,
+      aadhaarDoc: form.querySelector('[name="aadhaarDoc"]').files[0] || null,
+      photoDoc:   form.querySelector('[name="photoDoc"]').files[0]   || null,
+      addressDoc: form.querySelector('[name="addressDoc"]').files[0] || null,
     };
-
-    function openLoginModal()  { document.getElementById('loginModal').style.display = 'flex'; }
-    function closeLoginModal() { document.getElementById('loginModal').style.display = 'none'; }
-
-    document.getElementById('loginModal').addEventListener('click', function(e) {
-      if (e.target === this) closeLoginModal();
+    waitForFn('firebaseRegisterUser', () => {
+      window.firebaseRegisterUser(fd)
+        .then(({ uid, primaryRole }) => {
+          hideLoading();
+          showToast('Registration successful! Please verify your email. Redirecting…', 'success');
+          setTimeout(() => { window.location.href = DASHBOARDS[primaryRole] || 'portals/tgold/dashboard.html'; }, 2000);
+        })
+        .catch(err => {
+          hideLoading();
+          const msg = err.code === 'auth/email-already-in-use' ? 'This email is already registered. Please log in.'
+                    : err.code === 'auth/weak-password'        ? 'Password is too weak. Use at least 8 characters.'
+                    : err.message || 'Registration failed. Please try again.';
+          showToast(msg, 'error');
+        });
     });
+  }, 2000);
 
-    function redirectByRole(profile) {
-      const role = profile.primaryRole;
-      window.location.href = (role && DASHBOARDS[role]) ? DASHBOARDS[role] : 'portals/tgold/dashboard.html';
-    }
+  /* ── Modal ───────────────────────────────────────────────────────────────── */
+  function openLoginModal()  { document.getElementById('loginModal').classList.add('open'); document.body.style.overflow = 'hidden'; }
+  function closeLoginModal() { document.getElementById('loginModal').classList.remove('open'); document.body.style.overflow = ''; }
+  document.getElementById('loginModal').addEventListener('click', e => { if (e.target === document.getElementById('loginModal')) closeLoginModal(); });
+  document.getElementById('loginPassword').addEventListener('keydown', e => { if (e.key === 'Enter') handleEmailLogin(); });
 
-    function waitForFn(name, cb) {
-      const t = setInterval(() => {
-        if (typeof window[name] === 'function') { clearInterval(t); cb(); }
-      }, 100);
-    }
-
-    // ── Google Sign-In ────────────────────────────────────────────────────────
-    function handleGoogleSignIn() {
-      waitForFn('firebaseGoogleSignIn', () => {
-        window.firebaseGoogleSignIn()
-          .then((result) => {
-            if (result.isNewUser) {
-              showToast('Google account linked! Please complete your profile & KYC.', 'success');
-              closeLoginModal();
-            } else {
-              showToast('Welcome back! Redirecting\u2026', 'success');
-              closeLoginModal();
-              setTimeout(() => redirectByRole(result), 1500);
-            }
-          })
-          .catch((err) => {
-            if (err.code !== 'auth/popup-closed-by-user') {
-              showToast(err.message || 'Google sign-in failed.', 'error');
-            }
-          });
-      });
-    }
-
-    // ── Email / Password Login ────────────────────────────────────────────────
-    function handleEmailLogin() {
-      const email    = document.getElementById('loginEmail').value.trim();
-      const password = document.getElementById('loginPassword').value;
-      if (!email || !password) { showToast('Please enter email and password.', 'error'); return; }
-
-      waitForFn('firebaseLogin', () => {
-        window.firebaseLogin(email, password)
-          .then((profile) => {
-            showToast('Signed in! Redirecting\u2026', 'success');
+  /* ── Google Sign-In ──────────────────────────────────────────────────────── */
+  function handleGoogleSignIn() {
+    waitForFn('firebaseGoogleSignIn', () => {
+      window.firebaseGoogleSignIn()
+        .then(result => {
+          if (!result) return;
+          if (result.isNewUser) {
+            showToast('Google account linked! Please complete your profile & KYC.', 'success');
             closeLoginModal();
-            setTimeout(() => redirectByRole(profile), 1500);
-          })
-          .catch((err) => {
-            const msg = err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password'
-              ? 'Incorrect email or password.'
-              : err.code === 'auth/user-not-found'
-              ? 'No account found with this email.'
-              : err.code === 'auth/too-many-requests'
-              ? 'Too many attempts. Please try again later.'
-              : err.message || 'Sign-in failed.';
-            showToast(msg, 'error');
-          });
-      });
-    }
-
-    document.getElementById('loginPassword').addEventListener('keydown', function(e) {
-      if (e.key === 'Enter') handleEmailLogin();
+          } else {
+            showToast('Welcome back! Redirecting\u2026', 'success');
+            closeLoginModal();
+            setTimeout(() => redirectByRole(result), 1500);
+          }
+        })
+        .catch(err => { if (err && err.code !== 'auth/popup-closed-by-user') showToast(err.message || 'Google sign-in failed.', 'error'); });
     });
-  </script>
+  }
+
+  /* ── Email Login ─────────────────────────────────────────────────────────── */
+  function handleEmailLogin() {
+    const email = document.getElementById('loginEmail').value.trim();
+    const pwd   = document.getElementById('loginPassword').value;
+    if (!email || !pwd) { showToast('Please enter email and password.', 'error'); return; }
+    waitForFn('firebaseLogin', () => {
+      window.firebaseLogin(email, pwd)
+        .then(profile => { showToast('Signed in! Redirecting\u2026', 'success'); closeLoginModal(); setTimeout(() => redirectByRole(profile), 1500); })
+        .catch(err => {
+          const msg = err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password' ? 'Incorrect email or password.'
+                    : err.code === 'auth/user-not-found'    ? 'No account found with this email.'
+                    : err.code === 'auth/too-many-requests' ? 'Too many attempts. Try again later.'
+                    : err.message || 'Sign-in failed.';
+          showToast(msg, 'error');
+        });
+    });
+  }
+
+  /* ── Init ────────────────────────────────────────────────────────────────── */
+  document.addEventListener('DOMContentLoaded', () => {
+    updateWizardUI();
+    waitForFn('checkGoogleRedirect', () => {
+      window.checkGoogleRedirect().then(result => {
+        if (!result) return;
+        if (result.isNewUser) showToast('Google account linked! Please complete your profile & KYC.', 'success');
+        else { showToast('Welcome back! Redirecting\u2026', 'success'); setTimeout(() => redirectByRole(result), 1500); }
+      });
+    });
+  });
+</script>
 </body>
 </html>
