@@ -5,7 +5,7 @@
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
-         onAuthStateChanged, signOut, sendEmailVerification,
+         onAuthStateChanged, signOut, sendEmailVerification, sendPasswordResetEmail,
          GoogleAuthProvider, signInWithRedirect, getRedirectResult }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { getFirestore, doc, setDoc, getDoc, onSnapshot, serverTimestamp }
@@ -106,6 +106,8 @@ window.firebaseRegisterUser = async function(formData) {
           address, city, state, pincode, roles,
           panDoc, aadhaarDoc, photoDoc, addressDoc } = formData;
 
+  if (!roles || !roles.length) throw new Error('Please select at least one role.');
+
   // 1. Create Firebase Auth account
   const userCredential = await createUserWithEmailAndPassword(auth, email, password);
   const user = userCredential.user;
@@ -169,6 +171,11 @@ window.firebaseLogin = async function(email, password) {
   return userDoc.data();
 };
 
+// ─── Password Reset ─────────────────────────────────────────────────────────
+window.firebaseResetPassword = async function(email) {
+  await sendPasswordResetEmail(auth, email);
+};
+
 // ─── Logout ───────────────────────────────────────────────────────────────────
 window.firebaseLogout = async function() {
   await signOut(auth);
@@ -199,20 +206,20 @@ window.initAuthGuard = function(requireAuth = true, redirectTo = '/registration.
 window.syncUserProfile = function(uid, onUpdate) {
   return onSnapshot(doc(db, 'users', uid), (snapshot) => {
     if (snapshot.exists()) onUpdate(snapshot.data());
-  });
+  }, (err) => console.error('syncUserProfile error:', err));
 };
 
 // ─── Real-time Balance Sync ───────────────────────────────────────────────────
 window.syncTGDPBalance = function(uid, onUpdate) {
   return onSnapshot(doc(db, 'tgdp_balances', uid), (snapshot) => {
     onUpdate(snapshot.exists() ? snapshot.data() : { balance: 0 });
-  });
+  }, (err) => console.error('syncTGDPBalance error:', err));
 };
 
 window.syncFTRBalance = function(uid, onUpdate) {
   return onSnapshot(doc(db, 'ftr_balances', uid), (snapshot) => {
     onUpdate(snapshot.exists() ? snapshot.data() : { balance: 0 });
-  });
+  }, (err) => console.error('syncFTRBalance error:', err));
 };
 
 // ─── Export for use in non-module scripts ────────────────────────────────────

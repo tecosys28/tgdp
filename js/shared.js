@@ -4,28 +4,7 @@
    Last Updated: March 2026
    ═══════════════════════════════════════════════════════════════════════════ */
 
-// ═══════════════════════════════════════════════════════════════════════════
-// FIREBASE CONFIGURATION (Replace with your Firebase project details)
-// ═══════════════════════════════════════════════════════════════════════════
-const FIREBASE_CONFIG = {
-  apiKey: "AIzaSyAsHHiCqvvlwzt3Zx7nwbKCnpmkWG-HPpc",
-  authDomain: "tgdp-d4a3d.firebaseapp.com",
-  projectId: "tgdp-d4a3d",
-  storageBucket: "tgdp-d4a3d.firebasestorage.app",
-  messagingSenderId: "399267274832",
-  appId: "1:399267274832:web:202956b9af788eb96ff155",
-  measurementId: "G-NHVPJS29MB"
-};
-
-// Firebase initialization (uncomment when Firebase SDK is loaded)
-// import { initializeApp } from 'firebase/app';
-// import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword } from 'firebase/auth';
-// import { getFirestore, collection, doc, setDoc, getDoc, updateDoc, query, where, getDocs } from 'firebase/firestore';
-// import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
-// const app = initializeApp(FIREBASE_CONFIG);
-// const auth = getAuth(app);
-// const db = getFirestore(app);
-// const storage = getStorage(app);
+// Firebase config lives in js/firebase-backend.js (ES module)
 
 // ═══════════════════════════════════════════════════════════════════════════
 // RAZORPAY CONFIGURATION

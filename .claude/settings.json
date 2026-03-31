@@ -17,7 +17,10 @@
       "Bash(firebase deploy:*)",
       "Bash(git pull:*)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(node -c js/shared.js)",
+      "Bash(node -c css/shared.css)",
+      "Bash(python3:*)"
     ]
   }
 }

@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Sign in to TGDP Ecosystem - Access your dashboard">
+  <title>Sign In · TGDP Ecosystem</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/shared.css">
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body { background: #0a0a0f; min-height: 100vh; overflow-x: hidden; }
+
+    /* ── Layout ───────────────────────────────────────────────────────────── */
+    .login-wrap {
+      display: grid;
+      grid-template-columns: 1fr 480px;
+      min-height: 100vh;
+    }
+
+    /* ── Left visual panel ────────────────────────────────────────────────── */
+    .login-left {
+      position: relative;
+      background: linear-gradient(160deg, #0e0e16 0%, #12121f 60%, #0a0a0f 100%);
+      display: flex; flex-direction: column;
+      justify-content: center; align-items: center;
+      padding: 3rem;
+      overflow: hidden;
+    }
+    .login-orb {
+      position: absolute; border-radius: 50%; filter: blur(80px); pointer-events: none;
+    }
+    .login-orb-1 { width: 400px; height: 400px; background: rgba(212,175,55,.1); top: -100px; left: -100px; }
+    .login-orb-2 { width: 300px; height: 300px; background: rgba(167,139,250,.07); bottom: -50px; right: -50px; }
+    .login-orb-3 { width: 200px; height: 200px; background: rgba(45,212,191,.06); top: 50%; left: 60%; }
+
+    .login-left-content { position: relative; z-index: 1; max-width: 480px; }
+
+    .login-brand {
+      display: flex; align-items: center; gap: .75rem;
+      text-decoration: none; margin-bottom: 3rem;
+    }
+    .login-brand img { width: 44px; height: 44px; border-radius: 12px; object-fit: cover; }
+    .login-brand-text { font-family: var(--font-display); font-size: 1.5rem; font-weight: 700; color: var(--gold); }
+
+    .login-headline {
+      font-family: var(--font-display);
+      font-size: 2.8rem; font-weight: 700; line-height: 1.15;
+      color: #fff; margin-bottom: 1.25rem;
+    }
+    .login-headline em { color: var(--gold); font-style: italic; }
+    .login-subline {
+      font-size: 1.05rem; color: var(--text-secondary);
+      line-height: 1.7; margin-bottom: 3rem;
+    }
+
+    .login-stats {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem;
+    }
+    .login-stat {
+      background: rgba(255,255,255,.03);
+      border: 1px solid rgba(255,255,255,.06);
+      border-radius: 14px; padding: 1.25rem;
+      text-align: center;
+    }
+    .login-stat-num {
+      font-family: var(--font-display);
+      font-size: 1.6rem; font-weight: 700; color: var(--gold);
+      margin-bottom: .25rem;
+    }
+    .login-stat-label {
+      font-size: .75rem; color: var(--text-muted);
+      text-transform: uppercase; letter-spacing: .08em;
+    }
+
+    /* ── Right sign-in panel ──────────────────────────────────────────────── */
+    .login-right {
+      display: flex; flex-direction: column;
+      justify-content: center; align-items: center;
+      padding: 2.5rem;
+      border-left: 1px solid rgba(212,175,55,.08);
+      background: #0a0a0f;
+    }
+
+    .login-card {
+      width: 100%; max-width: 380px;
+    }
+
+    .login-card-tag {
+      display: inline-flex; align-items: center; gap: .5rem;
+      padding: .3rem .85rem; border-radius: 50px;
+      background: rgba(212,175,55,.1); border: 1px solid rgba(212,175,55,.2);
+      font-size: .72rem; font-weight: 600; color: var(--gold);
+      letter-spacing: .08em; text-transform: uppercase;
+      margin-bottom: 1.5rem;
+    }
+    .login-card-tag .dot { width: 5px; height: 5px; background: var(--gold); border-radius: 50%; animation: blink 2s infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+    .login-card-title {
+      font-family: var(--font-display);
+      font-size: 2rem; font-weight: 700; color: #fff;
+      margin-bottom: .35rem;
+    }
+    .login-card-title em { color: var(--gold); font-style: italic; }
+    .login-card-sub {
+      font-size: .9rem; color: var(--text-muted);
+      margin-bottom: 2rem; line-height: 1.6;
+    }
+
+    /* ── Google button ────────────────────────────────────────────────────── */
+    .google-btn {
+      width: 100%; display: flex; align-items: center; justify-content: center; gap: .65rem;
+      padding: .85rem 1.25rem;
+      background: rgba(255,255,255,.05); border: 1px solid rgba(255,255,255,.12);
+      border-radius: 12px; color: #fff; font-size: .95rem; font-family: inherit;
+      font-weight: 500; cursor: pointer; transition: all .25s;
+    }
+    .google-btn:hover { background: rgba(255,255,255,.09); border-color: rgba(255,255,255,.22); transform: translateY(-1px); }
+
+    .or-divider {
+      display: flex; align-items: center; gap: 1rem;
+      color: var(--text-muted); font-size: .8rem;
+      margin: 1.5rem 0;
+    }
+    .or-divider::before, .or-divider::after { content: ''; flex: 1; height: 1px; background: rgba(255,255,255,.08); }
+
+    /* ── Form ─────────────────────────────────────────────────────────────── */
+    .login-form-group { margin-bottom: 1.15rem; }
+    .login-label {
+      display: block; font-size: .75rem; font-weight: 600;
+      color: var(--text-secondary); text-transform: uppercase;
+      letter-spacing: .04em; margin-bottom: .4rem;
+    }
+    .login-input {
+      width: 100%; padding: .75rem 1rem;
+      background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.1);
+      border-radius: 10px; color: #fff; font-size: .95rem; font-family: inherit;
+      transition: border-color .2s, background .2s;
+    }
+    .login-input:focus { outline: none; border-color: rgba(212,175,55,.5); background: rgba(212,175,55,.04); }
+    .login-input::placeholder { color: var(--text-muted); }
+
+    .login-options {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1.5rem;
+    }
+    .login-remember {
+      display: flex; align-items: center; gap: .5rem;
+      font-size: .82rem; color: var(--text-secondary); cursor: pointer;
+    }
+    .login-remember input { accent-color: var(--gold); cursor: pointer; }
+    .login-forgot {
+      font-size: .82rem; color: var(--gold); text-decoration: none;
+      font-weight: 500; transition: color .2s;
+    }
+    .login-forgot:hover { color: var(--gold-light); }
+
+    .btn-login {
+      width: 100%; padding: .85rem;
+      background: var(--gold); border: none; color: #000;
+      border-radius: 10px; font-size: 1rem; font-weight: 700;
+      font-family: inherit; cursor: pointer; transition: all .25s;
+      box-shadow: 0 0 24px rgba(212,175,55,.25);
+    }
+    .btn-login:hover { background: var(--gold-light); transform: translateY(-1px); box-shadow: 0 0 36px rgba(212,175,55,.4); }
+    .btn-login:disabled { opacity: .5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+    .login-footer {
+      text-align: center; margin-top: 2rem;
+      font-size: .875rem; color: var(--text-muted);
+    }
+    .login-footer a {
+      color: var(--gold); text-decoration: none; font-weight: 600;
+      transition: color .2s;
+    }
+    .login-footer a:hover { color: var(--gold-light); }
+
+    .login-error {
+      display: none; align-items: center; gap: .6rem;
+      background: rgba(239,68,68,.1); border: 1px solid rgba(239,68,68,.25);
+      border-radius: 10px; padding: .75rem 1rem;
+      font-size: .82rem; color: #f87171; margin-bottom: 1rem;
+    }
+    .login-error.visible { display: flex; }
+
+    .login-success {
+      display: none; align-items: center; gap: .6rem;
+      background: rgba(74,222,128,.1); border: 1px solid rgba(74,222,128,.25);
+      border-radius: 10px; padding: .75rem 1rem;
+      font-size: .82rem; color: #4ade80; margin-bottom: 1rem;
+    }
+    .login-success.visible { display: flex; }
+
+    /* ── Password reset modal ─────────────────────────────────────────────── */
+    .modal-backdrop {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.92);
+      z-index: 9999; align-items: center; justify-content: center; padding: 1rem;
+    }
+    .modal-backdrop.open { display: flex; }
+    .modal-box {
+      background: #13131e; border: 1px solid rgba(255,255,255,.1);
+      border-radius: 20px; padding: 2rem; width: 100%; max-width: 400px;
+      animation: modal-in .25s ease;
+    }
+    @keyframes modal-in { from{opacity:0;transform:scale(.95)} to{opacity:1;transform:scale(1)} }
+    .modal-title { font-family: var(--font-display); font-size: 1.4rem; color: var(--gold); margin-bottom: .25rem; }
+    .modal-sub { font-size: .85rem; color: var(--text-muted); margin-bottom: 1.25rem; line-height: 1.6; }
+
+    /* ── Legal footer ─────────────────────────────────────────────────────── */
+    .login-legal {
+      position: absolute; bottom: 1.5rem; left: 0; right: 0;
+      text-align: center; font-size: .72rem; color: var(--text-muted);
+    }
+    .login-legal a { color: var(--gold); text-decoration: none; }
+
+    /* ── Responsive ───────────────────────────────────────────────────────── */
+    @media (max-width: 960px) {
+      .login-wrap { grid-template-columns: 1fr; }
+      .login-left { display: none; }
+      .login-right { border-left: none; min-height: 100vh; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="login-wrap">
+
+  <!-- ── Left visual panel ──────────────────────────────────────────────── -->
+  <div class="login-left">
+    <div class="login-orb login-orb-1"></div>
+    <div class="login-orb login-orb-2"></div>
+    <div class="login-orb login-orb-3"></div>
+
+    <div class="login-left-content">
+      <a href="index.html" class="login-brand">
+        <img src="assets/images/trot-logo.jpg" alt="TROT">
+        <span class="login-brand-text">TGDP Ecosystem</span>
+      </a>
+
+      <h1 class="login-headline">Welcome Back to<br>the <em>Gold Standard</em></h1>
+      <p class="login-subline">Access your dashboard, manage your portfolio, and participate in the world's first tokenized gold protocol.</p>
+
+      <div class="login-stats">
+        <div class="login-stat">
+          <div class="login-stat-num">164</div>
+          <div class="login-stat-label">Nations</div>
+        </div>
+        <div class="login-stat">
+          <div class="login-stat-num">$2.4T</div>
+          <div class="login-stat-label">Gold Value</div>
+        </div>
+        <div class="login-stat">
+          <div class="login-stat-num">24/7</div>
+          <div class="login-stat-label">Trading</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="login-legal">
+      <p>&copy; 2026 TGDP Ecosystem &middot; <a href="docs/agreements/terms.html">Terms</a> &middot; <a href="docs/agreements/privacy.html">Privacy</a></p>
+    </div>
+  </div>
+
+  <!-- ── Right sign-in panel ────────────────────────────────────────────── -->
+  <div class="login-right">
+    <div class="login-card">
+
+      <div class="login-card-tag"><span class="dot"></span>Secure Login</div>
+      <h2 class="login-card-title">Sign <em>In</em></h2>
+      <p class="login-card-sub">Enter your credentials to access your TGDP dashboard.</p>
+
+      <!-- Google Sign-In -->
+      <button type="button" class="google-btn" onclick="handleGoogleSignIn()">
+        <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+          <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
+          <path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/>
+          <path d="M3.964 10.707A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332z" fill="#FBBC05"/>
+          <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.961L3.964 6.293C4.672 4.166 6.656 3.58 9 3.58z" fill="#EA4335"/>
+        </svg>
+        Continue with Google
+      </button>
+
+      <div class="or-divider">or sign in with email</div>
+
+      <!-- Error / Success messages -->
+      <div class="login-error" id="loginError">
+        <span>&#10007;</span>
+        <span id="loginErrorText">Invalid credentials</span>
+      </div>
+      <div class="login-success" id="loginSuccess">
+        <span>&#10003;</span>
+        <span id="loginSuccessText">Signed in! Redirecting...</span>
+      </div>
+
+      <!-- Email/Password form -->
+      <form id="loginForm" onsubmit="handleEmailLogin(event)">
+        <div class="login-form-group">
+          <label class="login-label" for="loginEmail">Email Address</label>
+          <input type="email" id="loginEmail" class="login-input" placeholder="you@example.com" required>
+        </div>
+
+        <div class="login-form-group">
+          <label class="login-label" for="loginPassword">Password</label>
+          <input type="password" id="loginPassword" class="login-input" placeholder="Enter your password" required>
+        </div>
+
+        <div class="login-options">
+          <label class="login-remember">
+            <input type="checkbox" id="rememberMe"> Remember me
+          </label>
+          <a href="#" class="login-forgot" onclick="openResetModal(); return false;">Forgot password?</a>
+        </div>
+
+        <button type="submit" class="btn-login" id="btnLogin">Sign In</button>
+      </form>
+
+      <div class="login-footer">
+        Don't have an account? <a href="registration.html">Create Account</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Password Reset Modal ────────────────────────────────────────────── -->
+<div class="modal-backdrop" id="resetModal">
+  <div class="modal-box">
+    <div class="modal-title">Reset Password</div>
+    <div class="modal-sub">Enter your email and we'll send you a link to reset your password.</div>
+
+    <label class="login-label" for="resetEmail">Email Address</label>
+    <input type="email" id="resetEmail" class="login-input" placeholder="you@example.com" style="margin-bottom:1.25rem;">
+
+    <div class="login-error" id="resetError" style="display:none;">
+      <span>&#10007;</span>
+      <span id="resetErrorText"></span>
+    </div>
+    <div class="login-success" id="resetSuccess" style="display:none;">
+      <span>&#10003;</span>
+      <span id="resetSuccessText"></span>
+    </div>
+
+    <button type="button" class="btn-login" onclick="handlePasswordReset()" style="margin-bottom:.75rem;">Send Reset Link</button>
+    <button type="button" class="google-btn" onclick="closeResetModal()">Cancel</button>
+  </div>
+</div>
+
+<script src="js/shared.js"></script>
+<script type="module" src="js/firebase-backend.js"></script>
+
+<script>
+  /* ── Dashboard routing ──────────────────────────────────────────────────── */
+  const DASHBOARDS = {
+    household:'portals/tgold/dashboard.html', licensee:'portals/gic/dashboard.html',
+    jeweler:'portals/tjr/dashboard.html',     designer:'portals/tjdb/dashboard.html',
+    returnee:'portals/tjr/dashboard.html',    consultant:'portals/tgold/dashboard.html',
+    advertiser:'portals/tgold/dashboard.html',ombudsman:'portals/ombudsman/dashboard.html'
+  };
+
+  function redirectByRole(profile) {
+    const r = profile.primaryRole;
+    window.location.href = (r && DASHBOARDS[r]) ? DASHBOARDS[r] : 'portals/tgold/dashboard.html';
+  }
+
+  function waitForFn(name, cb) {
+    const t = setInterval(() => { if (typeof window[name] === 'function') { clearInterval(t); cb(); } }, 100);
+  }
+
+  /* ── Show/hide messages ─────────────────────────────────────────────────── */
+  function showLoginError(msg) {
+    const el = document.getElementById('loginError');
+    document.getElementById('loginErrorText').textContent = msg;
+    el.classList.add('visible');
+    document.getElementById('loginSuccess').classList.remove('visible');
+  }
+  function showLoginSuccess(msg) {
+    const el = document.getElementById('loginSuccess');
+    document.getElementById('loginSuccessText').textContent = msg;
+    el.classList.add('visible');
+    document.getElementById('loginError').classList.remove('visible');
+  }
+  function clearMessages() {
+    document.getElementById('loginError').classList.remove('visible');
+    document.getElementById('loginSuccess').classList.remove('visible');
+  }
+
+  /* ── Email/Password Login ───────────────────────────────────────────────── */
+  function handleEmailLogin(e) {
+    if (e) e.preventDefault();
+    const email = document.getElementById('loginEmail').value.trim();
+    const pwd   = document.getElementById('loginPassword').value;
+    if (!email || !pwd) { showLoginError('Please enter both email and password.'); return; }
+
+    clearMessages();
+    const btn = document.getElementById('btnLogin');
+    btn.disabled = true;
+    btn.textContent = 'Signing in...';
+
+    waitForFn('firebaseLogin', () => {
+      window.firebaseLogin(email, pwd)
+        .then(profile => {
+          showLoginSuccess('Signed in! Redirecting to your dashboard...');
+          btn.textContent = 'Redirecting...';
+          setTimeout(() => redirectByRole(profile), 1500);
+        })
+        .catch(err => {
+          btn.disabled = false;
+          btn.textContent = 'Sign In';
+          const msg = err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password'
+                        ? 'Incorrect email or password. Please try again.'
+                    : err.code === 'auth/user-not-found'
+                        ? 'No account found with this email. Please register first.'
+                    : err.code === 'auth/too-many-requests'
+                        ? 'Too many failed attempts. Please try again later.'
+                    : err.message || 'Sign-in failed. Please try again.';
+          showLoginError(msg);
+        });
+    });
+  }
+
+  /* ── Google Sign-In ─────────────────────────────────────────────────────── */
+  function handleGoogleSignIn() {
+    waitForFn('firebaseGoogleSignIn', () => {
+      window.firebaseGoogleSignIn()
+        .then(result => {
+          if (!result) return;
+          if (result.isNewUser) {
+            showLoginSuccess('Google account linked! Redirecting to complete your profile...');
+            setTimeout(() => { window.location.href = 'registration.html'; }, 1500);
+          } else {
+            showLoginSuccess('Welcome back! Redirecting...');
+            setTimeout(() => redirectByRole(result), 1500);
+          }
+        })
+        .catch(err => {
+          if (err && err.code !== 'auth/popup-closed-by-user') {
+            showLoginError(err.message || 'Google sign-in failed.');
+          }
+        });
+    });
+  }
+
+  /* ── Password Reset Modal ───────────────────────────────────────────────── */
+  function openResetModal()  { document.getElementById('resetModal').classList.add('open'); document.body.style.overflow = 'hidden'; }
+  function closeResetModal() { document.getElementById('resetModal').classList.remove('open'); document.body.style.overflow = ''; }
+  document.getElementById('resetModal').addEventListener('click', e => { if (e.target === document.getElementById('resetModal')) closeResetModal(); });
+
+  function handlePasswordReset() {
+    const email = document.getElementById('resetEmail').value.trim();
+    if (!email) {
+      document.getElementById('resetError').style.display = 'flex';
+      document.getElementById('resetErrorText').textContent = 'Please enter your email address.';
+      document.getElementById('resetSuccess').style.display = 'none';
+      return;
+    }
+    waitForFn('firebaseResetPassword', () => {
+      window.firebaseResetPassword(email)
+        .then(() => {
+          document.getElementById('resetSuccess').style.display = 'flex';
+          document.getElementById('resetSuccessText').textContent = 'Password reset email sent! Check your inbox.';
+          document.getElementById('resetError').style.display = 'none';
+        })
+        .catch(err => {
+          document.getElementById('resetError').style.display = 'flex';
+          document.getElementById('resetErrorText').textContent = err.code === 'auth/user-not-found'
+            ? 'No account found with this email.'
+            : err.message || 'Failed to send reset email.';
+          document.getElementById('resetSuccess').style.display = 'none';
+        });
+    });
+  }
+
+  /* ── Enter key on password field ─────────────────────────────────────────── */
+  document.getElementById('loginPassword').addEventListener('keydown', e => {
+    if (e.key === 'Enter') handleEmailLogin(e);
+  });
+
+  /* ── Init: check Google redirect & auth state ───────────────────────────── */
+  document.addEventListener('DOMContentLoaded', () => {
+    // Check if user already logged in
+    waitForFn('checkGoogleRedirect', () => {
+      window.checkGoogleRedirect().then(result => {
+        if (!result) return;
+        if (result.isNewUser) {
+          showLoginSuccess('Google account linked! Redirecting to complete your profile...');
+          setTimeout(() => { window.location.href = 'registration.html'; }, 1500);
+        } else {
+          showLoginSuccess('Welcome back! Redirecting...');
+          setTimeout(() => redirectByRole(result), 1500);
+        }
+      });
+    });
+  });
+</script>
+</body>
+</html>
