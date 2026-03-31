@@ -10,10 +10,10 @@
 // RAZORPAY CONFIGURATION
 // ═══════════════════════════════════════════════════════════════════════════
 const RAZORPAY_CONFIG = {
-  key_id: "SNvdpImD0XKojj",  // TROT Gold Razorpay Key ID
+  key_id: "SNvdpImD0XKojj",  // Deepa Tidke — Razorpay Merchant ID
   key_secret: "YOUR_KEY_SECRET",       // Keep this on server-side only - DO NOT expose in frontend
   currency: "INR",
-  company_name: "TROT Gold",
+  company_name: "Deepa Tidke — TGDP Ecosystem",
   company_logo: "assets/images/trot-logo.jpg",
   theme_color: "#d4af37"
 };

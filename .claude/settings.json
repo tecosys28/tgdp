@@ -20,7 +20,13 @@
       "Bash(git commit:*)",
       "Bash(node -c js/shared.js)",
       "Bash(node -c css/shared.css)",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "Bash(ls -la c:/Users/PRATHMESH/Downloads/tgdp/portals/*/dashboard.html c:/Users/PRATHMESH/Downloads/tgdp/portals/*/index.html)",
+      "Bash(tail -1 grep -n \"</body>\" c:/Users/PRATHMESH/Downloads/tgdp/portals/gic/dashboard.html)",
+      "Bash(tail -1 grep -n \"</body>\" c:/Users/PRATHMESH/Downloads/tgdp/portals/tjr/dashboard.html)",
+      "Bash(tail -1 grep -n \"</body>\" c:/Users/PRATHMESH/Downloads/tgdp/portals/tjdb/dashboard.html)",
+      "Bash(tail -1 grep -n \"</body>\" c:/Users/PRATHMESH/Downloads/tgdp/portals/ombudsman/dashboard.html)",
+      "Bash(tail -1 grep -n \"</body>\" c:/Users/PRATHMESH/Downloads/tgdp/admin/index.html)"
     ]
   }
 }
