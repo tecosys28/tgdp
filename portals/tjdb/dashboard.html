@@ -805,5 +805,15 @@
       }, 1500);
     });
   </script>
+
+<!-- ── Auth Guard ─────────────────────────────────────────────────────────── -->
+<script type="module">
+  import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  const _cfg = { apiKey:"AIzaSyAsHHiCqvvlwzt3Zx7nwbKCnpmkWG-HPpc", authDomain:"tgdp-d4a3d.firebaseapp.com", projectId:"tgdp-d4a3d", appId:"1:399267274832:web:202956b9af788eb96ff155" };
+  const _app = getApps().length ? getApps()[0] : initializeApp(_cfg, "guard");
+  const _auth = getAuth(_app);
+  onAuthStateChanged(_auth, user => { if (!user) window.location.replace("/login.html"); });
+</script>
 </body>
 </html>

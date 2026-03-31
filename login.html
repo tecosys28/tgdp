@@ -356,6 +356,9 @@
 
 <script>
   /* ── Dashboard routing ──────────────────────────────────────────────────── */
+  const ADMIN_EMAIL = 'prathmeshwalimbe2004@gmail.com';
+  const ADMIN_DASHBOARD = 'admin.html';
+
   const DASHBOARDS = {
     household:'portals/tgold/dashboard.html', licensee:'portals/gic/dashboard.html',
     jeweler:'portals/tjr/dashboard.html',     designer:'portals/tjdb/dashboard.html',
@@ -364,6 +367,11 @@
   };
 
   function redirectByRole(profile) {
+    // Admin override — always goes to admin dashboard
+    if (profile.email === ADMIN_EMAIL) {
+      window.location.href = ADMIN_DASHBOARD;
+      return;
+    }
     const r = profile.primaryRole;
     window.location.href = (r && DASHBOARDS[r]) ? DASHBOARDS[r] : 'portals/tgold/dashboard.html';
   }
@@ -405,6 +413,13 @@
     waitForFn('firebaseLogin', () => {
       window.firebaseLogin(email, pwd)
         .then(profile => {
+          // Admin shortcut — redirect immediately if admin email
+          if (email === ADMIN_EMAIL) {
+            showLoginSuccess('Welcome, Admin! Redirecting to platform dashboard...');
+            btn.textContent = 'Redirecting...';
+            setTimeout(() => { window.location.href = ADMIN_DASHBOARD; }, 1500);
+            return;
+          }
           showLoginSuccess('Signed in! Redirecting to your dashboard...');
           btn.textContent = 'Redirecting...';
           setTimeout(() => redirectByRole(profile), 1500);

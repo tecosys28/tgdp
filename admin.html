@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>T-Gold · All User Dashboards · TGDP Platform · Intech Research Group</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink:#0B0D10; --deep:#0F1318; --surface:#151B23; --s2:#1C242E; --s3:#232D38;
+  --border:#253040; --border-lt:#2E3C4A; --text:#EEE8D8; --muted:#7A8A98; --dim:#404E5C;
+  --g:#C8A44A; --g-lt:#E8C870; --g-pale:#FAF2DC; --g-dim:#8A6C18; --g-glow:rgba(200,164,74,0.15);
+  --hh:#3E9E68;   --hh2:rgba(62,158,104,0.12);
+  --jw:#D47830;   --jw2:rgba(212,120,48,0.12);
+  --lc:#4080D0;   --lc2:rgba(64,128,208,0.12);
+  --in:#9060D0;   --in2:rgba(144,96,208,0.12);
+  --bk:#30A0A8;   --bk2:rgba(48,160,168,0.12);
+  --om:#C04040;   --om2:rgba(192,64,64,0.12);
+  --ad:#C8A44A;   --ad2:rgba(200,164,74,0.12);
+  --cn:#7878C8;   --cn2:rgba(120,120,200,0.12);
+  --fp:#60B040;   --fp2:rgba(96,176,64,0.12);
+  --tr:#A84898;   --tr2:rgba(168,72,152,0.12);
+  --nm:#C86030;   --nm2:rgba(200,96,48,0.12);
+  --or:#20A880;   --or2:rgba(32,168,128,0.12);
+  --green:#3A9A5A; --red:#C84848; --orange:#C87030;
+  --sh:0 2px 20px rgba(0,0,0,0.5); --sh-lg:0 8px 48px rgba(0,0,0,0.7);
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'Syne',sans-serif;background:var(--ink);color:var(--text);min-height:100vh;overflow-x:hidden;}
+
+#selector{min-height:100vh;display:flex;flex-direction:column;background:var(--ink);position:relative;overflow:hidden;}
+#selector::before{content:'';position:absolute;top:-400px;left:50%;transform:translateX(-50%);width:900px;height:900px;background:radial-gradient(ellipse at center,rgba(200,164,74,0.04) 0%,transparent 65%);pointer-events:none;}
+.bg-orb{position:absolute;border-radius:50%;pointer-events:none;border:1px solid;}
+.orb1{width:600px;height:600px;top:-200px;right:-200px;border-color:rgba(200,164,74,0.04);}
+.orb2{width:400px;height:400px;bottom:-100px;left:-100px;border-color:rgba(200,164,74,0.03);}
+.orb3{width:200px;height:200px;top:30%;left:5%;border-color:rgba(200,164,74,0.05);}
+
+.sel-header{padding:32px 48px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);position:relative;z-index:1;}
+.sel-logo{display:flex;align-items:center;gap:14px;}
+.sel-mark{width:42px;height:42px;background:linear-gradient(135deg,var(--g),var(--g-dim));border-radius:10px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:16px;color:var(--ink);}
+.sel-brand{font-family:'DM Serif Display',serif;font-size:22px;color:var(--text);}
+.sel-meta{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);}
+.bm-live{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:8px 16px;display:flex;align-items:center;gap:10px;}
+.bm-live .dot{width:6px;height:6px;background:#4ade80;border-radius:50%;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(74,222,128,0.4);}50%{box-shadow:0 0 0 5px rgba(74,222,128,0);opacity:.7;}}
+.bm-live .lv{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;color:var(--g-lt);}
+.bm-live .lc{font-family:'JetBrains Mono',monospace;font-size:10px;}
+.sel-hero{padding:56px 48px 40px;position:relative;z-index:1;}
+.sel-eyebrow{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--g);display:flex;align-items:center;gap:10px;margin-bottom:16px;}
+.sel-eyebrow::before{content:'';width:24px;height:1px;background:var(--g);}
+.sel-title{font-family:'DM Serif Display',serif;font-size:clamp(36px,4vw,58px);line-height:1.05;color:var(--text);margin-bottom:10px;}
+.sel-title em{font-style:italic;color:var(--g-lt);}
+.sel-sub{font-size:14px;color:var(--muted);max-width:680px;line-height:1.7;}
+.admin-bar{margin:0 48px 16px;padding:12px 20px;background:rgba(200,164,74,.08);border:1px solid rgba(200,164,74,.25);border-radius:10px;display:flex;align-items:center;justify-content:space-between;}
+.admin-bar-left{display:flex;align-items:center;gap:10px;font-size:12px;color:var(--g-lt);}
+.admin-bar-left strong{font-weight:700;}
+.admin-bar-right{display:flex;gap:8px;}
+.btn-admin-sm{padding:5px 13px;border-radius:6px;font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;border:none;transition:.15s;}
+.btn-exit{background:var(--s2);color:var(--muted);border:1px solid var(--border);}
+.btn-exit:hover{border-color:var(--red);color:var(--red);}
+
+.role-grid-wrap{padding:0 48px 56px;position:relative;z-index:1;}
+.rg-title{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim);margin-bottom:20px;display:flex;align-items:center;gap:10px;}
+.rg-title::after{content:'';flex:1;height:1px;background:var(--border);}
+.role-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+.role-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px 18px;cursor:pointer;transition:all .2s;position:relative;overflow:hidden;}
+.role-card:hover{transform:translateY(-3px);box-shadow:var(--sh);}
+.rc-num{position:absolute;top:14px;right:14px;font-family:'JetBrains Mono',monospace;font-size:8px;letter-spacing:.1em;color:var(--dim);opacity:.6;}
+.rc-icon{font-size:28px;margin-bottom:10px;display:block;}
+.rc-role{font-size:8px;letter-spacing:.15em;text-transform:uppercase;font-weight:700;margin-bottom:5px;}
+.rc-name{font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px;line-height:1.2;}
+.rc-desc{font-size:10px;color:var(--muted);line-height:1.5;margin-bottom:12px;}
+.rc-tags{display:flex;flex-wrap:wrap;gap:4px;}
+.rc-tag{font-size:8px;padding:2px 7px;border-radius:3px;letter-spacing:.04em;}
+.rc-cta{margin-top:12px;font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;display:flex;align-items:center;gap:5px;opacity:0;transition:opacity .2s;color:var(--g);}
+.role-card:hover .rc-cta{opacity:1;}
+
+#app{display:none;flex-direction:column;min-height:100vh;}
+#app.visible{display:flex;}
+.sidebar{width:230px;background:var(--deep);border-right:1px solid var(--border);position:fixed;top:0;left:0;bottom:0;z-index:50;overflow-y:auto;display:flex;flex-direction:column;}
+.sidebar::-webkit-scrollbar{width:3px;}.sidebar::-webkit-scrollbar-thumb{background:var(--border);}
+.sb-top{padding:18px 16px;border-bottom:1px solid var(--border);}
+.sb-brand-row{display:flex;align-items:center;gap:10px;margin-bottom:12px;}
+.sb-logo{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:13px;color:var(--ink);flex-shrink:0;}
+.sb-brand-name{font-family:'DM Serif Display',serif;font-size:16px;color:var(--text);}
+.sb-brand-sub{font-size:7px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim);}
+.sb-user{padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:var(--s2);position:relative;}
+.sb-avatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;background:var(--s3);}
+.sb-uname{font-size:11px;font-weight:700;color:var(--text);}
+.sb-urole{font-size:8px;letter-spacing:.1em;text-transform:uppercase;font-weight:700;}
+.sb-kyc{position:absolute;top:6px;right:8px;font-size:7px;letter-spacing:.07em;text-transform:uppercase;padding:2px 6px;border-radius:3px;font-weight:700;}
+.kyc-ok{background:rgba(58,154,90,.2);color:var(--green);}
+.kyc-wait{background:rgba(200,120,48,.2);color:var(--orange);}
+.sb-nav{flex:1;padding:8px 0;}
+.nav-sec{padding:10px 14px 2px;font-size:7px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim);}
+.nav-div{height:1px;background:var(--border);margin:5px 12px;}
+.ni{display:flex;align-items:center;gap:9px;padding:8px 14px;cursor:pointer;color:var(--muted);font-size:11px;font-weight:500;transition:.12s;border-left:2px solid transparent;}
+.ni:hover{background:var(--s2);color:var(--text);}
+.ni.act{background:var(--g-glow);color:var(--g-lt);border-left-color:var(--g);}
+.ni .ic{width:15px;text-align:center;font-size:12px;flex-shrink:0;}
+.ni .nb{margin-left:auto;border-radius:10px;padding:1px 5px;font-size:8px;font-weight:700;background:var(--red);color:white;}
+.ni .ng{background:var(--g-dim);}
+.sb-bot{padding:10px 12px;border-top:1px solid var(--border);}
+.main{margin-left:230px;flex:1;display:flex;flex-direction:column;}
+.topbar{background:var(--deep);border-bottom:1px solid var(--border);height:52px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;position:sticky;top:0;z-index:40;}
+.tb-title{font-family:'DM Serif Display',serif;font-size:17px;color:var(--text);}
+.tb-right{display:flex;align-items:center;gap:12px;}
+.bm-ticker{background:var(--s2);border:1px solid var(--border);border-radius:8px;padding:5px 13px;display:flex;align-items:center;gap:8px;}
+.bt-label{font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);}
+.bt-val{font-family:'JetBrains Mono',monospace;font-size:13px;font-weight:500;color:var(--g);}
+.bt-chg{font-family:'JetBrains Mono',monospace;font-size:10px;}
+.up2{color:#4ade80;}.dn2{color:#f87171;}
+.nbell{position:relative;width:32px;height:32px;display:flex;align-items:center;justify-content:center;background:var(--s2);border:1px solid var(--border);border-radius:7px;cursor:pointer;font-size:14px;}
+.nbell:hover{border-color:var(--g);}
+.nc{position:absolute;top:-3px;right:-3px;background:var(--red);color:white;border-radius:10px;padding:1px 4px;font-size:7px;font-weight:700;}
+.back-btn{padding:6px 14px;background:var(--s2);border:1px solid var(--border);border-radius:7px;font-family:'Syne',sans-serif;font-size:10px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;color:var(--muted);transition:.12s;}
+.back-btn:hover{border-color:var(--g);color:var(--g);}
+.content{padding:22px;flex:1;}
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:11px;margin-bottom:14px;}
+.sg3{grid-template-columns:repeat(3,1fr);}
+.sg2{grid-template-columns:repeat(2,1fr);}
+.stat{background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px 16px;position:relative;overflow:hidden;transition:.15s;}
+.stat:hover{border-color:var(--border-lt);}
+.stat::after{content:'';position:absolute;top:-30px;right:-30px;width:80px;height:80px;border-radius:50%;background:currentColor;opacity:.03;}
+.st-label{font-size:8px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim);margin-bottom:5px;}
+.st-val{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:500;color:var(--text);margin-bottom:2px;line-height:1.2;}
+.st-sub{font-size:9px;color:var(--muted);}
+.st-badge{display:inline-flex;align-items:center;font-size:8px;font-weight:700;padding:2px 7px;border-radius:20px;margin-top:4px;letter-spacing:.04em;}
+.bg2{background:rgba(58,154,90,.18);color:var(--green);}
+.bo2{background:rgba(200,164,74,.15);color:var(--g);}
+.br2{background:rgba(200,72,72,.15);color:var(--red);}
+.bb2{background:rgba(64,128,208,.18);color:#70A8E8;}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:11px;box-shadow:var(--sh);margin-bottom:13px;}
+.ch{padding:13px 17px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+.ct{font-family:'DM Serif Display',serif;font-size:16px;color:var(--text);}
+.cb{padding:16px;}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:13px;}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:11px;}
+.role-hero{border-radius:12px;padding:24px 28px;margin-bottom:14px;position:relative;overflow:hidden;}
+.rh-eyebrow{font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+.rh-eyebrow::before{content:'';width:18px;height:1px;background:currentColor;}
+.rh-title{font-family:'DM Serif Display',serif;font-size:28px;color:white;margin-bottom:4px;line-height:1.1;}
+.rh-sub{font-size:11px;color:rgba(255,255,255,.45);max-width:500px;line-height:1.6;}
+.rh-glow{position:absolute;top:-80px;right:-80px;width:240px;height:240px;border-radius:50%;filter:blur(60px);opacity:.3;pointer-events:none;}
+.rh-stats{display:flex;gap:24px;margin-top:18px;flex-wrap:wrap;}
+.rh-stat .l{font-size:7px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.25);margin-bottom:3px;}
+.rh-stat .v{font-family:'JetBrains Mono',monospace;font-size:15px;font-weight:500;color:white;}
+.tbl{width:100%;border-collapse:collapse;}
+.tbl thead tr{background:var(--s2);}
+.tbl th{padding:8px 13px;text-align:left;font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600;white-space:nowrap;border-bottom:1px solid var(--border);}
+.tbl td{padding:10px 13px;border-bottom:1px solid var(--border);font-size:11px;vertical-align:middle;}
+.tbl tr:last-child td{border-bottom:none;}
+.tbl tr:hover td{background:rgba(200,164,74,.03);}
+.badge{display:inline-flex;align-items:center;padding:2px 8px;border-radius:3px;font-size:8px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;}
+.b-g{background:rgba(58,154,90,.18);color:var(--green);}
+.b-r{background:rgba(200,72,72,.15);color:var(--red);}
+.b-o{background:rgba(200,164,74,.15);color:var(--g);}
+.b-b{background:rgba(64,128,208,.18);color:#70A8E8;}
+.b-p{background:rgba(168,72,152,.18);color:#D070C0;}
+.b-t{background:rgba(48,160,168,.18);color:#60C8D0;}
+.b-gy{background:var(--s2);color:var(--muted);}
+.btn{padding:8px 15px;border-radius:7px;font-family:'Syne',sans-serif;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;border:none;transition:.15s;display:inline-flex;align-items:center;gap:6px;white-space:nowrap;}
+.btn-gold{background:linear-gradient(135deg,var(--g),var(--g-dim));color:var(--ink);}
+.btn-gold:hover{filter:brightness(1.1);}
+.btn-sf{background:var(--s2);color:var(--text);border:1px solid var(--border);}
+.btn-sf:hover{border-color:var(--g);color:var(--g);}
+.btn-gr{background:rgba(58,154,90,.15);color:var(--green);border:1px solid rgba(58,154,90,.3);}
+.btn-rd{background:rgba(200,72,72,.15);color:var(--red);border:1px solid rgba(200,72,72,.3);}
+.btn-sm{padding:5px 11px;font-size:9px;}
+.btn-xs{padding:3px 8px;font-size:8px;}
+.ibox{background:rgba(200,164,74,.06);border:1px solid rgba(200,164,74,.2);border-radius:8px;padding:10px 13px;font-size:10px;color:#D8C080;line-height:1.6;margin-bottom:12px;}
+.sbox{background:rgba(58,154,90,.08);border:1px solid rgba(58,154,90,.2);border-radius:8px;padding:10px 13px;font-size:10px;color:#70C080;margin-bottom:12px;}
+.wbox{background:rgba(200,72,72,.08);border:1px solid rgba(200,72,72,.2);border-radius:8px;padding:10px 13px;font-size:10px;color:#D07070;margin-bottom:12px;}
+.bbox{background:rgba(64,128,208,.08);border:1px solid rgba(64,128,208,.2);border-radius:8px;padding:10px 13px;font-size:10px;color:#80A8E0;margin-bottom:12px;}
+.tbox{background:rgba(48,160,168,.08);border:1px solid rgba(48,160,168,.2);border-radius:8px;padding:10px 13px;font-size:10px;color:#60C0C8;margin-bottom:12px;}
+.qa-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px;}
+.qa{background:var(--s2);border:1px solid var(--border);border-radius:9px;padding:14px 12px;cursor:pointer;text-align:center;transition:.15s;}
+.qa:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,.3);}
+.qa .qi{font-size:24px;margin-bottom:6px;}
+.qa .ql{font-size:10px;font-weight:700;}
+.qa .qs{font-size:9px;color:var(--muted);margin-top:2px;}
+.pbar{height:4px;background:var(--s3);border-radius:2px;overflow:hidden;}
+.pf{height:100%;border-radius:2px;background:linear-gradient(90deg,var(--g),var(--g-lt));transition:width .4s;}
+.tl{position:relative;padding-left:28px;}
+.tl::before{content:'';position:absolute;left:8px;top:0;bottom:0;width:1px;background:var(--border);}
+.tl-item{position:relative;padding:0 0 18px;}
+.tl-item::before{content:'';position:absolute;left:-24px;top:4px;width:10px;height:10px;border-radius:50%;background:var(--s2);border:1px solid var(--border);}
+.tl-item.ok::before{background:var(--green);border-color:var(--green);}
+.tl-item.warn::before{background:var(--orange);border-color:var(--orange);}
+.tl-item.go::before{background:var(--g);border-color:var(--g);}
+.tl-t{font-size:11px;font-weight:700;color:var(--text);margin-bottom:2px;}
+.tl-d{font-size:10px;color:var(--muted);line-height:1.5;}
+.tl-ts{font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--dim);margin-top:2px;}
+.mono{font-family:'JetBrains Mono',monospace;}
+.muted{color:var(--muted);}.dim{color:var(--dim);}
+.fw7{font-weight:700;}.gold{color:var(--g);}.green{color:var(--green);}.red{color:var(--red);}
+.mb8{margin-bottom:8px;}.mb12{margin-bottom:12px;}.mb16{margin-bottom:16px;}
+.mt8{margin-top:8px;}.mt12{margin-top:12px;}
+.sep{height:1px;background:var(--border);margin:12px 0;}
+.flex{display:flex;}.fca{align-items:center;}.fsb{justify-content:space-between;}
+.g8{gap:8px;}.g12{gap:12px;}
+.hidden{display:none!important;}
+.fadein{animation:fi .22s ease;}
+@keyframes fi{from{opacity:0;transform:translateY(5px);}to{opacity:1;transform:translateY(0);}}
+.toast{position:fixed;top:16px;right:16px;z-index:999;padding:11px 16px;border-radius:9px;font-size:11px;font-weight:500;display:flex;align-items:center;gap:8px;box-shadow:var(--sh-lg);animation:ti .3s ease;max-width:340px;border:1px solid;}
+@keyframes ti{from{transform:translateX(110%);opacity:0;}to{transform:translateX(0);opacity:1;}}
+.t-d{background:var(--s2);color:var(--text);border-color:var(--border);}
+.t-s{background:rgba(58,154,90,.2);color:#70C080;border-color:rgba(58,154,90,.4);}
+.t-g{background:rgba(200,164,74,.15);color:var(--g-lt);border-color:rgba(200,164,74,.3);}
+.t-e{background:rgba(200,72,72,.2);color:#D07070;border-color:rgba(200,72,72,.4);}
+@media(max-width:1100px){.role-grid{grid-template-columns:repeat(3,1fr);}}
+@media(max-width:800px){.role-grid{grid-template-columns:repeat(2,1fr);}.stat-grid{grid-template-columns:1fr 1fr;}.two-col{grid-template-columns:1fr;}.sidebar{transform:translateX(-100%);}.main{margin-left:0;}}
+</style>
+</head>
+<body>
+
+<div id="selector">
+  <div class="bg-orb orb1"></div>
+  <div class="bg-orb orb2"></div>
+  <div class="bg-orb orb3"></div>
+
+  <div class="sel-header">
+    <div class="sel-logo">
+      <div class="sel-mark">TG</div>
+      <div>
+        <div class="sel-brand">T-Gold Platform</div>
+        <div class="sel-meta">TGDP · TROTDFX Ecosystem · Intech Research Group</div>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:12px;">
+      <div class="bm-live">
+        <div class="dot"></div>
+        <div>
+          <div class="bt-label">TGDP Benchmark · Oracle Live</div>
+          <div class="lv" id="bm-sel">₹6,842.50</div>
+        </div>
+      </div>
+      <button class="btn-admin-sm btn-exit" onclick="window.location.href='login.html'">⟵ Sign Out</button>
+    </div>
+  </div>
+
+  <div class="admin-bar">
+    <div class="admin-bar-left">
+      <span>⚙️</span>
+      <span><strong>Admin Mode</strong> · Intech Research Group · prathmeshwalimbe2004@gmail.com</span>
+    </div>
+    <div class="admin-bar-right">
+      <button class="btn-admin-sm btn-exit" onclick="window.location.href='login.html'">Sign Out</button>
+    </div>
+  </div>
+
+  <div class="sel-hero">
+    <div class="sel-eyebrow">All User Dashboards · TGDP Platform</div>
+    <div class="sel-title">12 Roles.<br><em>One Platform.</em></div>
+    <div class="sel-sub">Every participant in the TROTDFX ecosystem has a role-specific dashboard built from the white paper specification. Select any role to see exactly what that participant sees, does, and monitors on the platform.</div>
+  </div>
+
+  <div class="role-grid-wrap">
+    <div class="rg-title">Select a role to open their dashboard</div>
+    <div class="role-grid" id="role-grid"></div>
+  </div>
+</div>
+
+<div id="app">
+  <nav class="sidebar" id="sidebar">
+    <div class="sb-top">
+      <div class="sb-brand-row">
+        <div class="sb-logo" id="sb-logo">TG</div>
+        <div><div class="sb-brand-name">T-Gold</div><div class="sb-brand-sub">TGDP Platform</div></div>
+      </div>
+      <div class="sb-user" id="sb-user">
+        <div class="flex fca g8 mb8">
+          <div class="sb-avatar" id="sb-avatar">👤</div>
+          <div>
+            <div class="sb-uname" id="sb-uname">—</div>
+            <div class="sb-urole" id="sb-urole">—</div>
+          </div>
+        </div>
+        <div class="sb-kyc kyc-ok" id="sb-kyc">KYC ✓ Verified</div>
+      </div>
+    </div>
+    <div class="sb-nav" id="sb-nav"></div>
+    <div class="sb-bot">
+      <div class="ni" onclick="showAudit()"><span class="ic">🔍</span>Audit Trail<span class="nb ng" id="audit-count">—</span></div>
+      <div class="ni" onclick="exitToSelector()"><span class="ic">⟵</span>All Roles</div>
+      <div class="ni" onclick="window.location.href='login.html'" style="margin-top:4px;"><span class="ic">🚪</span>Sign Out</div>
+    </div>
+  </nav>
+  <div class="main">
+    <div class="topbar">
+      <div class="tb-title" id="tb-title">Dashboard</div>
+      <div class="tb-right">
+        <div class="bm-ticker">
+          <div class="dot"></div>
+          <div>
+            <div class="bt-label">TGDP Benchmark</div>
+            <div class="flex fca g8">
+              <div class="bt-val" id="bm-val">₹6,842.50</div>
+              <div class="bt-chg up2" id="bm-chg">+0.18%</div>
+            </div>
+          </div>
+        </div>
+        <div class="nbell" title="Notifications">🔔<div class="nc" id="notif-ct">3</div></div>
+        <button class="back-btn" onclick="exitToSelector()">⟵ All Roles</button>
+      </div>
+    </div>
+    <div class="content fadein" id="content"></div>
+  </div>
+</div>
+
+<script>
+'use strict';
+let BM = 6842.50, ROLE = null, AUDIT_LOG = [];
+const fmt = {
+  inr: n => '₹' + Math.abs(n).toLocaleString('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2}),
+  cr:  n => n>=1e7 ? '₹'+(n/1e7).toFixed(2)+'Cr' : n>=1e5 ? '₹'+(n/1e5).toFixed(1)+'L' : '₹'+Math.round(n).toLocaleString('en-IN'),
+  pct: n => (n>=0?'+':'')+n.toFixed(2)+'%',
+  grams: n => (+n).toFixed(2)+'g',
+  date: d => { try{return new Date(d).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'});}catch{return d;} },
+};
+
+setInterval(() => {
+  BM += (Math.random()-.49) * .4;
+  BM = Math.max(6600, Math.min(7100, BM));
+  const chg = ((BM-6800)/6800)*100;
+  ['bm-sel','bm-val'].forEach(id => { const el=document.getElementById(id); if(el) el.textContent=fmt.inr(BM); });
+  const bc = document.getElementById('bm-chg');
+  if(bc){ bc.textContent=fmt.pct(chg); bc.className='bt-chg '+(chg>=0?'up2':'dn2'); }
+}, 7000);
+
+function toast(msg, type='d') {
+  document.querySelectorAll('.toast').forEach(e=>e.remove());
+  const el=document.createElement('div'); el.className=`toast t-${type}`;
+  el.innerHTML=`<span>${{d:'ℹ',s:'✓',e:'✗',g:'★'}[type]||'ℹ'}</span><span>${msg}</span>`;
+  document.body.appendChild(el);
+  setTimeout(()=>{el.style.animation='ti .3s ease reverse';setTimeout(()=>el.remove(),280);},3200);
+}
+function R(html) { const ca=document.getElementById('content'); if(ca) ca.innerHTML=`<div class="fadein">${html}</div>`; }
+function addAudit(ev,desc) { AUDIT_LOG.unshift({ev,desc,ts:new Date().toLocaleTimeString()}); const ac=document.getElementById('audit-count'); if(ac) ac.textContent=AUDIT_LOG.length; }
+
+const ROLES = [
+  {id:'household',num:'01',icon:'🏠',name:'Household',tag:'Minter / Beneficiary',color:'var(--hh)',bg:'var(--hh2)',dot:'#3E9E68',desc:'Sole entity authorised to mint TGDP. Earmarks physical gold, generates units, manages sale listings, tracks earnings, requests exit.',tags:['Minting','Gold Earmark','Beneficiary','GIC Earnings'],sample:{name:'Priya Sharma',location:'Mumbai',units:450,reserve:50,bonus:12,encumbered:80,goldGrams:50,joinDate:'Oct 2025'},kyc:'verified',notifs:3,nav:[{p:'dash',i:'🏠',l:'Dashboard'},{p:'portfolio',i:'💼',l:'My Portfolio'},{p:'mint',i:'⛏️',l:'Mint TGDP'},{p:'trade',i:'📈',l:'Trade'},{p:'redeem',i:'💰',l:'Redeem / Buy-Back'},{p:'swap',i:'🔄',l:'Swap → FTR'},{p:'earmark',i:'🔒',l:'Earmark Obligation'},{p:'gift',i:'🎁',l:'Gift / Nominate'},'---',{p:'kyc',i:'🛡️',l:'KYC Status'},{p:'licence',i:'📄',l:'My Sub-Licence'},{p:'earnings',i:'💎',l:'GIC Earnings'}]},
+  {id:'jeweller',num:'02',icon:'💍',name:'Jeweller',tag:'Licensed Facilitator & Liquidity Provider',color:'var(--jw)',bg:'var(--jw2)',dot:'#D47830',desc:'Facilitates minting, acts as on-demand buyer at Benchmark, holds 5% corpus gold as working stock, manages Trust as settlor.',tags:['Buy-Back','Gold Custody','Trust Settlor','Facilitator'],sample:{name:'Mehta Jewellers Pvt Ltd',location:'Mumbai Central',trustBalance:34212500,corpusGrams:500,pendingMints:2,buybackQueue:3},kyc:'verified',notifs:2,nav:[{p:'dash',i:'🏠',l:'Dashboard'},{p:'pending-mints',i:'⛏️',l:'Minting Queue',badge:2},{p:'buyback',i:'🔁',l:'Buy-Back Queue',badge:3},{p:'gold-inventory',i:'⚖️',l:'Gold Inventory'},{p:'trust',i:'🏛️',l:'Trust Dashboard'},{p:'corpus',i:'📊',l:'Corpus Fund'},'---',{p:'kyc',i:'🛡️',l:'KYC Status'},{p:'licence',i:'📄',l:'Jeweller Licence'},{p:'promo',i:'📢',l:'Jewellery Promo'}]},
+  {id:'trust',num:'03',icon:'🏛️',name:'Trust Officer',tag:'Irrevocable Private Trust — Corpus Manager',color:'var(--tr)',bg:'var(--tr2)',dot:'#A84898',desc:'Manages the irrevocable private trust corpus, beneficiary sub-ledgers, buy-back obligation processing, and cancellation uploads.',tags:['Sub-Ledger','Corpus','Obligations','Beneficiary'],sample:{name:'Mehta Private Trust T001',trusteeBank:'HDFC Trustee',unitsOutstanding:4500,coveragePct:102.4,totalValue:34212500},kyc:'verified',notifs:1,nav:[{p:'dash',i:'🏠',l:'Trust Overview'},{p:'corpus',i:'📊',l:'Corpus Summary'},{p:'subledger',i:'📋',l:'Beneficiary Sub-Ledger'},{p:'obligations',i:'⚖️',l:'Obligation Queue'},{p:'buyback-upload',i:'📤',l:'Buy-Back Upload'},{p:'cancellation',i:'🔥',l:'Cancellation Upload'},'---',{p:'bank-instructions',i:'🏦',l:'Bank Instructions'},{p:'super-corpus',i:'🌐',l:'Super-Corpus Contribution'}]},
+  {id:'licensee',num:'04',icon:'🏢',name:'Licencee',tag:'Enroller / Regional Distributor',color:'var(--lc)',bg:'var(--lc2)',dot:'#4080D0',desc:'Issues sub-licences, enrols households and jewellers, earns GIC through three income streams: sale royalty, TSF share, and referral commissions.',tags:['GIC Income','Sub-Licence','Enrolment','Referrals'],sample:{name:'Rajesh Kumar',territory:'Mumbai',gicBalance:18420,gicEarned:42800,households:34,capacity:300},kyc:'verified',notifs:2,nav:[{p:'dash',i:'🏠',l:'Dashboard'},{p:'gic',i:'💰',l:'GIC Dashboard'},{p:'households',i:'👥',l:'My Households'},{p:'enrol',i:'➕',l:'Enrol Household'},{p:'gic-redeem',i:'🏦',l:'Redeem GIC'},{p:'performance',i:'📊',l:'Income Statement'},'---',{p:'kyc',i:'🛡️',l:'KYC Status'},{p:'licence',i:'📄',l:'My Licence'},{p:'sub-licences',i:'🔑',l:'Sub-Licences Issued'}]},
+  {id:'investor',num:'05',icon:'📈',name:'Investor',tag:'TGDP Holder / Secondary Market Trader',color:'var(--in)',bg:'var(--in2)',dot:'#9060D0',desc:'Purchases TGDP units on secondary market. Can sell, swap to FTRs, gift, or surrender to any jeweller at Benchmark. No minting rights.',tags:['Secondary Trade','FTR Swap','Portfolio','Buy-Back'],sample:{name:'Amit Patel',units:2400,avgBuyPrice:6728,trades:12,portfolioValue:2400*6842.50},kyc:'verified',notifs:1,nav:[{p:'dash',i:'🏠',l:'Dashboard'},{p:'portfolio',i:'💼',l:'Portfolio'},{p:'trade',i:'📈',l:'Buy / Sell'},{p:'swap',i:'🔄',l:'Swap → FTR'},{p:'redeem',i:'💰',l:'Surrender / Redeem'},{p:'gift',i:'🎁',l:'Gift'},{p:'ftr-market',i:'🌾',l:'FTR Market'},'---',{p:'kyc',i:'🛡️',l:'KYC Status'},{p:'licence',i:'📄',l:'Investor Licence'}]},
+  {id:'bank',num:'06',icon:'🏦',name:'Bank Trustee',tag:'A-Rated Bank — Corpus Account Manager',color:'var(--bk)',bg:'var(--bk2)',dot:'#30A0A8',desc:'Manages corpus bank account under trustee arrangement. Executes only parameterised platform instructions — no discretionary investment decisions.',tags:['Trustee','Corpus Custody','Instructions','Valuation Feed'],sample:{name:'HDFC Trustee Services',trustManaged:'T001',corpusValue:34212500,pendingInstructions:2,lastValuation:'20 Mar 2026'},kyc:'verified',notifs:2,nav:[{p:'dash',i:'🏠',l:'Overview'},{p:'instructions',i:'📩',l:'Platform Instructions',badge:2},{p:'valuation-feed',i:'📊',l:'Valuation Feed Upload'},{p:'corpus-view',i:'🏛️',l:'Corpus View'},{p:'allocation-confirm',i:'✅',l:'Allocation Confirmation'},'---',{p:'kyc',i:'🛡️',l:'KYC Status'}]},
+  {id:'admin',num:'07',icon:'⚙️',name:'Intech Admin',tag:'Licensor / Platform Oversight — Read-Only Operations',color:'var(--ad)',bg:'var(--ad2)',dot:'#C8A44A',desc:'Intech Research Group oversight. Issues master licences, monitors global super-corpus, maintains platform health.',tags:['Global Oversight','Super-Corpus','Master Licences','Platform Health'],sample:{name:'Intech Research Group',totalTrusts:34,totalUnits:45000,globalCorpus:180000000,aiCoverage:99.2},kyc:'verified',notifs:4,nav:[{p:'dash',i:'🏠',l:'Platform Overview'},{p:'global-corpus',i:'🌐',l:'Global Super-Corpus'},{p:'oracle',i:'🔮',l:'Oracle & Benchmark'},{p:'ai-gov',i:'🤖',l:'AI Governance'},{p:'parameters',i:'⚙️',l:'Parameters'},{p:'all-users',i:'👥',l:'All Participants'},{p:'licences-admin',i:'📄',l:'Master Licences'},{p:'legal-docs',i:'📚',l:'Legal Documents'},'---',{p:'audit',i:'🔍',l:'Platform Audit Trail'},{p:'platform-health',i:'💓',l:'Platform Health'}]},
+  {id:'ombudsman',num:'08',icon:'⚖️',name:'Ombudsman',tag:'Independent Judicial Officer — Dispute Resolution',color:'var(--om)',bg:'var(--om2)',dot:'#C04040',desc:'Independent former judicial officer. Handles dispute resolution, audit approvals, and modification deadlocks.',tags:['Disputes','Audit Approvals','Module Suspension','Precedents'],sample:{name:'Dr. Sunita Rao (Retd. HC Judge)',openCases:3,resolved:47,avgDays:3.2,suspensionAuthority:'Any module · 72h'},kyc:'verified',notifs:2,nav:[{p:'dash',i:'🏠',l:'Overview'},{p:'disputes',i:'⚖️',l:'Active Disputes',badge:3},{p:'hearing',i:'🎙️',l:'Hearing Room'},{p:'precedents',i:'📚',l:'Precedent Database'},{p:'audit-requests',i:'🔎',l:'Audit Requests'},{p:'module-suspend',i:'🔴',l:'Module Suspension'},'---',{p:'kyc-review',i:'🛡️',l:'KYC Review Queue'}]},
+  {id:'consultant',num:'09',icon:'🎓',name:'Domain Consultant',tag:'Independent Sector Expert — Parameter Advice',color:'var(--cn)',bg:'var(--cn2)',dot:'#7878C8',desc:'Sector expert who provides independent advice on parameter change proposals. Flat fee paid unconditionally regardless of advice content.',tags:['Parameter Advice','Independent','Flat Fee','AI-Rated'],sample:{name:'Prof. Arun Mehta',sector:'Gold / Commodity Markets',rating:4.7,feesEarned:84000,responseRate:92,pendingRequests:1},kyc:'verified',notifs:1,nav:[{p:'dash',i:'🏠',l:'Overview'},{p:'advice-requests',i:'📝',l:'Advice Requests',badge:1},{p:'my-ratings',i:'⭐',l:'My AI Ratings'},{p:'param-history',i:'📊',l:'Parameter History'},{p:'market-intel',i:'📈',l:'Market Intelligence'},'---',{p:'kyc',i:'🛡️',l:'KYC Status'},{p:'fee-history',i:'💳',l:'Fee History'}]},
+  {id:'ftrprovider',num:'10',icon:'🌾',name:'FTR Provider',tag:'Future Trade Rights Issuer',color:'var(--fp)',bg:'var(--fp2)',dot:'#60B040',desc:'Issues Future Trade Rights for essential goods and services at pre-fixed prices. Maintains credit score above 0.65.',tags:['FTR Issuance','Credit Score','Delivery','Pre-Fixed Prices'],sample:{name:'AgroFresh Ltd',sector:'Agricultural',creditScore:0.82,ftrsIssued:500,portfolioValue:2150000,deliveryRate:97.3},kyc:'verified',notifs:1,nav:[{p:'dash',i:'🏠',l:'Overview'},{p:'my-ftrs',i:'🌾',l:'My FTRs'},{p:'issue-ftr',i:'➕',l:'Issue New FTR'},{p:'delivery-queue',i:'🚚',l:'Delivery Queue'},{p:'credit-score',i:'📊',l:'Credit Score'},{p:'valuation',i:'💹',l:'FTR Valuation'},'---',{p:'kyc',i:'🛡️',l:'KYC Status'},{p:'licence',i:'📄',l:'FTR Licence'}]},
+  {id:'nominee',num:'11',icon:'🤲',name:'Nominee',tag:'Designated Successor — Redemption Rights Only',color:'var(--nm)',bg:'var(--nm2)',dot:'#C86030',desc:'Designated by a TGDP holder for succession. Receives redemption rights upon verified death of holder. Cannot trade.',tags:['Succession','Redemption Only','Death Certificate','No Trading'],sample:{name:'Rahul Sharma (Nominee for H001)',designation:'Spouse',unitsEntitled:462,estimatedValue:462*6842.50},kyc:'pending',notifs:1,nav:[{p:'dash',i:'🏠',l:'My Entitlement'},{p:'redeem-nominee',i:'💰',l:'Surrender to Jeweller'},{p:'death-cert',i:'📋',l:'Submit Death Certificate'},{p:'claim-status',i:'📊',l:'Claim Status'},'---',{p:'kyc',i:'🛡️',l:'KYC Verification'}]},
+  {id:'approval',num:'12',icon:'🔏',name:'Approval Authority',tag:'Intech Internal — 3-Member Governance Panel',color:'var(--or)',bg:'var(--or2)',dot:'#20A880',desc:"Intech's internal 3-person Approval Authority. Final decision on parameter changes after Domain Consultant advice.",tags:['Parameter Decisions','Final Authority','Constitutional Guard','Change Management'],sample:{name:'Intech Approval Authority',members:3,pendingDecisions:1,decisionsThisYear:7,constitutionalChanges:0},kyc:'verified',notifs:2,nav:[{p:'dash',i:'🏠',l:'Authority Overview'},{p:'pending-decisions',i:'🔔',l:'Pending Decisions',badge:1},{p:'param-proposals',i:'⚙️',l:'Parameter Proposals'},{p:'constitutional-guard',i:'🔒',l:'Constitutional Guard'},{p:'decision-history',i:'📋',l:'Decision History'},'---',{p:'consultant-ratings',i:'⭐',l:'Consultant Ratings'},{p:'platform-health',i:'💓',l:'Platform Health'}]},
+];
+
+function buildSelector() {
+  const grid = document.getElementById('role-grid');
+  grid.innerHTML = ROLES.map(r => `
+  <div class="role-card fadein" onclick="openRole('${r.id}')"
+    style="border-top:2px solid ${r.color}"
+    onmouseover="this.style.background='${r.bg}';this.style.borderColor='${r.color}'"
+    onmouseout="this.style.background='var(--surface)';this.style.borderTopColor='${r.color}';this.style.borderRightColor='var(--border)';this.style.borderBottomColor='var(--border)';this.style.borderLeftColor='var(--border)'">
+    <div class="rc-num">${r.num}</div>
+    <div class="rc-icon">${r.icon}</div>
+    <div class="rc-role" style="color:${r.color}">${r.id.toUpperCase()}</div>
+    <div class="rc-name">${r.name}</div>
+    <div class="rc-desc">${r.desc}</div>
+    <div class="rc-tags">${r.tags.map(t=>`<span class="rc-tag" style="background:${r.bg};color:${r.color}">${t}</span>`).join('')}</div>
+    <div class="rc-cta">Open Dashboard →</div>
+  </div>`).join('');
+}
+
+function openRole(id) {
+  ROLE = ROLES.find(r => r.id === id);
+  if(!ROLE) return;
+  addAudit('ROLE_OPEN', ROLE.name+' dashboard opened');
+  buildShell();
+  document.getElementById('selector').style.display = 'none';
+  document.getElementById('app').classList.add('visible');
+  renderDash();
+  toast('Viewing: '+ROLE.name+' Dashboard', 'g');
+}
+
+function exitToSelector() {
+  document.getElementById('app').classList.remove('visible');
+  document.getElementById('selector').style.display = 'flex';
+  ROLE = null;
+}
+
+function buildShell() {
+  const logo = document.getElementById('sb-logo');
+  if(logo) { logo.style.background=`linear-gradient(135deg,${ROLE.color},${ROLE.dot})`; logo.textContent='TG'; }
+  document.getElementById('sb-avatar').textContent = ROLE.icon;
+  document.getElementById('sb-uname').textContent = ROLE.sample.name;
+  document.getElementById('sb-urole').textContent = ROLE.tag;
+  document.getElementById('sb-urole').style.color = ROLE.color;
+  const kyc = document.getElementById('sb-kyc');
+  kyc.className = 'sb-kyc '+(ROLE.kyc==='verified'?'kyc-ok':'kyc-wait');
+  kyc.textContent = ROLE.kyc==='verified' ? 'KYC ✓ Verified' : 'KYC Pending';
+  const nc = document.getElementById('notif-ct');
+  if(nc) nc.textContent = ROLE.notifs||0;
+  document.getElementById('sb-nav').innerHTML = buildNav();
+  document.getElementById('tb-title').textContent = ROLE.name+' Dashboard';
+}
+
+function buildNav() {
+  return ROLE.nav.map(item => {
+    if(item==='---') return '<div class="nav-div"></div>';
+    const badge = item.badge ? `<span class="nb">${item.badge}</span>` : '';
+    return `<div class="ni${item.p==='dash'?' act':''}" onclick="navTo('${item.p}','${item.l}')">
+      <span class="ic">${item.i}</span>${item.l}${badge}
+    </div>`;
+  }).join('');
+}
+
+function navTo(page, label) {
+  document.querySelectorAll('.ni').forEach(el => el.classList.remove('act'));
+  event?.currentTarget?.classList.add('act');
+  document.getElementById('tb-title').textContent = label;
+  addAudit('NAV', label+' opened');
+  if(page === 'dash') return renderDash();
+  R(`<div style="padding:40px;text-align:center">
+    <div style="font-size:32px;margin-bottom:12px">${ROLE.icon}</div>
+    <div style="font-family:'DM Serif Display',serif;font-size:22px;color:var(--text);margin-bottom:8px">${label}</div>
+    <div class="muted" style="font-size:12px;margin-bottom:16px">This module is part of the full platform build.</div>
+    <div class="ibox" style="max-width:500px;margin:0 auto;text-align:left">Each navigation page links to the corresponding module being built. The dashboard below represents the complete ${ROLE.name} home screen.</div>
+    <button class="btn btn-sf mt12" onclick="renderDash()">⟵ Return to Dashboard</button>
+  </div>`);
+}
+
+function showAudit() {
+  R(`<div class="card"><div class="ch"><div class="ct">Session Audit Log</div><span class="badge b-r" style="font-size:8px">APPEND-ONLY</span></div>
+  <div class="cb" style="padding:0"><table class="tbl"><thead><tr><th>#</th><th>Event</th><th>Description</th><th>Time</th></tr></thead>
+  <tbody>${AUDIT_LOG.map((a,i)=>`<tr><td class="mono dim" style="font-size:9px">${AUDIT_LOG.length-i}</td><td><span class="badge b-o" style="font-size:8px">${a.ev}</span></td><td style="font-size:11px">${a.desc}</td><td class="mono dim" style="font-size:9px">${a.ts}</td></tr>`).join('')||'<tr><td colspan="4" style="text-align:center;padding:16px;color:var(--dim)">No events yet</td></tr>'}</tbody>
+  </table></div></div>`);
+}
+
+function heroHTML(title, sub, stats) {
+  return `<div class="role-hero" style="background:linear-gradient(135deg,${ROLE.dot}22,${ROLE.dot}08);border:1px solid ${ROLE.color}40">
+    <div class="rh-glow" style="background:${ROLE.color}"></div>
+    <div class="rh-eyebrow" style="color:${ROLE.color}">${ROLE.icon} ${ROLE.tag}</div>
+    <div class="rh-title">${title}</div>
+    <div class="rh-sub">${sub}</div>
+    <div class="rh-stats">${stats.map(([l,v])=>`<div class="rh-stat"><div class="l">${l}</div><div class="v">${v}</div></div>`).join('')}</div>
+  </div>`;
+}
+
+function statCard(l,v,s,b='',bc='bo2') {
+  return `<div class="stat" style="border-top:2px solid ${ROLE.color}40">
+    <div class="st-label">${l}</div><div class="st-val">${v}</div>
+    <div class="st-sub">${s}</div>${b?`<div class="st-badge ${bc}">${b}</div>`:''}
+  </div>`;
+}
+
+function quickAction(icon,label,sub,fn='') {
+  return `<div class="qa" onclick="${fn||`toast('${label} — feature active','g')`}"
+    onmouseover="this.style.background='${ROLE.bg}';this.style.borderColor='${ROLE.color}'"
+    onmouseout="this.style.background='var(--s2)';this.style.borderColor='var(--border)'">
+    <div class="qi">${icon}</div><div class="ql" style="color:${ROLE.color}">${label}</div><div class="qs">${sub}</div>
+  </div>`;
+}
+
+function renderDash() {
+  const fn = {
+    household:dashHousehold, jeweller:dashJeweller, trust:dashTrust,
+    licensee:dashLicencee, investor:dashInvestor, bank:dashBank,
+    admin:dashAdmin, ombudsman:dashOmbudsman, consultant:dashConsultant,
+    ftrprovider:dashFTRProvider, nominee:dashNominee, approval:dashApproval,
+  }[ROLE.id];
+  if(fn) fn(); else R('<div class="muted" style="padding:40px;text-align:center">Dashboard loading...</div>');
+}
+
+function dashHousehold() {
+  const u = ROLE.sample, pv = u.units * BM, free = u.units - (u.encumbered||0);
+  R(`${heroHTML('Gold at Work','Your physical gold is earmarked, your TGDP units are live, your corpus earnings are compounding.',[['Portfolio Value',fmt.cr(pv)],['Units Held',u.units.toLocaleString()+' TGDP'],['Gold Earmarked',fmt.grams(u.goldGrams)],['Bonus Units','+'+u.bonus+' this cycle']])}
+  <div class="stat-grid">
+    ${statCard('Total TGDP Units',u.units.toLocaleString(),fmt.grams(u.goldGrams)+' earmarked','≈'+fmt.cr(pv),'bo2')}
+    ${statCard('Available to Trade',free.toLocaleString(),u.encumbered+' encumbered · '+u.reserve+' reserve','Free to transact','bg2')}
+    ${statCard('Bonus TGDP Earned',u.bonus,'From corpus surplus 1.13%','Fully tradable','bg2')}
+    ${statCard('Portfolio Value',fmt.cr(pv),'At today\'s Benchmark',fmt.pct(((BM-6650)/6650)*100)+' since mint','bg2')}
+  </div>
+  <div class="qa-grid">
+    ${quickAction('⛏️','Mint TGDP','Earmark gold → mint units')}
+    ${quickAction('📈','Trade','Buy / sell on TROT Exchange')}
+    ${quickAction('💰','Redeem','Buy-back at Benchmark')}
+    ${quickAction('🔄','Swap → FTR','Exchange for future goods')}
+    ${quickAction('🔒','Encumber','Lock for loan / obligation')}
+    ${quickAction('🎁','Gift / Nominate','Transfer or designate nominee')}
+  </div>`);
+}
+
+function dashJeweller() {
+  const u = ROLE.sample;
+  R(`${heroHTML('Facilitate · Guarantee · Prosper','You are the liquidity backbone of the TGDP network. Every unit redeemed anywhere comes through you or your peers.',[['Trust Corpus',fmt.cr(u.trustBalance)],['Gold Under Custody',fmt.grams(u.corpusGrams)],['Pending Mints',u.pendingMints+' requests'],['Buy-Back SLA','2-hour window']])}
+  <div class="stat-grid">
+    ${statCard('Trust Corpus',fmt.cr(u.trustBalance),'T001 · 102.4% coverage','Healthy','bg2')}
+    ${statCard('Gold Held (5% alloc.)',fmt.grams(u.corpusGrams),'Corpus physical allocation','In vault','bo2')}
+    ${statCard('Pending Mints',u.pendingMints,'Awaiting your confirmation','Action needed · 2h SLA','br2')}
+    ${statCard('Buy-Back Queue',u.buybackQueue,'Surrender requests active','Geo-routed to you','br2')}
+  </div>
+  <div class="two-col">
+    <div class="card"><div class="ch"><div class="ct">⚡ Minting Confirmation Queue</div></div>
+    <div class="cb" style="padding:0"><table class="tbl"><thead><tr><th>Household</th><th>Grams</th><th>AI Score</th><th>Action</th></tr></thead>
+    <tbody>
+      <tr><td class="fw7">Priya Sharma</td><td class="mono">50.0g</td><td><span class="badge b-g">97%</span></td><td><button class="btn btn-gr btn-xs" onclick="toast('Minting confirmed · 450 units minted','s')">✓ Confirm</button></td></tr>
+      <tr><td class="fw7">Sundar Krishnan</td><td class="mono">15.0g</td><td><span class="badge b-o">88%</span></td><td><button class="btn btn-gr btn-xs" onclick="toast('Minting confirmed','s')">✓ Confirm</button></td></tr>
+    </tbody></table></div></div>
+    <div class="card"><div class="ch"><div class="ct">Buy-Back Queue · 2h SLA</div></div>
+    <div class="cb" style="padding:0"><table class="tbl"><thead><tr><th>Holder</th><th>Units</th><th>Amount</th><th>Action</th></tr></thead>
+    <tbody>
+      <tr><td>H003</td><td class="mono">30</td><td class="mono">${fmt.cr(30*BM)}</td><td><button class="btn btn-gold btn-xs" onclick="toast('Payment recorded · Corpus liquidation triggered','s')">Execute</button></td></tr>
+    </tbody></table></div></div>
+  </div>`);
+}
+
+function dashTrust() {
+  const u = ROLE.sample;
+  R(`${heroHTML('Trust Corpus Overview','Managing the irrevocable private trust with full transparency and audit compliance.',[['Units Outstanding',u.unitsOutstanding.toLocaleString()],['Corpus Value',fmt.cr(u.totalValue)],['Coverage',u.coveragePct+'%'],['Status','Healthy']])}
+  <div class="stat-grid sg3">
+    ${statCard('Units Outstanding',u.unitsOutstanding.toLocaleString(),'Beneficiary holdings','Active','bg2')}
+    ${statCard('Corpus Coverage',u.coveragePct+'%','Above 100% = surplus','Healthy','bg2')}
+    ${statCard('Total Value',fmt.cr(u.totalValue),'As at today\'s Benchmark','Verified','bo2')}
+  </div>
+  <div class="ibox">Trust T001 is in good standing. Coverage ratio above 100% — surplus of 2.4% generating bonus TGDP for beneficiaries.</div>`);
+}
+
+function dashLicencee() {
+  const u = ROLE.sample;
+  R(`${heroHTML('Your GIC Income Engine','Three revenue streams, one dashboard. Register households, earn royalties, grow your territory.',[['GIC Balance',fmt.inr(u.gicBalance)],['Total Earned',fmt.inr(u.gicEarned)],['Households',u.households+' active'],['Capacity',u.capacity+' max']])}
+  <div class="stat-grid">
+    ${statCard('GIC Balance',fmt.inr(u.gicBalance),'Available for withdrawal','Withdraw now','bg2')}
+    ${statCard('Total GIC Earned',fmt.inr(u.gicEarned),'Since onboarding','Cumulative','bo2')}
+    ${statCard('Active Households',u.households,'Registered under you',Math.round(u.households/u.capacity*100)+'% capacity','bb2')}
+    ${statCard('Remaining Capacity',u.capacity-u.households,'More households available','Expand network','bg2')}
+  </div>
+  <div class="qa-grid">
+    ${quickAction('➕','Enrol Household','Add new household to your network')}
+    ${quickAction('💰','Withdraw GIC','Transfer earnings to bank account')}
+    ${quickAction('📊','Income Report','View detailed earnings breakdown')}
+  </div>`);
+}
+
+function dashInvestor() {
+  const u = ROLE.sample, pv = u.units * BM;
+  R(`${heroHTML('Your Gold Portfolio','Buy, hold, swap, or gift — full secondary market access at LBMA Benchmark pricing.',[['Portfolio Value',fmt.cr(pv)],['Units Held',u.units.toLocaleString()],['Avg. Buy Price',fmt.inr(u.avgBuyPrice)],['Total Trades',u.trades]])}
+  <div class="stat-grid">
+    ${statCard('Portfolio Value',fmt.cr(pv),'At today\'s Benchmark',fmt.pct(((BM-u.avgBuyPrice)/u.avgBuyPrice)*100)+' return','bg2')}
+    ${statCard('Units Held',u.units.toLocaleString(),'Secondary market purchase','Active','bo2')}
+    ${statCard('Avg. Buy Price',fmt.inr(u.avgBuyPrice),'Weighted average','vs '+fmt.inr(BM)+' today',BM>u.avgBuyPrice?'bg2':'br2')}
+    ${statCard('Total Trades',u.trades,'Buy + sell transactions','This account','bb2')}
+  </div>
+  <div class="qa-grid">
+    ${quickAction('📈','Buy TGDP','Purchase units at Benchmark')}
+    ${quickAction('💰','Sell / Redeem','Surrender to jeweller')}
+    ${quickAction('🔄','Swap → FTR','Exchange for future goods')}
+  </div>`);
+}
+
+function dashBank() {
+  const u = ROLE.sample;
+  R(`${heroHTML('Trustee Services Dashboard','Executing platform instructions with full parameterised compliance. No discretionary decisions.',[['Trust Managed',u.trustManaged],['Corpus Value',fmt.cr(u.corpusValue)],['Pending Instructions',u.pendingInstructions],['Last Valuation',u.lastValuation]])}
+  <div class="stat-grid sg3">
+    ${statCard('Corpus Under Management',fmt.cr(u.corpusValue),'T001 account balance','Active','bg2')}
+    ${statCard('Pending Instructions',u.pendingInstructions,'Awaiting execution','Urgent','br2')}
+    ${statCard('Last Valuation Upload',u.lastValuation,'Next due tomorrow','On schedule','bo2')}
+  </div>
+  <div class="ibox">All instructions are platform-generated and parameterised. No discretionary investment decisions permitted under the trust deed.</div>`);
+}
+
+function dashAdmin() {
+  const u = ROLE.sample;
+  R(`${heroHTML('Platform Oversight','Global view of the entire TGDP ecosystem. Monitor, licence, and maintain — zero operational control over calculations.',[['Total Trusts',u.totalTrusts],['Total Units',u.totalUnits.toLocaleString()],['Global Corpus',fmt.cr(u.globalCorpus)],['AI Coverage',u.aiCoverage+'%']])}
+  <div class="stat-grid">
+    ${statCard('Active Trusts',u.totalTrusts,'Across all regions','Growing','bg2')}
+    ${statCard('Units Outstanding',u.totalUnits.toLocaleString(),'All holders combined','Live','bo2')}
+    ${statCard('Global Super-Corpus',fmt.cr(u.globalCorpus),'1% of all trust corpora','Healthy','bg2')}
+    ${statCard('AI Governance Coverage',u.aiCoverage+'%','Automated oversight active','Excellent','bg2')}
+  </div>
+  <div class="qa-grid">
+    ${quickAction('🌐','Global Corpus','Monitor super-corpus allocation')}
+    ${quickAction('🔮','Oracle Feed','Manage Benchmark data sources')}
+    ${quickAction('👥','All Participants','View every registered user')}
+    ${quickAction('📄','Issue Licence','Grant master licence to jeweller')}
+    ${quickAction('⚙️','Parameters','Review parameter change proposals')}
+    ${quickAction('💓','Platform Health','System status and uptime')}
+  </div>`);
+}
+
+function dashOmbudsman() {
+  const u = ROLE.sample;
+  R(`${heroHTML('Dispute Resolution Chamber','Independent judicial oversight. Your rulings set binding precedents for the entire platform.',[['Open Cases',u.openCases],['Cases Resolved',u.resolved],['Avg. Resolution',u.avgDays+' days'],['Authority',u.suspensionAuthority]])}
+  <div class="stat-grid sg3">
+    ${statCard('Open Cases',u.openCases,'Awaiting hearing','Active','br2')}
+    ${statCard('Cases Resolved',u.resolved,'Since appointment','Total','bg2')}
+    ${statCard('Avg. Resolution Time',u.avgDays+' days','Well within 14-day SLA','Efficient','bg2')}
+  </div>
+  <div class="wbox">3 active disputes require scheduling. Module suspension authority available for systemic issues.</div>`);
+}
+
+function dashConsultant() {
+  const u = ROLE.sample;
+  R(`${heroHTML('Parameter Advisory Dashboard','Your independent advice shapes the platform\'s economic parameters. Flat fee regardless of content.',[['AI Rating',u.rating+'/5.0'],['Fees Earned',fmt.inr(u.feesEarned)],['Response Rate',u.responseRate+'%'],['Pending Requests',u.pendingRequests]])}
+  <div class="stat-grid sg3">
+    ${statCard('AI Rating',u.rating+'/5.0',u.sector+' sector','Top rated','bg2')}
+    ${statCard('Fees Earned',fmt.inr(u.feesEarned),'Unconditional flat fee','Paid','bo2')}
+    ${statCard('Response Rate',u.responseRate+'%','Within 48-hour window','Excellent','bg2')}
+  </div>
+  <div class="ibox">1 pending advice request on gold price parameter adjustment. Response due within 48 hours.</div>`);
+}
+
+function dashFTRProvider() {
+  const u = ROLE.sample;
+  R(`${heroHTML('FTR Issuance Dashboard','Future Trade Rights at pre-fixed prices. Maintain your credit score above 0.65 to keep issuing.',[['Credit Score',u.creditScore],['FTRs Issued',u.ftrsIssued],['Portfolio Value',fmt.cr(u.portfolioValue)],['Delivery Rate',u.deliveryRate+'%']])}
+  <div class="stat-grid sg3">
+    ${statCard('Credit Score',u.creditScore,'Min 0.65 required',u.creditScore>=0.65?'Compliant':'Below Threshold',u.creditScore>=0.65?'bg2':'br2')}
+    ${statCard('FTRs Outstanding',u.ftrsIssued,'Active future rights','Live','bo2')}
+    ${statCard('Delivery Rate',u.deliveryRate+'%','Historical fulfillment','Excellent','bg2')}
+  </div>`);
+}
+
+function dashNominee() {
+  const u = ROLE.sample, ev = u.unitsEntitled * BM;
+  R(`${heroHTML('Nominee Entitlement','Redemption rights designated to you upon verified succession event.',[['Units Entitled',u.unitsEntitled],['Estimated Value',fmt.cr(ev)],['Status','Pending Claim'],['Designation',u.designation]])}
+  <div class="stat-grid sg2">
+    ${statCard('Units Entitled',u.unitsEntitled,'Upon successful claim','Held in trust','bo2')}
+    ${statCard('Estimated Value',fmt.cr(ev),'At today\'s Benchmark','Redemption value','bo2')}
+  </div>
+  <div class="bbox">To activate your claim, submit a certified death certificate. Our KYC team will verify within 5 business days.</div>`);
+}
+
+function dashApproval() {
+  const u = ROLE.sample;
+  R(`${heroHTML('Approval Authority Panel','Final governance decisions on parameter changes. Constitutional guard against structural modifications.',[['Members',u.members],['Pending Decisions',u.pendingDecisions],['Decisions This Year',u.decisionsThisYear],['Constitutional Changes',u.constitutionalChanges]])}
+  <div class="stat-grid sg3">
+    ${statCard('Pending Decisions',u.pendingDecisions,'Require panel vote','Urgent','br2')}
+    ${statCard('Decisions This Year',u.decisionsThisYear,'Parameter approvals','Active','bo2')}
+    ${statCard('Constitutional Guard',u.constitutionalChanges+' changes','Core parameters protected','Locked','bg2')}
+  </div>
+  <div class="ibox">1 parameter change proposal from Domain Consultant awaiting panel decision. All 3 members must vote within 7 days.</div>`);
+}
+
+// Init
+buildSelector();
+toast('Admin Dashboard · 12 Roles · TGDP Platform', 'g');
+</script>
+</body>
+</html>

@@ -14,11 +14,17 @@
       "INSTRUCTIONS.md",
       "DEPLOYMENT.md",
       "FILE_RENAME_GUIDE.md",
+      "README.md",
       "js/shared.txt",
       "api/api-config.txt",
       "blockchain/blockchain-service.txt",
+      "blockchain/contracts.sol",
       "config/firebase-rules.txt",
-      "services/core-services.txt"
+      "services/core-services.txt",
+      "firestore.rules",
+      "storage.rules",
+      "templates/**",
+      ".claude/**"
     ],
     "rewrites": [],
     "headers": [
