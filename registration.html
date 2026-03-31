@@ -284,7 +284,7 @@
         <img src="assets/images/trot-logo.jpg" alt="TROT®">
         <span class="logo-text">TGDP</span>
       </a>
-      <span style="color: var(--text-muted); font-size: 0.9rem;">Already registered? <a href="#" style="color: var(--gold);">Sign In</a></span>
+      <span style="color: var(--text-muted); font-size: 0.9rem;">Already registered? <a href="#" onclick="openLoginModal(); return false;" style="color: var(--gold);">Sign In</a></span>
     </header>
     
     <!-- Main Content -->
@@ -292,7 +292,25 @@
       <div class="register-container">
         <h1 class="register-title">Create Your <em>Account</em></h1>
         <p class="register-subtitle">Join the TGDP ecosystem and unlock the value of your gold</p>
-        
+
+        <!-- Google Sign-In -->
+        <div style="margin-bottom: 1.5rem; text-align: center;">
+          <button type="button" id="googleSignInBtn" onclick="handleGoogleSignIn()" style="display: inline-flex; align-items: center; gap: 0.6rem; padding: 0.65rem 1.5rem; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); color: var(--text-primary); font-size: 0.95rem; font-family: inherit; cursor: pointer; transition: background 0.2s;">
+            <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+              <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
+              <path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/>
+              <path d="M3.964 10.707A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332z" fill="#FBBC05"/>
+              <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.961L3.964 6.293C4.672 4.166 6.656 3.58 9 3.58z" fill="#EA4335"/>
+            </svg>
+            Continue with Google
+          </button>
+          <div style="display: flex; align-items: center; gap: 0.75rem; margin-top: 1.25rem; color: var(--text-muted); font-size: 0.85rem;">
+            <div style="flex:1; height:1px; background: var(--border);"></div>
+            or register with email below
+            <div style="flex:1; height:1px; background: var(--border);"></div>
+          </div>
+        </div>
+
         <!-- Wizard Steps -->
         <div class="wizard-steps">
           <div class="wizard-step active" onclick="goToStep(1)">
@@ -996,6 +1014,136 @@
     // Initialize
     document.addEventListener('DOMContentLoaded', function() {
       updateWizardUI();
+      // Handle Google redirect sign-in return
+      waitForFn('checkGoogleRedirect', () => {
+        window.checkGoogleRedirect().then((result) => {
+          if (!result) return;
+          if (result.isNewUser) {
+            showToast('Google account linked! Please complete your profile & KYC.', 'success');
+          } else {
+            showToast('Welcome back! Redirecting\u2026', 'success');
+            setTimeout(() => redirectByRole(result), 1500);
+          }
+        });
+      });
+    });
+  </script>
+
+  <!-- ── Login Modal ─────────────────────────────────────────────────────── -->
+  <div id="loginModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:1000; align-items:center; justify-content:center;">
+    <div style="background:var(--surface); border:1px solid var(--border); border-radius:16px; padding:2rem; width:100%; max-width:420px; margin:1rem;">
+      <h2 style="color:var(--gold); margin:0 0 0.25rem;">Sign In</h2>
+      <p style="color:var(--text-muted); font-size:0.9rem; margin:0 0 1.5rem;">Welcome back to TGDP</p>
+
+      <!-- Google login -->
+      <button type="button" onclick="handleGoogleSignIn()" style="width:100%; display:flex; align-items:center; justify-content:center; gap:0.6rem; padding:0.65rem 1rem; border:1px solid var(--border); border-radius:8px; background:var(--surface); color:var(--text-primary); font-size:0.95rem; font-family:inherit; cursor:pointer; margin-bottom:1.25rem;">
+        <svg width="18" height="18" viewBox="0 0 18 18" xmlns="http://www.w3.org/2000/svg">
+          <path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/>
+          <path d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z" fill="#34A853"/>
+          <path d="M3.964 10.707A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.707V4.961H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.039l3.007-2.332z" fill="#FBBC05"/>
+          <path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.961L3.964 6.293C4.672 4.166 6.656 3.58 9 3.58z" fill="#EA4335"/>
+        </svg>
+        Continue with Google
+      </button>
+
+      <div style="display:flex; align-items:center; gap:0.75rem; color:var(--text-muted); font-size:0.85rem; margin-bottom:1.25rem;">
+        <div style="flex:1; height:1px; background:var(--border);"></div>or<div style="flex:1; height:1px; background:var(--border);"></div>
+      </div>
+
+      <!-- Email / password login -->
+      <div style="margin-bottom:1rem;">
+        <label style="display:block; color:var(--text-secondary); font-size:0.85rem; margin-bottom:0.4rem;">Email</label>
+        <input type="email" id="loginEmail" placeholder="you@example.com" style="width:100%; padding:0.6rem 0.8rem; background:var(--bg-primary); border:1px solid var(--border); border-radius:8px; color:var(--text-primary); font-size:0.95rem; box-sizing:border-box;">
+      </div>
+      <div style="margin-bottom:1.5rem;">
+        <label style="display:block; color:var(--text-secondary); font-size:0.85rem; margin-bottom:0.4rem;">Password</label>
+        <input type="password" id="loginPassword" placeholder="••••••••" style="width:100%; padding:0.6rem 0.8rem; background:var(--bg-primary); border:1px solid var(--border); border-radius:8px; color:var(--text-primary); font-size:0.95rem; box-sizing:border-box;">
+      </div>
+      <button type="button" onclick="handleEmailLogin()" style="width:100%; padding:0.75rem; background:var(--gold); color:#000; border:none; border-radius:8px; font-size:1rem; font-weight:600; cursor:pointer; margin-bottom:1rem;">Sign In</button>
+      <button type="button" onclick="closeLoginModal()" style="width:100%; padding:0.65rem; background:transparent; color:var(--text-muted); border:1px solid var(--border); border-radius:8px; font-size:0.9rem; cursor:pointer;">Cancel</button>
+    </div>
+  </div>
+
+  <script>
+    const DASHBOARDS = {
+      household:  'portals/tgold/dashboard.html',
+      licensee:   'portals/gic/dashboard.html',
+      jeweler:    'portals/tjr/dashboard.html',
+      designer:   'portals/tjdb/dashboard.html',
+      returnee:   'portals/tjr/dashboard.html',
+      consultant: 'portals/tgold/dashboard.html',
+      advertiser: 'portals/tgold/dashboard.html',
+      ombudsman:  'portals/ombudsman/dashboard.html'
+    };
+
+    function openLoginModal()  { document.getElementById('loginModal').style.display = 'flex'; }
+    function closeLoginModal() { document.getElementById('loginModal').style.display = 'none'; }
+
+    document.getElementById('loginModal').addEventListener('click', function(e) {
+      if (e.target === this) closeLoginModal();
+    });
+
+    function redirectByRole(profile) {
+      const role = profile.primaryRole;
+      window.location.href = (role && DASHBOARDS[role]) ? DASHBOARDS[role] : 'portals/tgold/dashboard.html';
+    }
+
+    function waitForFn(name, cb) {
+      const t = setInterval(() => {
+        if (typeof window[name] === 'function') { clearInterval(t); cb(); }
+      }, 100);
+    }
+
+    // ── Google Sign-In ────────────────────────────────────────────────────────
+    function handleGoogleSignIn() {
+      waitForFn('firebaseGoogleSignIn', () => {
+        window.firebaseGoogleSignIn()
+          .then((result) => {
+            if (result.isNewUser) {
+              showToast('Google account linked! Please complete your profile & KYC.', 'success');
+              closeLoginModal();
+            } else {
+              showToast('Welcome back! Redirecting\u2026', 'success');
+              closeLoginModal();
+              setTimeout(() => redirectByRole(result), 1500);
+            }
+          })
+          .catch((err) => {
+            if (err.code !== 'auth/popup-closed-by-user') {
+              showToast(err.message || 'Google sign-in failed.', 'error');
+            }
+          });
+      });
+    }
+
+    // ── Email / Password Login ────────────────────────────────────────────────
+    function handleEmailLogin() {
+      const email    = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      if (!email || !password) { showToast('Please enter email and password.', 'error'); return; }
+
+      waitForFn('firebaseLogin', () => {
+        window.firebaseLogin(email, password)
+          .then((profile) => {
+            showToast('Signed in! Redirecting\u2026', 'success');
+            closeLoginModal();
+            setTimeout(() => redirectByRole(profile), 1500);
+          })
+          .catch((err) => {
+            const msg = err.code === 'auth/invalid-credential' || err.code === 'auth/wrong-password'
+              ? 'Incorrect email or password.'
+              : err.code === 'auth/user-not-found'
+              ? 'No account found with this email.'
+              : err.code === 'auth/too-many-requests'
+              ? 'Too many attempts. Please try again later.'
+              : err.message || 'Sign-in failed.';
+            showToast(msg, 'error');
+          });
+      });
+    }
+
+    document.getElementById('loginPassword').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') handleEmailLogin();
     });
   </script>
 </body>

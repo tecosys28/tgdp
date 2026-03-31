@@ -5,10 +5,10 @@
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
-         onAuthStateChanged, signOut, sendEmailVerification }
+         onAuthStateChanged, signOut, sendEmailVerification,
+         GoogleAuthProvider, signInWithRedirect, getRedirectResult }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc, updateDoc, collection,
-         onSnapshot, serverTimestamp }
+import { getFirestore, doc, setDoc, getDoc, onSnapshot, serverTimestamp }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { getStorage, ref, uploadBytes, getDownloadURL }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
@@ -25,11 +25,16 @@ const FIREBASE_CONFIG = {
   measurementId: "G-NHVPJS29MB"
 };
 
-const app      = initializeApp(FIREBASE_CONFIG);
-const auth     = getAuth(app);
-const db       = getFirestore(app);
-const storage  = getStorage(app);
-const analytics = getAnalytics(app);
+const app         = initializeApp(FIREBASE_CONFIG);
+const auth        = getAuth(app);
+const db          = getFirestore(app);
+const storage     = getStorage(app);
+getAnalytics(app);
+const googleProvider = new GoogleAuthProvider();
+googleProvider.setCustomParameters({
+  client_id: '399267274832-qe24nepg617svaitmv0skqas05pcluke.apps.googleusercontent.com',
+  prompt: 'select_account'
+});
 
 // ─── Upload KYC Document to Firebase Storage ─────────────────────────────────
 async function uploadKYCDoc(uid, file, docType) {
@@ -39,6 +44,60 @@ async function uploadKYCDoc(uid, file, docType) {
   const url = await getDownloadURL(snapshot.ref);
   return url;
 }
+
+// ─── Google Sign-In ───────────────────────────────────────────────────────────
+// Tries popup first; falls back to redirect if the browser blocks it.
+// For new Google users: creates a minimal Firestore profile with pending_kyc status.
+
+async function _saveGoogleProfile(user) {
+  const uid        = user.uid;
+  const userDocRef = doc(db, 'users', uid);
+  const userSnap   = await getDoc(userDocRef);
+  if (!userSnap.exists()) {
+    const nameParts = (user.displayName || '').split(' ');
+    await setDoc(userDocRef, {
+      uid,
+      firstName:     nameParts[0] || '',
+      lastName:      nameParts.slice(1).join(' ') || '',
+      email:         user.email,
+      phone:         user.phoneNumber || '',
+      pan:           '',
+      aadhaar:       '',
+      address:       '',
+      city:          '',
+      state:         '',
+      pincode:       '',
+      roles:         [],
+      primaryRole:   null,
+      status:        'pending_kyc',
+      emailVerified: user.emailVerified,
+      photoURL:      user.photoURL || null,
+      authProvider:  'google',
+      createdAt:     serverTimestamp(),
+      updatedAt:     serverTimestamp(),
+    });
+    return { uid, isNewUser: true, primaryRole: null };
+  }
+  return { uid, isNewUser: false, ...userSnap.data() };
+}
+
+window.firebaseGoogleSignIn = async function() {
+  // Always use redirect — avoids auth/popup-blocked across all browsers
+  await signInWithRedirect(auth, googleProvider);
+  return null; // page reloads; result caught by checkGoogleRedirect()
+};
+
+// ─── Handle Google Redirect Result (call once on every page load) ─────────────
+window.checkGoogleRedirect = async function() {
+  try {
+    const result = await getRedirectResult(auth);
+    if (!result) return null;
+    return await _saveGoogleProfile(result.user);
+  } catch (err) {
+    console.error('Google redirect error:', err);
+    return null;
+  }
+};
 
 // ─── Register User ────────────────────────────────────────────────────────────
 // Called from registration.html on form submit
