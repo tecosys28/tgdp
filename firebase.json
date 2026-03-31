@@ -1,0 +1,30 @@
+{
+  "hosting": {
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**",
+      "INSTRUCTIONS.md",
+      "DEPLOYMENT.md",
+      "FILE_RENAME_GUIDE.md",
+      "js/shared.txt",
+      "api/api-config.txt",
+      "blockchain/blockchain-service.txt",
+      "config/firebase-rules.txt",
+      "services/core-services.txt"
+    ],
+    "rewrites": [],
+    "headers": [
+      {
+        "source": "**/*.@(js|css)",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "max-age=31536000"
+          }
+        ]
+      }
+    ]
+  }
+}
