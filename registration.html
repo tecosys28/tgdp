@@ -681,7 +681,9 @@
   </div>
   
   <!-- Shared JavaScript -->
-  <script src="js/shared.txt"></script>
+  <script src="js/shared.js"></script>
+  <!-- Firebase Backend -->
+  <script type="module" src="js/firebase-backend.js"></script>
   
   <script>
     let currentWizardStep = 1;
@@ -934,29 +936,60 @@
       }
       
       showLoading('Creating your account...');
-      
-      // Simulate registration
-      setTimeout(() => {
-        hideLoading();
-        showToast('Registration successful! Redirecting to dashboard...', 'success');
-        
-        // In production, this would create the user in Firebase
-        // and redirect to appropriate dashboard based on primary role
-        setTimeout(() => {
-          const primaryRole = selectedRoles[0];
-          const dashboards = {
-            household: 'portals/tgold/dashboard.html',
-            licensee: 'portals/gic/dashboard.html',
-            jeweler: 'portals/tjr/dashboard.html',
-            designer: 'portals/tjdb/dashboard.html',
-            returnee: 'portals/tjr/dashboard.html',
-            consultant: 'portals/tgold/dashboard.html',
-            advertiser: 'portals/tgold/dashboard.html',
-            ombudsman: 'portals/gic/dashboard.html'
-          };
-          
-          window.location.href = dashboards[primaryRole] || 'portals/tgold/dashboard.html';
-        }, 1500);
+
+      const form = document.getElementById('registrationForm');
+      const formData = {
+        email:       form.querySelector('[name="email"]').value.trim(),
+        password:    form.querySelector('[name="password"]').value,
+        firstName:   form.querySelector('[name="firstName"]').value.trim(),
+        lastName:    form.querySelector('[name="lastName"]').value.trim(),
+        phone:       form.querySelector('[name="phone"]').value.trim(),
+        pan:         form.querySelector('[name="pan"]').value.trim(),
+        aadhaar:     form.querySelector('[name="aadhaar"]').value.replace(/\s/g, ''),
+        address:     form.querySelector('[name="address"]').value.trim(),
+        city:        form.querySelector('[name="city"]').value.trim(),
+        state:       form.querySelector('[name="state"]').value.trim(),
+        pincode:     form.querySelector('[name="pincode"]').value.trim(),
+        roles:       selectedRoles,
+        panDoc:      form.querySelector('[name="panDoc"]').files[0]     || null,
+        aadhaarDoc:  form.querySelector('[name="aadhaarDoc"]').files[0] || null,
+        photoDoc:    form.querySelector('[name="photoDoc"]').files[0]   || null,
+        addressDoc:  form.querySelector('[name="addressDoc"]').files[0] || null,
+      };
+
+      // Wait for firebase-backend.js module to load then register
+      const waitForFirebase = setInterval(() => {
+        if (typeof window.firebaseRegisterUser === 'function') {
+          clearInterval(waitForFirebase);
+          window.firebaseRegisterUser(formData)
+            .then(({ uid, primaryRole }) => {
+              hideLoading();
+              showToast('Registration successful! Please verify your email. Redirecting...', 'success');
+              const dashboards = {
+                household:  'portals/tgold/dashboard.html',
+                licensee:   'portals/gic/dashboard.html',
+                jeweler:    'portals/tjr/dashboard.html',
+                designer:   'portals/tjdb/dashboard.html',
+                returnee:   'portals/tjr/dashboard.html',
+                consultant: 'portals/tgold/dashboard.html',
+                advertiser: 'portals/tgold/dashboard.html',
+                ombudsman:  'portals/ombudsman/dashboard.html'
+              };
+              setTimeout(() => {
+                window.location.href = dashboards[primaryRole] || 'portals/tgold/dashboard.html';
+              }, 2000);
+            })
+            .catch((err) => {
+              hideLoading();
+              const msg = err.code === 'auth/email-already-in-use'
+                ? 'This email is already registered. Please log in.'
+                : err.code === 'auth/weak-password'
+                ? 'Password is too weak. Use at least 8 characters.'
+                : err.message || 'Registration failed. Please try again.';
+              showToast(msg, 'error');
+            });
+        }
+      }, 100);
       }, 2000);
     });
     
