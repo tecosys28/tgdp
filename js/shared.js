@@ -7,53 +7,110 @@
 // Firebase config lives in js/firebase-backend.js (ES module)
 
 // ═══════════════════════════════════════════════════════════════════════════
-// RAZORPAY CONFIGURATION
+// RAZORPAY PAYMENT
+// key_id is safe to expose in browser. key_secret lives only in Cloud Functions.
 // ═══════════════════════════════════════════════════════════════════════════
+
 const RAZORPAY_CONFIG = {
-  key_id: "SNvdpImD0XKojj",  // Deepa Tidke — Razorpay Merchant ID
-  key_secret: "YOUR_KEY_SECRET",       // Keep this on server-side only - DO NOT expose in frontend
-  currency: "INR",
-  company_name: "Deepa Tidke — TGDP Ecosystem",
-  company_logo: "assets/images/trot-logo.jpg",
-  theme_color: "#d4af37"
+  currency:     'INR',
+  company_name: 'Deepa Tidke — TGDP Ecosystem',
+  company_logo: 'assets/images/trot-logo.jpg',
+  theme_color:  '#d4af37',
 };
 
-// Razorpay payment handler (example)
-function initiatePayment(amount, description, onSuccess, onFailure) {
+/**
+ * Load the Razorpay checkout script lazily (only once).
+ * Returns a promise that resolves when the script is ready.
+ */
+function _loadRazorpaySDK() {
+  if (window.Razorpay) return Promise.resolve();
+  return new Promise((resolve, reject) => {
+    const script  = document.createElement('script');
+    script.src    = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.onload  = resolve;
+    script.onerror = () => reject(new Error('Failed to load Razorpay SDK'));
+    document.head.appendChild(script);
+  });
+}
+
+/**
+ * Initiate a Razorpay payment.
+ *
+ * @param {number}   amount      - Amount in INR (e.g. 300 for ₹300)
+ * @param {string}   description - Shown in the checkout modal
+ * @param {string}   purpose     - 'gic_license' | 'withdrawal' | 'design_purchase'
+ * @param {object}   metadata    - Extra fields stored with the order (e.g. { designId })
+ * @param {function} onSuccess   - Called with { paymentId, orderId, signature } on success
+ * @param {function} onFailure   - Called with { error } on failure / cancellation
+ */
+async function initiatePayment(amount, description, purpose, metadata, onSuccess, onFailure) {
+  try {
+    await _loadRazorpaySDK();
+  } catch (e) {
+    showToast('Could not load payment gateway. Check your connection.', 'error');
+    if (onFailure) onFailure({ error: e.message });
+    return;
+  }
+
+  showToast('Creating payment order…', 'info');
+
+  let orderData;
+  try {
+    // Call Cloud Function to create the order (key_secret stays server-side)
+    const fn = firebase.functions().httpsCallable('createRazorpayOrder');
+    const res = await fn({ amount, purpose, metadata: metadata || {} });
+    orderData = res.data;
+  } catch (e) {
+    showToast('Payment order creation failed: ' + (e.message || 'Unknown error'), 'error');
+    if (onFailure) onFailure({ error: e.message });
+    return;
+  }
+
   const options = {
-    key: RAZORPAY_CONFIG.key_id,
-    amount: amount * 100, // Razorpay expects amount in paise
-    currency: RAZORPAY_CONFIG.currency,
-    name: RAZORPAY_CONFIG.company_name,
-    description: description,
-    image: RAZORPAY_CONFIG.company_logo,
-    handler: function(response) {
-      // Payment successful
-      console.log('Payment ID:', response.razorpay_payment_id);
-      if (onSuccess) onSuccess(response);
-    },
+    key:         orderData.keyId,
+    order_id:    orderData.orderId,
+    amount:      orderData.amount,   // paise
+    currency:    orderData.currency,
+    name:        RAZORPAY_CONFIG.company_name,
+    description,
+    image:       RAZORPAY_CONFIG.company_logo,
     prefill: {
-      name: TGDP.user?.name || '',
-      email: TGDP.user?.email || '',
-      contact: TGDP.user?.phone || ''
+      name:    TGDP.user?.name    || '',
+      email:   TGDP.user?.email   || '',
+      contact: TGDP.user?.phone   || '',
     },
-    theme: {
-      color: RAZORPAY_CONFIG.theme_color
-    },
+    theme: { color: RAZORPAY_CONFIG.theme_color },
     modal: {
-      ondismiss: function() {
+      ondismiss: () => {
+        showToast('Payment cancelled', 'warning');
         if (onFailure) onFailure({ error: 'Payment cancelled' });
+      },
+    },
+    handler: async (response) => {
+      // response = { razorpay_order_id, razorpay_payment_id, razorpay_signature }
+      showToast('Verifying payment…', 'info');
+      try {
+        const verify = firebase.functions().httpsCallable('verifyRazorpayPayment');
+        await verify({
+          orderId:   response.razorpay_order_id,
+          paymentId: response.razorpay_payment_id,
+          signature: response.razorpay_signature,
+        });
+        showToast('Payment successful!', 'success');
+        if (onSuccess) onSuccess(response);
+      } catch (e) {
+        showToast('Payment verification failed: ' + (e.message || 'Unknown error'), 'error');
+        if (onFailure) onFailure({ error: e.message });
       }
-    }
+    },
   };
-  
-  // Uncomment when Razorpay SDK is loaded
-  // const rzp = new Razorpay(options);
-  // rzp.open();
-  
-  // Mock for development
-  console.log('Razorpay payment initiated (mock):', options);
-  showToast('Payment gateway will be activated after Razorpay integration', 'info');
+
+  const rzp = new window.Razorpay(options);
+  rzp.on('payment.failed', (resp) => {
+    showToast('Payment failed: ' + resp.error.description, 'error');
+    if (onFailure) onFailure(resp.error);
+  });
+  rzp.open();
 }
 
 // ═══════════════════════════════════════════════════════════════════════════
@@ -274,13 +331,15 @@ function isStrongPassword(password) {
  * Value: array of roles it CANNOT be combined with
  */
 const ROLE_INCOMPATIBILITIES = {
+  // Ombudsman is fully exclusive — cannot combine with any other role
   ombudsman: ['licensee', 'household', 'jeweler', 'designer', 'returnee', 'consultant', 'advertiser'],
+  // Jeweler cannot be: Household, Returnee, Designer, Consultant, or Licensee (spec 4.2)
   jeweler: ['household', 'returnee', 'designer', 'consultant', 'licensee'],
-  household: ['jeweler'],
-  returnee: ['jeweler'],
-  designer: ['jeweler'],
+  household:  ['jeweler'],
+  returnee:   ['jeweler'],
+  designer:   ['jeweler'],
   consultant: ['jeweler'],
-  licensee: ['jeweler'],
+  licensee:   ['jeweler'],
   advertiser: []
 };
 

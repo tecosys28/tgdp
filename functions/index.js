@@ -8,9 +8,78 @@ const { onCall, HttpsError } = require('firebase-functions/v2/https');
 const { onSchedule }         = require('firebase-functions/v2/scheduler');
 const { onDocumentCreated }  = require('firebase-functions/v2/firestore');
 const admin                  = require('firebase-admin');
+const { ethers }             = require('ethers');
 
 admin.initializeApp();
 const db = admin.firestore();
+
+// ─── Blockchain helpers ───────────────────────────────────────────────────────
+
+/**
+ * Load contract addresses from Firestore /config/contracts.
+ * Returns null if not yet deployed (blockchain recording is skipped gracefully).
+ */
+async function getContractAddresses() {
+  const snap = await db.collection('config').doc('contracts').get();
+  if (!snap.exists) return null;
+  return snap.data();
+}
+
+/**
+ * Get a signer for the REGISTRAR wallet.
+ * Private key stored in Firebase Secret Manager as REGISTRAR_PRIVATE_KEY.
+ * Returns null if not configured (pre-deployment mode).
+ */
+function getRegistrarSigner(rpcUrl) {
+  const pk = process.env.REGISTRAR_PRIVATE_KEY;
+  if (!pk) return null;
+  const provider = new ethers.JsonRpcProvider(rpcUrl);
+  return new ethers.Wallet(pk, provider);
+}
+
+const RPC_URL = process.env.POLYGON_RPC_URL || 'https://rpc-amoy.polygon.technology';
+
+/**
+ * Record a transaction on-chain and save the tx hash to Firestore.
+ * All blockchain errors are caught and logged — they never block the Firebase operation.
+ *
+ * @param {string}   operation   e.g. 'mint', 'earmark', 'designIPR', 'designSale'
+ * @param {Function} fn          Async function that uses `signer` and returns { txHash, ... }
+ * @param {string}   firestorePath  e.g. 'earmarks/MINT-XXX'  — doc to update with txHash
+ */
+async function recordOnChain(operation, fn, firestorePath) {
+  try {
+    const addresses = await getContractAddresses();
+    if (!addresses) {
+      console.log(`[blockchain] Contracts not deployed yet — skipping ${operation}`);
+      return null;
+    }
+    const signer = getRegistrarSigner(RPC_URL);
+    if (!signer) {
+      console.log('[blockchain] REGISTRAR_PRIVATE_KEY not set — skipping on-chain record');
+      return null;
+    }
+
+    const result = await fn(signer, addresses);
+
+    // Save tx hash to Firestore for audit trail
+    if (firestorePath && result && result.txHash) {
+      const [col, docId] = firestorePath.split('/');
+      await db.collection(col).doc(docId).update({
+        blockchainTxHash:  result.txHash,
+        blockchainNetwork: process.env.POLYGON_NETWORK || 'amoy',
+        blockchainRecordedAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    }
+
+    console.log(`[blockchain] ${operation} recorded: ${result?.txHash}`);
+    return result;
+  } catch (err) {
+    // Never throw — blockchain recording is best-effort
+    console.error(`[blockchain] ${operation} failed (non-fatal):`, err.message);
+    return null;
+  }
+}
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -52,6 +121,29 @@ async function getLBMARate() {
   return 7342; // safe fallback
 }
 
+// ─── Role compatibility (mirrors spec 4.2 and Solidity _validateRoles) ────────
+
+const ROLE_INCOMPATIBILITIES = {
+  ombudsman: ['licensee', 'household', 'jeweler', 'designer', 'returnee', 'consultant', 'advertiser'],
+  jeweler:   ['household', 'returnee', 'designer', 'consultant', 'licensee'],
+  household:  ['jeweler'],
+  returnee:   ['jeweler'],
+  designer:   ['jeweler'],
+  consultant: ['jeweler'],
+  licensee:   ['jeweler'],
+};
+
+function isRoleCombinationValid(roles) {
+  if (!Array.isArray(roles) || roles.length === 0) return true;
+  for (const role of roles) {
+    const blocked = ROLE_INCOMPATIBILITIES[role] || [];
+    for (const other of roles) {
+      if (role !== other && blocked.includes(other)) return false;
+    }
+  }
+  return true;
+}
+
 // ─── 1. KYC APPROVAL (Admin only) ─────────────────────────────────────────────
 
 exports.approveKYC = onCall(async (request) => {
@@ -60,6 +152,17 @@ exports.approveKYC = onCall(async (request) => {
 
   const { targetUserId, approved, notes } = request.data;
   if (!targetUserId) throw new HttpsError('invalid-argument', 'targetUserId required.');
+
+  // Validate role combination before approving
+  if (approved) {
+    const userSnap = await db.collection('users').doc(targetUserId).get();
+    if (!userSnap.exists) throw new HttpsError('not-found', 'User not found.');
+    const roles = userSnap.data().roles || [];
+    if (!isRoleCombinationValid(roles)) {
+      throw new HttpsError('failed-precondition',
+        `User has incompatible roles [${roles.join(', ')}]. Fix roles before approving.`);
+    }
+  }
 
   const batch = db.batch();
   const status = approved ? 'active' : 'rejected';
@@ -205,6 +308,36 @@ exports.confirmMint = onCall(async (request) => {
   });
 
   await batch.commit();
+
+  // ── Blockchain recording (best-effort, post-commit) ──────────────────────
+  if (approved) {
+    const goldMilligrams = Math.round(earmark.pureGoldGrams * 1000);
+    const certHash       = ethers.keccak256(ethers.toUtf8Bytes(mintId));
+    const tgdpWei        = ethers.parseUnits(String(earmark.tgdpAmount), 18);
+
+    // 1. Earmark gold in Registry
+    await recordOnChain('earmarkGold', async (signer, addr) => {
+      const REGISTRY_ABI = [
+        'function earmarkGold(address owner, bytes32 certificateHash, uint256 pureGoldMilligrams, uint256 tgdpAmount) returns (bytes32)',
+      ];
+      const registry = new ethers.Contract(addr.registry, REGISTRY_ABI, signer);
+      const tx       = await registry.earmarkGold(earmark.userId, certHash, BigInt(goldMilligrams), tgdpWei);
+      const receipt  = await tx.wait();
+      return { txHash: receipt.hash };
+    }, `earmarks/${mintId}`);
+
+    // 2. Mint TGDP on-chain
+    await recordOnChain('mintTGDP', async (signer, addr) => {
+      const TGDP_ABI = [
+        'function mint(address to, uint256 goldMilligrams, bytes32 certificateHash) returns (bytes32)',
+      ];
+      const tgdp    = new ethers.Contract(addr.tgdpToken, TGDP_ABI, signer);
+      const tx      = await tgdp.mint(earmark.userId, BigInt(goldMilligrams), certHash);
+      const receipt = await tx.wait();
+      return { txHash: receipt.hash };
+    }, null); // tx hash written to earmarks doc by first recordOnChain already
+  }
+
   return { success: true, approved };
 });
 
@@ -566,6 +699,18 @@ exports.fileComplaint = onCall(async (request) => {
 });
 
 // ─── 12. UPDATE COMPLAINT (Ombudsman) ────────────────────────────────────────
+// Enforces spec 5.1 stage ordering and sets per-stage SLA deadlines.
+
+const COMPLAINT_STAGE_ORDER = [
+  'acknowledgment', 'investigation', 'mediation', 'resolution', 'appeal', 'closed',
+];
+// Days from filing to stage deadline (spec 5.1)
+const COMPLAINT_STAGE_DAYS = {
+  acknowledgment: 2,
+  investigation:  7,
+  mediation:      10,
+  resolution:     14,
+};
 
 exports.updateComplaint = onCall(async (request) => {
   const uid = requireAuth(request);
@@ -581,20 +726,58 @@ exports.updateComplaint = onCall(async (request) => {
   const snap = await ref.get();
   if (!snap.exists) throw new HttpsError('not-found', 'Complaint not found.');
 
+  const current = snap.data();
+
+  // Enforce stage ordering — cannot go backwards
+  if (newStage) {
+    const currentIdx = COMPLAINT_STAGE_ORDER.indexOf(current.stage);
+    const newIdx     = COMPLAINT_STAGE_ORDER.indexOf(newStage);
+    if (newIdx === -1) throw new HttpsError('invalid-argument', `Invalid stage: ${newStage}`);
+    if (newIdx <= currentIdx) {
+      throw new HttpsError('failed-precondition',
+        `Cannot move complaint backwards from '${current.stage}' to '${newStage}'`);
+    }
+  }
+
+  // Resolution is required when closing/resolving
+  if ((newStage === 'resolution' || newStage === 'closed') && !resolution) {
+    throw new HttpsError('invalid-argument', 'resolution decision required when resolving a complaint.');
+  }
+
   const updates = {
     updatedAt: admin.firestore.FieldValue.serverTimestamp(),
     timeline:  admin.firestore.FieldValue.arrayUnion({
-      stage:     newStage || snap.data().stage,
+      stage:     newStage || current.stage,
       timestamp: new Date().toISOString(),
       updatedBy: uid,
       note:      note || '',
     }),
   };
 
-  if (newStage)   updates.stage      = newStage;
+  if (newStage) {
+    updates.stage = newStage;
+
+    // Set stage-specific deadline based on filing date
+    const filedAt   = current.createdAt?.toDate ? current.createdAt.toDate() : new Date();
+    const stageDays = COMPLAINT_STAGE_DAYS[newStage];
+    if (stageDays) {
+      updates.stageDeadline = admin.firestore.Timestamp.fromDate(
+        new Date(filedAt.getTime() + stageDays * 24 * 60 * 60 * 1000)
+      );
+    }
+
+    // Appeal window: 7 days after resolution date
+    if (newStage === 'resolution') {
+      updates.appealDeadline = admin.firestore.Timestamp.fromDate(
+        new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
+      );
+      updates.status = 'resolved';
+    }
+    if (newStage === 'closed') updates.status = 'closed';
+  }
+
   if (resolution) updates.resolution = resolution;
-  if (newStage === 'resolved' || newStage === 'closed') updates.status = newStage;
-  if (!snap.data().assignedOmbudsman && isOmbudsman) updates.assignedOmbudsman = uid;
+  if (!current.assignedOmbudsman && isOmbudsman) updates.assignedOmbudsman = uid;
 
   await ref.update(updates);
   return { success: true };
@@ -723,24 +906,45 @@ exports.registerDesign = onCall(async (request) => {
 
   const designId = generateId('DES');
 
+  // Compute design hash from content (mirrors what browser hashes before upload)
+  const designHash = ethers.keccak256(
+    ethers.toUtf8Bytes(JSON.stringify({ designId, uid, title, category, price }))
+  );
+
   await db.collection('tjdb_designs').doc(designId).set({
     designId,
-    designerId:  uid,
+    designerId:     uid,
     title,
-    description: description || '',
-    category:    category || 'general',
+    description:    description || '',
+    category:       category || 'general',
     price,
-    imageUrls:   imageUrls || [],
-    fileUrls:    fileUrls || [],
+    imageUrls:      imageUrls || [],
+    fileUrls:       fileUrls  || [],
+    designHash,
     iprRegistered:  false,
-    blockchainHash: null,
-    status:      'active',
-    salesCount:  0,
-    createdAt:   admin.firestore.FieldValue.serverTimestamp(),
-    updatedAt:   admin.firestore.FieldValue.serverTimestamp(),
+    blockchainTxHash: null,
+    status:         'active',
+    salesCount:     0,
+    createdAt:      admin.firestore.FieldValue.serverTimestamp(),
+    updatedAt:      admin.firestore.FieldValue.serverTimestamp(),
   });
 
-  return { success: true, designId };
+  // Register IPR on-chain (best-effort)
+  const metadataUri = `ipfs://tgdp-designs/${designId}`;   // real IPFS hash written after Pinata upload
+  await recordOnChain('registerDesignIPR', async (signer, addr) => {
+    const IPR_ABI = [
+      'function registerDesign(bytes32 designHash, string metadataUri, address designer) returns (uint256)',
+    ];
+    const ipr     = new ethers.Contract(addr.iprRegistry, IPR_ABI, signer);
+    const tx      = await ipr.registerDesign(designHash, metadataUri, uid);
+    const receipt = await tx.wait();
+    return { txHash: receipt.hash };
+  }, `tjdb_designs/${designId}`);
+
+  // Mark IPR registered in Firestore
+  await db.collection('tjdb_designs').doc(designId).update({ iprRegistered: true });
+
+  return { success: true, designId, designHash };
 });
 
 // ─── 17. PURCHASE DESIGN (T-JDB) ─────────────────────────────────────────────
@@ -806,28 +1010,90 @@ exports.purchaseDesign = onCall(async (request) => {
     }, { merge: true });
   });
 
+  // Record sale on IPR Registry (best-effort)
+  if (design.designHash) {
+    await recordOnChain('recordDesignSale', async (signer, addr) => {
+      const IPR_ABI = [
+        'function recordSale(uint256 designId, address buyer, uint256 amount)',
+        'function getDesignIdByHash(bytes32 designHash) view returns (uint256)',
+      ];
+      const ipr         = new ethers.Contract(addr.iprRegistry, IPR_ABI, signer);
+      const onChainId   = await ipr.getDesignIdByHash(design.designHash);
+      if (Number(onChainId) === 0) return null; // not yet on-chain
+      const saleAmtWei  = ethers.parseUnits(String(tgdpAmount), 18);
+      const tx          = await ipr.recordSale(onChainId, uid, saleAmtWei);
+      const receipt     = await tx.wait();
+      return { txHash: receipt.hash };
+    }, `tjdb_orders/${orderId}`);
+  }
+
   return { success: true, orderId, designerPayout };
 });
 
 // ─── 18. SCHEDULED: REFRESH LBMA RATE ────────────────────────────────────────
 // Runs daily at 06:00 IST (00:30 UTC) after LBMA morning fixing.
-// In production replace the mock with a real LBMA API call.
+// Uses Nasdaq Data Link LBMA/GOLD dataset + exchangerate-api for USD→INR.
+// Set NASDAQ_API_KEY in Firebase Secret Manager (param in .env for local dev).
 
 exports.refreshLBMARate = onSchedule('30 0 * * *', async () => {
-  // TODO: replace mock with real LBMA API call
-  // Example: const res = await fetch('https://data.nasdaq.com/api/v3/datasets/LBMA/GOLD.json?api_key=YOUR_KEY&rows=1');
-  const baseRate  = 7342;
-  const variation = (Math.random() - 0.5) * 100;
-  const rate      = Math.round(baseRate + variation);
+  const NASDAQ_API_KEY = process.env.NASDAQ_API_KEY;
+
+  let ratePerGramINR;
+  let ratePerGramUSD;
+  let usdToInr;
+  let source = 'LBMA';
+
+  try {
+    if (!NASDAQ_API_KEY) throw new Error('NASDAQ_API_KEY not set');
+
+    // 1. Fetch LBMA Gold AM fixing (USD per troy oz) from Nasdaq Data Link
+    //    LBMA/GOLD dataset columns: Date | USD (AM) | USD (PM) | GBP (AM) | GBP (PM) | EUR (AM) | EUR (PM)
+    const lbmaUrl = `https://data.nasdaq.com/api/v3/datasets/LBMA/GOLD.json?api_key=${NASDAQ_API_KEY}&rows=1`;
+    const lbmaRes = await fetch(lbmaUrl);
+    if (!lbmaRes.ok) throw new Error(`LBMA API ${lbmaRes.status}: ${await lbmaRes.text()}`);
+    const lbmaJson = await lbmaRes.json();
+
+    // dataset.data[0] = [date, USD_AM, USD_PM, GBP_AM, GBP_PM, EUR_AM, EUR_PM]
+    const latestRow = lbmaJson.dataset?.data?.[0];
+    if (!latestRow || latestRow.length < 2) throw new Error('Unexpected LBMA response shape');
+    const usdPerTroyOz = parseFloat(latestRow[1]); // AM fixing
+    if (!usdPerTroyOz || isNaN(usdPerTroyOz)) throw new Error('Invalid LBMA USD value');
+
+    // 1 troy oz = 31.1034768 grams
+    ratePerGramUSD = usdPerTroyOz / 31.1034768;
+
+    // 2. Fetch USD→INR exchange rate (free tier, no key needed)
+    const fxUrl = 'https://open.er-api.com/v6/latest/USD';
+    const fxRes = await fetch(fxUrl);
+    if (!fxRes.ok) throw new Error(`FX API ${fxRes.status}`);
+    const fxJson = await fxRes.json();
+    usdToInr = fxJson?.rates?.INR;
+    if (!usdToInr || isNaN(usdToInr)) throw new Error('Invalid INR rate');
+
+    ratePerGramINR = Math.round(ratePerGramUSD * usdToInr * 100) / 100;
+    console.log(`LBMA: $${usdPerTroyOz}/oz → $${ratePerGramUSD.toFixed(4)}/g × ₹${usdToInr} = ₹${ratePerGramINR}/g`);
+
+  } catch (err) {
+    console.error('LBMA fetch failed, keeping existing rate:', err.message);
+    // Do not overwrite with stale data — just log and exit
+    await db.collection('config').doc('lbma').set({
+      lastFetchError: err.message,
+      lastFetchAt:    admin.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
+    return;
+  }
 
   await db.collection('config').doc('lbma').set({
-    ratePerGram: rate,
-    currency:    'INR',
-    source:      'LBMA',
-    updatedAt:   admin.firestore.FieldValue.serverTimestamp(),
+    ratePerGram:    ratePerGramINR,
+    ratePerGramUSD: Math.round(ratePerGramUSD * 10000) / 10000,
+    usdToInr:       Math.round(usdToInr * 100) / 100,
+    currency:       'INR',
+    source,
+    updatedAt:      admin.firestore.FieldValue.serverTimestamp(),
+    lastFetchError: null,
   }, { merge: true });
 
-  console.log(`LBMA rate updated: ₹${rate}/gram`);
+  console.log(`LBMA rate updated: ₹${ratePerGramINR}/gram`);
 });
 
 // ─── 19. TRIGGER: Auto-credit GIC on new household link ──────────────────────
@@ -869,4 +1135,155 @@ exports.getAdminStats = onCall(async (request) => {
     totalFTRCommission: revenue.totalFTRCommission || 0,
     totalDesignRevenue: revenue.totalDesignRevenue || 0,
   };
+});
+
+// ─── 21. RAZORPAY: CREATE ORDER ───────────────────────────────────────────────
+// Creates a Razorpay order server-side so the key_secret never touches the client.
+// purpose: 'gic_license' | 'withdrawal' | 'design_purchase'
+// amount: INR value (NOT paise — conversion done here)
+
+exports.createRazorpayOrder = onCall(async (request) => {
+  const uid = requireAuth(request);
+  const { amount, purpose, metadata = {} } = request.data;
+
+  if (!amount || amount <= 0) throw new HttpsError('invalid-argument', 'amount required');
+  const VALID_PURPOSES = ['gic_license', 'withdrawal', 'design_purchase'];
+  if (!VALID_PURPOSES.includes(purpose)) throw new HttpsError('invalid-argument', 'invalid purpose');
+
+  const RAZORPAY_KEY_ID     = process.env.RAZORPAY_KEY_ID;
+  const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET;
+  if (!RAZORPAY_KEY_ID || !RAZORPAY_KEY_SECRET) {
+    throw new HttpsError('failed-precondition', 'Razorpay credentials not configured');
+  }
+
+  // Create Razorpay order via REST API
+  const credentials = Buffer.from(`${RAZORPAY_KEY_ID}:${RAZORPAY_KEY_SECRET}`).toString('base64');
+  const orderRes = await fetch('https://api.razorpay.com/v1/orders', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Basic ${credentials}`,
+      'Content-Type':  'application/json',
+    },
+    body: JSON.stringify({
+      amount:   Math.round(amount * 100), // paise
+      currency: 'INR',
+      receipt:  `tgdp_${purpose}_${uid}_${Date.now()}`,
+      notes: {
+        userId:  uid,
+        purpose,
+        ...metadata,
+      },
+    }),
+  });
+
+  if (!orderRes.ok) {
+    const errText = await orderRes.text();
+    console.error('Razorpay order creation failed:', errText);
+    throw new HttpsError('internal', 'Payment order creation failed');
+  }
+
+  const order = await orderRes.json();
+
+  // Persist order for verification later
+  await db.collection('payment_orders').doc(order.id).set({
+    orderId:   order.id,
+    userId:    uid,
+    amount,
+    purpose,
+    metadata,
+    status:    'created',
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  return {
+    orderId:   order.id,
+    amount:    order.amount,   // paise
+    currency:  order.currency,
+    keyId:     RAZORPAY_KEY_ID,
+  };
+});
+
+// ─── 22. RAZORPAY: VERIFY PAYMENT ────────────────────────────────────────────
+// Verifies Razorpay payment signature after the checkout modal closes.
+// On success, triggers the business action (e.g., activate GIC license).
+
+exports.verifyRazorpayPayment = onCall(async (request) => {
+  const uid = requireAuth(request);
+  const { orderId, paymentId, signature } = request.data;
+
+  if (!orderId || !paymentId || !signature) {
+    throw new HttpsError('invalid-argument', 'orderId, paymentId, signature required');
+  }
+
+  const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET;
+  if (!RAZORPAY_KEY_SECRET) {
+    throw new HttpsError('failed-precondition', 'Razorpay credentials not configured');
+  }
+
+  // Verify HMAC-SHA256 signature: sign(orderId + "|" + paymentId) with key_secret
+  const crypto    = require('crypto');
+  const expected  = crypto
+    .createHmac('sha256', RAZORPAY_KEY_SECRET)
+    .update(`${orderId}|${paymentId}`)
+    .digest('hex');
+
+  if (expected !== signature) {
+    throw new HttpsError('permission-denied', 'Payment signature verification failed');
+  }
+
+  // Fetch the pending order record
+  const orderSnap = await db.collection('payment_orders').doc(orderId).get();
+  if (!orderSnap.exists) throw new HttpsError('not-found', 'Order not found');
+  const order = orderSnap.data();
+  if (order.userId !== uid) throw new HttpsError('permission-denied', 'Order does not belong to user');
+  if (order.status === 'paid') return { success: true, alreadyProcessed: true };
+
+  // Mark paid
+  await db.collection('payment_orders').doc(orderId).update({
+    status:    'paid',
+    paymentId,
+    paidAt:    admin.firestore.FieldValue.serverTimestamp(),
+  });
+
+  // Trigger post-payment business logic
+  if (order.purpose === 'gic_license') {
+    // Activate GIC licensee status
+    await db.collection('users').doc(uid).update({
+      gicLicenseActive: true,
+      gicLicensePaidAt: admin.firestore.FieldValue.serverTimestamp(),
+      gicLicenseTxId:   paymentId,
+    });
+    await db.collection('kyc').doc(uid).update({
+      gicLicenseFee: true,
+    });
+
+  } else if (order.purpose === 'withdrawal') {
+    // Withdrawal payment captured — queue for processing
+    await db.collection('withdrawal_requests').add({
+      userId:    uid,
+      amount:    order.amount,
+      paymentId,
+      orderId,
+      status:    'queued',
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+
+  } else if (order.purpose === 'design_purchase') {
+    // Design purchase — orderId stored in metadata
+    const { designId } = order.metadata;
+    if (designId) {
+      await db.collection('tjdb_orders').add({
+        buyerId:   uid,
+        designId,
+        amount:    order.amount,
+        paymentId,
+        orderId,
+        paymentMethod: 'razorpay',
+        status:    'completed',
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      });
+    }
+  }
+
+  return { success: true };
 });

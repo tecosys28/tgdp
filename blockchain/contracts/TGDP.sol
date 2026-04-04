@@ -14,7 +14,6 @@ import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/Pausable.sol";
 
-
 // ═══════════════════════════════════════════════════════════════════════════
 // CONTRACT 1: TGDP TOKEN (ERC-20)
 // 10 TGDP = 1 gram pure gold (999 fineness)

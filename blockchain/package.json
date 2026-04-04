@@ -1,0 +1,20 @@
+{
+  "name": "tgdp-contracts",
+  "description": "TGDP Ecosystem Smart Contracts",
+  "scripts": {
+    "compile":        "hardhat compile",
+    "test":           "hardhat test",
+    "deploy:testnet": "hardhat run scripts/deploy.js --network amoy",
+    "deploy:mainnet": "hardhat run scripts/deploy.js --network polygon",
+    "verify":         "hardhat verify"
+  },
+  "devDependencies": {
+    "hardhat":                                  "^2.22.0",
+    "@nomicfoundation/hardhat-toolbox":         "^5.0.0",
+    "@openzeppelin/contracts":                  "^5.0.0",
+    "dotenv":                                   "^16.0.0"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.0.0"
+  }
+}

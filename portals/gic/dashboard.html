@@ -691,7 +691,10 @@
                     <label class="form-label required">Category</label>
                     <select class="form-select" id="complaintCategory" name="complaintCategory" required>
                       <option value="">Select Category</option>
-                      <option value="payment">Payment Issue</option>
+                      <option value="payment">Payment Dispute</option>
+                      <option value="household_conflict">Household Conflict</option>
+                      <option value="license">License Issue</option>
+                      <option value="commission">Commission Dispute</option>
                       <option value="gic">GIC Dispute</option>
                       <option value="fraud">Suspected Fraud</option>
                       <option value="kyc">KYC Issue</option>
@@ -802,9 +805,9 @@
                 <div>
                   <h4 style="margin-bottom: 1rem;">Expand Capacity</h4>
                   <div style="background: var(--purple-muted); border: 1px solid rgba(167, 139, 250, 0.3); border-radius: var(--radius-lg); padding: 1.5rem; text-align: center;">
-                    <div style="font-size: 2.5rem; font-family: var(--font-display); font-weight: 700; color: var(--purple);">$300</div>
+                    <div style="font-size: 2.5rem; font-family: var(--font-display); font-weight: 700; color: var(--purple);">₹300</div>
                     <div style="color: var(--text-muted); margin-bottom: 1rem;">per additional household</div>
-                    <button class="btn btn-purple">Purchase More Capacity</button>
+                    <button class="btn btn-purple" onclick="payLicenseFee()">Purchase More Capacity</button>
                   </div>
                 </div>
               </div>
@@ -1017,6 +1020,25 @@
     });
 
     window.tgdpLogout = logout;
+
+    // ── GIC license fee payment via Razorpay ────────────────────────────────
+    window.payLicenseFee = function() {
+      initiatePayment(
+        300,
+        'GIC License — Additional Household Capacity',
+        'gic_license',
+        {},
+        () => {
+          showToast('License capacity expanded!', 'success');
+          loadHouseholds();
+        },
+        (err) => {
+          if (err?.error !== 'Payment cancelled') {
+            showToast('Payment failed: ' + (err?.error || 'Unknown'), 'error');
+          }
+        }
+      );
+    };
   </script>
 </body>
 </html>

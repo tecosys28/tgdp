@@ -1,0 +1,22 @@
+# Secrets — never commit these
+.env
+functions/.env
+blockchain/.env
+**/serviceAccountKey.json
+**/deployed-*.json
+
+# Dependencies
+node_modules/
+functions/node_modules/
+blockchain/node_modules/
+
+# Build artifacts
+blockchain/artifacts/
+blockchain/cache/
+blockchain/typechain-types/
+
+# Firebase
+.firebase/
+firebase-debug.log
+firestore-debug.log
+ui-debug.log

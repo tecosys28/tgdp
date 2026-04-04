@@ -800,7 +800,7 @@
 
     // ── Render design card ─────────────────────────────────────────────────────
     function designCard(d) {
-      return `<div class="design-card" onclick="window._purchaseDesign('${d.designId}', '${d.title}', ${d.price})">
+      return `<div class="design-card" onclick="window._purchaseDesign('${d.designId}', '${d.title}', ${d.price}, ${d.priceINR || 0})">
         <div class="design-image" style="background:linear-gradient(135deg,var(--rose-muted),var(--obsidian-light));display:flex;align-items:center;justify-content:center;font-size:3rem;">💍</div>
         <div style="padding:1rem;">
           <div style="font-weight:600;margin-bottom:0.25rem;">${d.title}</div>
@@ -856,17 +856,47 @@
     await Promise.all([loadDesigns(), loadMyDesigns(), loadComplaints()]);
 
     // ── Purchase design ────────────────────────────────────────────────────────
-    window._purchaseDesign = async function(designId, title, price) {
-      if (!confirm(`Purchase "${title}" for ${price} TGDP?`)) return;
-      showLoading('Processing purchase...');
-      try {
-        const res = await callPurchaseDesign({ designId, tgdpAmount: price });
-        hideLoading();
-        showToast(`Purchase complete! Order: ${res.data.orderId}`, 'success');
-        await loadDesigns();
-      } catch (err) {
-        hideLoading();
-        showToast(err.message || 'Purchase failed.', 'error');
+    // Accepts optional inrPrice — if provided, user can choose TGDP or INR payment.
+    window._purchaseDesign = async function(designId, title, tgdpPrice, inrPrice) {
+      let useINR = false;
+      if (inrPrice && inrPrice > 0) {
+        const choice = confirm(
+          `Purchase "${title}"?\n\nClick OK to pay ₹${inrPrice} (Razorpay)\nClick Cancel to pay ${tgdpPrice} TGDP tokens`
+        );
+        useINR = choice; // OK = INR, Cancel = TGDP
+      } else {
+        if (!confirm(`Purchase "${title}" for ${tgdpPrice} TGDP?`)) return;
+      }
+
+      if (useINR) {
+        // INR path — Razorpay checkout
+        initiatePayment(
+          inrPrice,
+          `Design Purchase: ${title}`,
+          'design_purchase',
+          { designId },
+          async () => {
+            showToast(`Purchase complete! Design "${title}" is yours.`, 'success');
+            await loadDesigns();
+          },
+          (err) => {
+            if (err?.error !== 'Payment cancelled') {
+              showToast('Payment failed: ' + (err?.error || 'Unknown'), 'error');
+            }
+          }
+        );
+      } else {
+        // TGDP token path
+        showLoading('Processing purchase...');
+        try {
+          const res = await callPurchaseDesign({ designId, tgdpAmount: tgdpPrice });
+          hideLoading();
+          showToast(`Purchase complete! Order: ${res.data.orderId}`, 'success');
+          await loadDesigns();
+        } catch (err) {
+          hideLoading();
+          showToast(err.message || 'Purchase failed.', 'error');
+        }
       }
     };
 

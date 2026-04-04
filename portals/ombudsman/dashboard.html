@@ -161,6 +161,10 @@
             <span class="nav-icon">🤝</span>
             <span>Mediation</span>
           </div>
+          <div class="nav-item" onclick="showPanel('update')">
+            <span class="nav-icon">✏️</span>
+            <span>Update Case</span>
+          </div>
           <div class="nav-item" onclick="showPanel('reports')">
             <span class="nav-icon">📄</span>
             <span>Reports</span>
@@ -610,6 +614,53 @@
           </div>
         </div>
         
+        <!-- Update Complaint Panel -->
+        <div class="panel" id="panel-update">
+          <div class="card">
+            <div class="card-header">
+              <h3 class="card-title">Update Case</h3>
+            </div>
+            <div class="card-body">
+              <form id="updateComplaintForm">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label required">Case ID</label>
+                    <input type="text" class="form-input mono" name="complaintId" required placeholder="CMP-XXXXX">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label required">Advance to Stage</label>
+                    <select class="form-select" name="newStage" required>
+                      <option value="">Select Stage</option>
+                      <option value="acknowledgment">Acknowledgment (Day 0–2)</option>
+                      <option value="investigation">Investigation (Day 2–7)</option>
+                      <option value="mediation">Mediation (Day 7–10)</option>
+                      <option value="resolution">Resolution (Day 10–14)</option>
+                      <option value="appeal">Appeal Window (7 days after resolution)</option>
+                      <option value="closed">Closed</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">Update Note</label>
+                  <textarea class="form-input" name="note" rows="3" placeholder="Describe the action taken or findings at this stage..."></textarea>
+                </div>
+                <div class="form-group" id="resolutionField" style="display:none;">
+                  <label class="form-label required">Resolution Decision</label>
+                  <select class="form-select" name="resolution">
+                    <option value="">Select Decision</option>
+                    <option value="favor_complainant">Decision: In Favour of Complainant</option>
+                    <option value="favor_respondent">Decision: In Favour of Respondent</option>
+                    <option value="mutual_settlement">Mutual Settlement Reached</option>
+                    <option value="dismissed">Complaint Dismissed</option>
+                    <option value="withdrawn">Complaint Withdrawn by Party</option>
+                  </select>
+                </div>
+                <button type="submit" class="btn btn-lg" style="background: var(--ombudsman); color: var(--obsidian);">Update Case</button>
+              </form>
+            </div>
+          </div>
+        </div>
+
         <!-- Reports Panel -->
         <div class="panel" id="panel-reports">
           <div class="card">
@@ -816,9 +867,17 @@
       const list = document.querySelector('#panel-complaints .complaint-list, #panel-complaints');
       if (!list) return;
 
+      // Stage-specific SLA deadlines (days after filing)
+      const SLA_DAYS = { acknowledgment: 2, investigation: 7, mediation: 10, resolution: 14 };
+
       const cards = complaints.map(c => {
-        const isUrgent = c.ackDeadline && Date.now() > (c.ackDeadline.toDate ? c.ackDeadline.toDate() : new Date(c.ackDeadline)).getTime();
-        return `<div class="complaint-card ${isUrgent ? 'urgent' : ''}" onclick="window._openComplaint('${c.complaintId}')">
+        const filed      = c.createdAt?.toDate ? c.createdAt.toDate() : new Date(c.createdAt || Date.now());
+        const stageDays  = SLA_DAYS[c.stage] || 14;
+        const deadline   = new Date(filed.getTime() + stageDays * 24 * 60 * 60 * 1000);
+        const isBreached = Date.now() > deadline.getTime();
+        const daysLeft   = Math.ceil((deadline - Date.now()) / 86400000);
+        const dueSoon    = !isBreached && daysLeft <= 1;
+        return `<div class="complaint-card ${isBreached ? 'urgent' : ''}" onclick="window._openComplaint('${c.complaintId}')">
           <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:0.5rem;">
             <span class="mono" style="font-size:0.8rem;color:var(--text-muted)">${c.complaintId}</span>
             <span class="badge ${statusBadge(c.stage)}">${c.stage}</span>
@@ -827,7 +886,12 @@
           <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:0.5rem;">${c.portal} · ${c.category}</div>
           <div style="display:flex;justify-content:space-between;font-size:0.75rem;color:var(--text-muted);">
             <span>Filed ${timeSince(c.createdAt)}</span>
-            ${isUrgent ? '<span style="color:var(--danger)">⚠ SLA breached</span>' : ''}
+            ${isBreached ? '<span style="color:var(--danger)">⚠ SLA breached</span>'
+              : dueSoon   ? '<span style="color:var(--warning)">⏰ Due today</span>'
+              : `<span>SLA: ${daysLeft}d left</span>`}
+          </div>
+          <div style="font-size:0.7rem;color:var(--text-muted);margin-top:0.25rem;">
+            <button class="btn btn-outline btn-sm" style="font-size:0.7rem;padding:0.2rem 0.5rem;" onclick="event.stopPropagation();window._openComplaintForUpdate('${c.complaintId}')">Update</button>
           </div>
         </div>`;
       }).join('');
@@ -856,27 +920,45 @@
     };
 
     // ── Update complaint form ──────────────────────────────────────────────────
-    document.getElementById('updateComplaintForm') && document.getElementById('updateComplaintForm').addEventListener('submit', async function(e) {
-      e.preventDefault();
-      const fd = new FormData(this);
-      showLoading('Updating complaint...');
-      try {
-        await callUpdateComplaint({
-          complaintId: fd.get('complaintId'),
-          newStage:    fd.get('newStage'),
-          note:        fd.get('note'),
-          resolution:  fd.get('resolution'),
-        });
-        hideLoading();
-        showToast('Complaint updated successfully.', 'success');
-        this.reset();
-        await loadComplaints();
-        showPanel('complaints');
-      } catch (err) {
-        hideLoading();
-        showToast(err.message || 'Update failed.', 'error');
-      }
-    });
+    const updateForm = document.getElementById('updateComplaintForm');
+    if (updateForm) {
+      // Show resolution field only when stage is resolution or closed
+      updateForm.querySelector('[name="newStage"]').addEventListener('change', function() {
+        const show = this.value === 'resolution' || this.value === 'closed';
+        document.getElementById('resolutionField').style.display = show ? 'block' : 'none';
+        updateForm.querySelector('[name="resolution"]').required = show;
+      });
+
+      updateForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const fd = new FormData(this);
+        showLoading('Updating complaint...');
+        try {
+          await callUpdateComplaint({
+            complaintId: fd.get('complaintId'),
+            newStage:    fd.get('newStage'),
+            note:        fd.get('note'),
+            resolution:  fd.get('resolution') || null,
+          });
+          hideLoading();
+          showToast('Case updated successfully.', 'success');
+          this.reset();
+          document.getElementById('resolutionField').style.display = 'none';
+          await loadComplaints();
+          showPanel('pending');
+        } catch (err) {
+          hideLoading();
+          showToast(err.message || 'Update failed.', 'error');
+        }
+      });
+    }
+
+    // Auto-fill complaintId when opening a case from the list
+    window._openComplaintForUpdate = function(id) {
+      const f = document.getElementById('updateComplaintForm');
+      if (f) f.querySelector('[name="complaintId"]').value = id;
+      showPanel('update');
+    };
 
     // ── Mediation form ─────────────────────────────────────────────────────────
     document.getElementById('mediationForm') && document.getElementById('mediationForm').addEventListener('submit', async function(e) {

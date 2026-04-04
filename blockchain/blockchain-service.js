@@ -1,729 +1,468 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// TGDP BLOCKCHAIN RECORDING SYSTEM
-// Version: 1.0.0
-// Supports: Ethereum/Polygon for smart contracts, IPFS for document hashes
+// TGDP BLOCKCHAIN SERVICE
+// ethers.js v6  |  Polygon mainnet + Amoy testnet
+// Reads contract addresses from Firestore /config/contracts at runtime.
+// All writes go through the REGISTRAR wallet (server-side / Cloud Function).
+// Browser callers use read-only provider; no private keys in the browser.
 // ═══════════════════════════════════════════════════════════════════════════
 
-// ─────────────────────────────────────────────────────────────────────────────
-// CONFIGURATION
-// ─────────────────────────────────────────────────────────────────────────────
+// ─── Network config ───────────────────────────────────────────────────────────
 
-const BLOCKCHAIN_CONFIG = {
-  // Network Configuration (Use Polygon for lower gas fees)
-  network: {
-    name: 'polygon',
-    chainId: 137,
-    rpcUrl: 'https://polygon-rpc.com',
+export const NETWORKS = {
+  polygon: {
+    name:        'Polygon Mainnet',
+    chainId:     137,
+    rpcUrl:      'https://polygon-rpc.com',
     explorerUrl: 'https://polygonscan.com',
-    // Testnet for development
-    testnet: {
-      name: 'polygon-mumbai',
-      chainId: 80001,
-      rpcUrl: 'https://rpc-mumbai.maticvigil.com',
-      explorerUrl: 'https://mumbai.polygonscan.com'
-    }
   },
-  
-  // Contract Addresses (Deploy and update these)
-  contracts: {
-    tgdpToken: '0x0000000000000000000000000000000000000000', // TGDP ERC-20 Token
-    ftrToken: '0x0000000000000000000000000000000000000000',  // FTR ERC-1155 Multi-Token
-    gicToken: '0x0000000000000000000000000000000000000000',  // GIC ERC-20 Token
-    registry: '0x0000000000000000000000000000000000000000',  // Main Registry Contract
-    iprRegistry: '0x0000000000000000000000000000000000000000' // IPR Design Registry
+  amoy: {
+    // Polygon's current testnet (Mumbai deprecated → Amoy)
+    name:        'Polygon Amoy Testnet',
+    chainId:     80002,
+    rpcUrl:      'https://rpc-amoy.polygon.technology',
+    explorerUrl: 'https://amoy.polygonscan.com',
   },
-  
-  // IPFS Configuration for document storage
-  ipfs: {
-    gateway: 'https://ipfs.io/ipfs/',
-    pinataApiKey: 'YOUR_PINATA_API_KEY',
-    pinataSecretKey: 'YOUR_PINATA_SECRET_KEY',
-    pinataEndpoint: 'https://api.pinata.cloud/pinning/pinFileToIPFS'
-  },
-  
-  // Gas settings
-  gas: {
-    maxPriorityFeePerGas: '30000000000', // 30 Gwei
-    maxFeePerGas: '50000000000', // 50 Gwei
-    gasLimit: 500000
-  }
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// SMART CONTRACT ABIs
-// ─────────────────────────────────────────────────────────────────────────────
+// Active network — switch to 'polygon' for production
+export const ACTIVE_NETWORK = NETWORKS.amoy;
 
-// TGDP Token ABI (ERC-20 with minting and burning)
-const TGDP_TOKEN_ABI = [
-  // Read functions
-  "function name() view returns (string)",
-  "function symbol() view returns (string)",
-  "function decimals() view returns (uint8)",
-  "function totalSupply() view returns (uint256)",
-  "function balanceOf(address account) view returns (uint256)",
-  "function allowance(address owner, address spender) view returns (uint256)",
-  
-  // Write functions
-  "function transfer(address to, uint256 amount) returns (bool)",
-  "function approve(address spender, uint256 amount) returns (bool)",
-  "function transferFrom(address from, address to, uint256 amount) returns (bool)",
-  "function mint(address to, uint256 amount, bytes32 goldCertificateHash) returns (bool)",
-  "function burn(uint256 amount) returns (bool)",
-  
+// ─── ABIs (matching contracts.sol exactly) ────────────────────────────────────
+
+export const TGDP_ABI = [
+  // ERC-20 standard
+  'function name() view returns (string)',
+  'function symbol() view returns (string)',
+  'function decimals() view returns (uint8)',
+  'function totalSupply() view returns (uint256)',
+  'function balanceOf(address) view returns (uint256)',
+  'function allowance(address owner, address spender) view returns (uint256)',
+  'function transfer(address to, uint256 amount) returns (bool)',
+  'function approve(address spender, uint256 amount) returns (bool)',
+  'function transferFrom(address from, address to, uint256 amount) returns (bool)',
+  // TGDP-specific
+  'function mint(address to, uint256 goldMilligrams, bytes32 certificateHash) returns (bytes32)',
+  'function burn(uint256 amount)',
+  'function getMintRecord(bytes32 recordId) view returns (address recipient, uint256 amount, bytes32 certificateHash, uint256 goldMilligrams, uint256 timestamp)',
+  'function getMintRecordCount() view returns (uint256)',
+  'function TGDP_PER_GRAM() view returns (uint256)',
   // Events
-  "event Transfer(address indexed from, address indexed to, uint256 value)",
-  "event Approval(address indexed owner, address indexed spender, uint256 value)",
-  "event Minted(address indexed to, uint256 amount, bytes32 certificateHash, uint256 timestamp)",
-  "event Burned(address indexed from, uint256 amount, uint256 timestamp)"
+  'event TGDPMinted(bytes32 indexed recordId, address indexed recipient, uint256 amount, bytes32 certificateHash, uint256 goldMilligrams, uint256 timestamp)',
+  'event TGDPBurned(address indexed holder, uint256 amount, uint256 timestamp)',
+  'event Transfer(address indexed from, address indexed to, uint256 value)',
 ];
 
-// FTR Token ABI (ERC-1155 Multi-Token for 5 categories)
-const FTR_TOKEN_ABI = [
-  // Read functions
-  "function uri(uint256 tokenId) view returns (string)",
-  "function balanceOf(address account, uint256 id) view returns (uint256)",
-  "function balanceOfBatch(address[] accounts, uint256[] ids) view returns (uint256[])",
-  "function isApprovedForAll(address account, address operator) view returns (bool)",
-  "function getCategoryName(uint256 tokenId) view returns (string)",
-  "function getExpiryDate(address account, uint256 tokenId) view returns (uint256)",
-  
-  // Write functions
-  "function safeTransferFrom(address from, address to, uint256 id, uint256 amount, bytes data)",
-  "function safeBatchTransferFrom(address from, address to, uint256[] ids, uint256[] amounts, bytes data)",
-  "function setApprovalForAll(address operator, bool approved)",
-  "function swap(uint256 tgdpAmount, uint256 categoryId) returns (uint256 ftrAmount)",
-  "function redeem(uint256 tokenId, uint256 amount, address partner) returns (bool)",
-  
-  // Events
-  "event TransferSingle(address indexed operator, address indexed from, address indexed to, uint256 id, uint256 value)",
-  "event TransferBatch(address indexed operator, address indexed from, address indexed to, uint256[] ids, uint256[] values)",
-  "event Swapped(address indexed user, uint256 tgdpAmount, uint256 ftrAmount, uint256 categoryId, uint256 timestamp)",
-  "event Redeemed(address indexed user, uint256 tokenId, uint256 amount, address partner, uint256 timestamp)"
+export const FTR_ABI = [
+  'function balanceOf(address account, uint256 id) view returns (uint256)',
+  'function balanceOfBatch(address[] accounts, uint256[] ids) view returns (uint256[])',
+  'function getValidBalance(address user, uint256 categoryId) view returns (uint256)',
+  'function getEarliestExpiry(address user, uint256 categoryId) view returns (uint256)',
+  'function categoryNames(uint256 id) view returns (string)',
+  'function swap(uint256 tgdpAmount, uint256 categoryId) returns (bytes32)',
+  'function redeem(uint256 categoryId, uint256 amount, address partner) returns (bytes32)',
+  'function registerPartner(address partner)',
+  'function revokePartner(address partner)',
+  'event FTRSwapped(bytes32 indexed swapId, address indexed user, uint256 tgdpAmount, uint256 ftrAmount, uint256 categoryId, uint256 commission, uint256 expiryDate)',
+  'event FTRRedeemed(bytes32 indexed redemptionId, address indexed user, uint256 categoryId, uint256 amount, address indexed partner)',
 ];
 
-// GIC Token ABI
-const GIC_TOKEN_ABI = [
-  "function balanceOf(address account) view returns (uint256)",
-  "function totalEarned(address licensee) view returns (uint256)",
-  "function pendingRedemption(address licensee) view returns (uint256)",
-  "function credit(address licensee, uint256 amount, uint8 streamType, bytes32 txHash) returns (bool)",
-  "function redeem(uint256 amount) returns (bool)",
-  "event Credited(address indexed licensee, uint256 amount, uint8 streamType, bytes32 txHash, uint256 timestamp)",
-  "event Redeemed(address indexed licensee, uint256 amount, uint256 inrValue, uint256 timestamp)"
+export const GIC_ABI = [
+  'function balanceOf(address account) view returns (uint256)',
+  'function credit(address licensee, uint256 amount, uint8 streamType, bytes32 relatedTxHash) returns (bytes32)',
+  'function redeem(uint256 amount)',
+  'function incrementHouseholdCount(address licensee)',
+  'function getLicenseeStats(address licensee) view returns (uint256 totalEarned, uint256 totalRedeemed, uint256 registrationEarnings, uint256 mintingEarnings, uint256 tradingEarnings, uint256 balance, uint256 householdCount)',
+  'event GICCredited(bytes32 indexed creditId, address indexed licensee, uint256 amount, uint8 streamType, bytes32 relatedTxHash)',
+  'event GICRedeemed(address indexed licensee, uint256 amount, uint256 timestamp)',
 ];
 
-// Main Registry ABI
-const REGISTRY_ABI = [
-  // User registration
-  "function registerUser(address user, bytes32 kycHash, uint8[] roles) returns (bool)",
-  "function isRegistered(address user) view returns (bool)",
-  "function getUserRoles(address user) view returns (uint8[])",
-  "function getKycHash(address user) view returns (bytes32)",
-  
-  // Household-Licensee linking
-  "function linkHouseholdToLicensee(address household, address licensee) returns (bool)",
-  "function getLicensee(address household) view returns (address)",
-  "function getHouseholds(address licensee) view returns (address[])",
-  
-  // Gold earmarking
-  "function earmarkGold(address user, bytes32 certificateHash, uint256 pureGoldGrams, uint256 tgdpAmount) returns (bytes32 earmarkId)",
-  "function getEarmark(bytes32 earmarkId) view returns (address user, bytes32 certHash, uint256 goldGrams, uint256 tgdp, uint256 timestamp)",
-  
-  // Events
-  "event UserRegistered(address indexed user, bytes32 kycHash, uint8[] roles, uint256 timestamp)",
-  "event HouseholdLinked(address indexed household, address indexed licensee, uint256 timestamp)",
-  "event GoldEarmarked(bytes32 indexed earmarkId, address indexed user, uint256 goldGrams, uint256 tgdpAmount, uint256 timestamp)"
+export const REGISTRY_ABI = [
+  'function registerUser(address user, bytes32 kycHash, uint8[] roles)',
+  'function linkHouseholdToLicensee(address household, address licensee)',
+  'function earmarkGold(address owner, bytes32 certificateHash, uint256 pureGoldMilligrams, uint256 tgdpAmount) returns (bytes32)',
+  'function deactivateEarmark(bytes32 earmarkId)',
+  'function hasUserRole(address user, uint8 role) view returns (bool)',
+  'function getUser(address user) view returns (bytes32 kycHash, uint8[] roles, bool isActive, uint256 registeredAt, address linkedLicensee)',
+  'function getLicenseeHouseholds(address licensee) view returns (address[])',
+  'function getEarmark(bytes32 earmarkId) view returns (address owner, bytes32 certificateHash, uint256 pureGoldMilligrams, uint256 tgdpAmount, uint256 timestamp, bool isActive)',
+  'function getTotalUsers() view returns (uint256)',
+  'function getTotalEarmarks() view returns (uint256)',
+  'event UserRegistered(address indexed user, bytes32 kycHash, uint8[] roles, uint256 timestamp)',
+  'event HouseholdLinked(address indexed household, address indexed licensee, uint256 timestamp)',
+  'event GoldEarmarked(bytes32 indexed earmarkId, address indexed owner, bytes32 certificateHash, uint256 goldMilligrams, uint256 tgdpAmount)',
 ];
 
-// IPR Registry ABI for T-JDB designs
-const IPR_REGISTRY_ABI = [
-  "function registerDesign(bytes32 designHash, string metadataUri, address designer) returns (uint256 designId)",
-  "function getDesign(uint256 designId) view returns (bytes32 hash, string uri, address designer, uint256 timestamp, bool isActive)",
-  "function verifyOwnership(uint256 designId, address claimedOwner) view returns (bool)",
-  "function transferDesign(uint256 designId, address newOwner) returns (bool)",
-  "function getDesignerDesigns(address designer) view returns (uint256[])",
-  "event DesignRegistered(uint256 indexed designId, bytes32 designHash, address indexed designer, uint256 timestamp)",
-  "event DesignTransferred(uint256 indexed designId, address indexed from, address indexed to, uint256 timestamp)"
+export const IPR_ABI = [
+  'function registerDesign(bytes32 designHash, string metadataUri, address designer) returns (uint256)',
+  'function recordSale(uint256 designId, address buyer, uint256 amount)',
+  'function transferDesign(uint256 designId, address newOwner)',
+  'function deactivateDesign(uint256 designId)',
+  'function verifyOwnership(uint256 designId, address claimedOwner) view returns (bool)',
+  'function getDesign(uint256 designId) view returns (bytes32 designHash, string metadataUri, address designer, uint256 registeredAt, bool isActive, uint256 salesCount, uint256 totalRevenue)',
+  'function getDesignerDesigns(address designer) view returns (uint256[])',
+  'function getDesignIdByHash(bytes32 designHash) view returns (uint256)',
+  'function getTotalDesigns() view returns (uint256)',
+  'event DesignRegistered(uint256 indexed designId, bytes32 designHash, address indexed designer, string metadataUri, uint256 timestamp)',
+  'event DesignTransferred(uint256 indexed designId, address indexed from, address indexed to, uint256 timestamp)',
+  'event DesignSold(uint256 indexed designId, address indexed buyer, uint256 amount, uint256 timestamp)',
 ];
 
-// ─────────────────────────────────────────────────────────────────────────────
-// BLOCKCHAIN SERVICE CLASS
-// ─────────────────────────────────────────────────────────────────────────────
+// ─── IPFS / Pinata config ─────────────────────────────────────────────────────
 
-class BlockchainService {
-  constructor(config = BLOCKCHAIN_CONFIG) {
-    this.config = config;
-    this.provider = null;
-    this.signer = null;
-    this.contracts = {};
+export const IPFS_CONFIG = {
+  gateway:         'https://gateway.pinata.cloud/ipfs/',
+  pinataEndpoint:  'https://api.pinata.cloud/pinning/pinFileToIPFS',
+  // API keys are injected at runtime from Firestore /config/secrets (admin only)
+  // Never hardcode them here.
+};
+
+// ─── BlockchainService ────────────────────────────────────────────────────────
+// Browser: read-only (balances, verifications, explorer links)
+// Server (Cloud Function): full signer access via REGISTRAR_PRIVATE_KEY env var
+
+export class BlockchainService {
+  constructor() {
+    this.provider    = null;
+    this.signer      = null;
+    this.contracts   = {};
+    this.addresses   = {};     // loaded from Firestore
     this.initialized = false;
   }
-  
-  // Initialize connection
-  async initialize(privateKey = null) {
-    try {
-      // Check if ethers.js is available
-      if (typeof ethers === 'undefined') {
-        console.warn('ethers.js not loaded. Blockchain features disabled.');
-        return false;
-      }
-      
-      // Connect to network
-      this.provider = new ethers.providers.JsonRpcProvider(this.config.network.rpcUrl);
-      
-      // If private key provided, create signer
-      if (privateKey) {
-        this.signer = new ethers.Wallet(privateKey, this.provider);
-      }
-      
-      // Initialize contract instances
-      this.contracts.tgdp = new ethers.Contract(
-        this.config.contracts.tgdpToken,
-        TGDP_TOKEN_ABI,
-        this.signer || this.provider
-      );
-      
-      this.contracts.ftr = new ethers.Contract(
-        this.config.contracts.ftrToken,
-        FTR_TOKEN_ABI,
-        this.signer || this.provider
-      );
-      
-      this.contracts.gic = new ethers.Contract(
-        this.config.contracts.gicToken,
-        GIC_TOKEN_ABI,
-        this.signer || this.provider
-      );
-      
-      this.contracts.registry = new ethers.Contract(
-        this.config.contracts.registry,
-        REGISTRY_ABI,
-        this.signer || this.provider
-      );
-      
-      this.contracts.ipr = new ethers.Contract(
-        this.config.contracts.iprRegistry,
-        IPR_REGISTRY_ABI,
-        this.signer || this.provider
-      );
-      
-      this.initialized = true;
-      console.log('Blockchain service initialized');
-      return true;
-    } catch (error) {
-      console.error('Blockchain initialization failed:', error);
-      return false;
-    }
+
+  /**
+   * Initialize read-only provider (browser / verification use).
+   * @param {object} contractAddresses  { tgdpToken, ftrToken, gicToken, registry, iprRegistry }
+   */
+  async initReadOnly(contractAddresses) {
+    const { ethers } = await import('https://cdn.jsdelivr.net/npm/ethers@6.13.1/dist/ethers.min.js');
+    this._ethers   = ethers;
+    this.provider  = new ethers.JsonRpcProvider(ACTIVE_NETWORK.rpcUrl);
+    this.addresses = contractAddresses;
+    this._attachContracts(this.provider);
+    this.initialized = true;
   }
-  
-  // ─────────────────────────────────────────────────────────────────────────
-  // TGDP OPERATIONS
-  // ─────────────────────────────────────────────────────────────────────────
-  
-  // Mint TGDPs from gold certificate
-  async mintTGDP(toAddress, amount, certificateHash) {
-    if (!this.initialized || !this.signer) {
-      throw new Error('Blockchain not initialized or no signer');
-    }
-    
+
+  /**
+   * Initialize with signer (Node.js / Cloud Functions only).
+   * @param {string} privateKey          Registrar wallet private key.
+   * @param {object} contractAddresses   Same as above.
+   */
+  async initWithSigner(privateKey, contractAddresses) {
+    const { ethers } = require('ethers');   // Node import
+    this._ethers      = ethers;
+    this.provider     = new ethers.JsonRpcProvider(ACTIVE_NETWORK.rpcUrl);
+    this.signer       = new ethers.Wallet(privateKey, this.provider);
+    this.addresses    = contractAddresses;
+    this._attachContracts(this.signer);
+    this.initialized  = true;
+  }
+
+  _attachContracts(signerOrProvider) {
+    const { ethers } = this._ethers ? { ethers: this._ethers } : require('ethers');
+    const a = this.addresses;
+    this.contracts.tgdp     = new ethers.Contract(a.tgdpToken,   TGDP_ABI,     signerOrProvider);
+    this.contracts.ftr      = new ethers.Contract(a.ftrToken,    FTR_ABI,      signerOrProvider);
+    this.contracts.gic      = new ethers.Contract(a.gicToken,    GIC_ABI,      signerOrProvider);
+    this.contracts.registry = new ethers.Contract(a.registry,    REGISTRY_ABI, signerOrProvider);
+    this.contracts.ipr      = new ethers.Contract(a.iprRegistry, IPR_ABI,      signerOrProvider);
+  }
+
+  _requireSigner() {
+    if (!this.signer) throw new Error('Signer required — use initWithSigner()');
+  }
+
+  // ── TGDP reads ──────────────────────────────────────────────────────────────
+
+  async getTGDPBalance(address) {
+    const raw = await this.contracts.tgdp.balanceOf(address);
+    return this._ethers.formatUnits(raw, 18);
+  }
+
+  async getMintRecord(recordId) {
+    const r = await this.contracts.tgdp.getMintRecord(recordId);
+    return {
+      recipient:       r[0],
+      amount:          this._ethers.formatUnits(r[1], 18),
+      certificateHash: r[2],
+      goldMilligrams:  Number(r[3]),
+      timestamp:       Number(r[4]),
+    };
+  }
+
+  async getTotalMinted() {
+    return Number(await this.contracts.tgdp.getMintRecordCount());
+  }
+
+  // ── TGDP writes (signer required) ──────────────────────────────────────────
+
+  /**
+   * Mint TGDP on-chain for verified gold earmark.
+   * @param {string}  toAddress         Recipient wallet (hex).
+   * @param {number}  goldMilligrams    Pure gold in milligrams.
+   * @param {string}  certificateHash   bytes32 hex string of purity cert.
+   */
+  async mintTGDP(toAddress, goldMilligrams, certificateHash) {
+    this._requireSigner();
     const tx = await this.contracts.tgdp.mint(
       toAddress,
-      ethers.utils.parseUnits(amount.toString(), 18),
+      BigInt(goldMilligrams),
       certificateHash,
-      { gasLimit: this.config.gas.gasLimit }
     );
-    
     const receipt = await tx.wait();
+    const event   = receipt.logs
+      .map(l => { try { return this.contracts.tgdp.interface.parseLog(l); } catch { return null; } })
+      .find(e => e && e.name === 'TGDPMinted');
+
     return {
-      success: true,
-      txHash: receipt.transactionHash,
+      txHash:    receipt.hash,
       blockNumber: receipt.blockNumber,
-      gasUsed: receipt.gasUsed.toString()
+      recordId:  event ? event.args.recordId : null,
+      gasUsed:   receipt.gasUsed.toString(),
+      explorerUrl: this.getExplorerUrl(receipt.hash),
     };
   }
-  
-  // Get TGDP balance
-  async getTGDPBalance(address) {
-    const balance = await this.contracts.tgdp.balanceOf(address);
-    return ethers.utils.formatUnits(balance, 18);
-  }
-  
-  // Transfer TGDP
-  async transferTGDP(toAddress, amount) {
-    const tx = await this.contracts.tgdp.transfer(
-      toAddress,
-      ethers.utils.parseUnits(amount.toString(), 18),
-      { gasLimit: this.config.gas.gasLimit }
-    );
-    
-    const receipt = await tx.wait();
-    return {
-      success: true,
-      txHash: receipt.transactionHash
-    };
-  }
-  
-  // Burn TGDP (for withdrawal)
+
   async burnTGDP(amount) {
-    const tx = await this.contracts.tgdp.burn(
-      ethers.utils.parseUnits(amount.toString(), 18),
-      { gasLimit: this.config.gas.gasLimit }
-    );
-    
+    this._requireSigner();
+    const tx      = await this.contracts.tgdp.burn(this._ethers.parseUnits(String(amount), 18));
     const receipt = await tx.wait();
-    return {
-      success: true,
-      txHash: receipt.transactionHash
-    };
+    return { txHash: receipt.hash, explorerUrl: this.getExplorerUrl(receipt.hash) };
   }
-  
-  // ─────────────────────────────────────────────────────────────────────────
-  // FTR OPERATIONS
-  // ─────────────────────────────────────────────────────────────────────────
-  
-  // FTR Category IDs
-  static FTR_CATEGORIES = {
-    HOSPITALITY: 1,
-    HEALTHCARE: 2,
-    EDUCATION: 3,
-    RETAIL: 4,
-    TRAVEL: 5
-  };
-  
-  // Swap TGDP for FTR
-  async swapToFTR(tgdpAmount, categoryId) {
-    // First approve TGDP transfer
-    const approveTx = await this.contracts.tgdp.approve(
-      this.config.contracts.ftrToken,
-      ethers.utils.parseUnits(tgdpAmount.toString(), 18)
-    );
-    await approveTx.wait();
-    
-    // Then swap
-    const tx = await this.contracts.ftr.swap(
-      ethers.utils.parseUnits(tgdpAmount.toString(), 18),
-      categoryId,
-      { gasLimit: this.config.gas.gasLimit }
-    );
-    
-    const receipt = await tx.wait();
-    return {
-      success: true,
-      txHash: receipt.transactionHash,
-      ftrAmount: tgdpAmount * 0.96 // 4% commission deducted
-    };
-  }
-  
-  // Get FTR balance by category
+
+  // ── FTR reads ───────────────────────────────────────────────────────────────
+
   async getFTRBalance(address, categoryId) {
-    const balance = await this.contracts.ftr.balanceOf(address, categoryId);
-    return ethers.utils.formatUnits(balance, 18);
+    const raw = await this.contracts.ftr.balanceOf(address, categoryId);
+    return this._ethers.formatUnits(raw, 18);
   }
-  
-  // Redeem FTR at partner
+
+  async getValidFTRBalance(address, categoryId) {
+    const raw = await this.contracts.ftr.getValidBalance(address, categoryId);
+    return this._ethers.formatUnits(raw, 18);
+  }
+
+  async getFTREarliestExpiry(address, categoryId) {
+    const ts = await this.contracts.ftr.getEarliestExpiry(address, categoryId);
+    return Number(ts) > 0 ? new Date(Number(ts) * 1000).toISOString() : null;
+  }
+
+  // ── FTR writes ──────────────────────────────────────────────────────────────
+
+  async swapToFTR(tgdpAmount, categoryId) {
+    this._requireSigner();
+    const amountWei = this._ethers.parseUnits(String(tgdpAmount), 18);
+    // Approve first
+    const approveTx = await this.contracts.tgdp.approve(this.addresses.ftrToken, amountWei);
+    await approveTx.wait();
+    // Swap
+    const tx      = await this.contracts.ftr.swap(amountWei, categoryId);
+    const receipt = await tx.wait();
+    return { txHash: receipt.hash, explorerUrl: this.getExplorerUrl(receipt.hash) };
+  }
+
   async redeemFTR(categoryId, amount, partnerAddress) {
+    this._requireSigner();
     const tx = await this.contracts.ftr.redeem(
       categoryId,
-      ethers.utils.parseUnits(amount.toString(), 18),
+      this._ethers.parseUnits(String(amount), 18),
       partnerAddress,
-      { gasLimit: this.config.gas.gasLimit }
     );
-    
     const receipt = await tx.wait();
+    return { txHash: receipt.hash, explorerUrl: this.getExplorerUrl(receipt.hash) };
+  }
+
+  // ── GIC reads / writes ──────────────────────────────────────────────────────
+
+  async getGICBalance(address) {
+    const raw = await this.contracts.gic.balanceOf(address);
+    return this._ethers.formatUnits(raw, 18);
+  }
+
+  async getLicenseeStats(address) {
+    const s = await this.contracts.gic.getLicenseeStats(address);
     return {
-      success: true,
-      txHash: receipt.transactionHash
+      totalEarned:          this._ethers.formatUnits(s[0], 18),
+      totalRedeemed:        this._ethers.formatUnits(s[1], 18),
+      registrationEarnings: this._ethers.formatUnits(s[2], 18),
+      mintingEarnings:      this._ethers.formatUnits(s[3], 18),
+      tradingEarnings:      this._ethers.formatUnits(s[4], 18),
+      balance:              this._ethers.formatUnits(s[5], 18),
+      householdCount:       Number(s[6]),
     };
   }
-  
-  // ─────────────────────────────────────────────────────────────────────────
-  // GIC OPERATIONS
-  // ─────────────────────────────────────────────────────────────────────────
-  
-  // GIC Stream Types
-  static GIC_STREAMS = {
-    REGISTRATION: 1,
-    MINTING: 2,
-    TRADING: 3
-  };
-  
-  // Credit GIC to licensee
+
   async creditGIC(licenseeAddress, amount, streamType, relatedTxHash) {
+    this._requireSigner();
     const tx = await this.contracts.gic.credit(
       licenseeAddress,
-      ethers.utils.parseUnits(amount.toString(), 18),
+      this._ethers.parseUnits(String(amount), 18),
       streamType,
-      relatedTxHash,
-      { gasLimit: this.config.gas.gasLimit }
+      relatedTxHash || this._ethers.ZeroHash,
     );
-    
     const receipt = await tx.wait();
-    return {
-      success: true,
-      txHash: receipt.transactionHash
-    };
+    return { txHash: receipt.hash, explorerUrl: this.getExplorerUrl(receipt.hash) };
   }
-  
-  // Get GIC balance
-  async getGICBalance(licenseeAddress) {
-    const balance = await this.contracts.gic.balanceOf(licenseeAddress);
-    return ethers.utils.formatUnits(balance, 18);
-  }
-  
-  // Redeem GIC
-  async redeemGIC(amount) {
-    const tx = await this.contracts.gic.redeem(
-      ethers.utils.parseUnits(amount.toString(), 18),
-      { gasLimit: this.config.gas.gasLimit }
-    );
-    
+
+  // ── Registry writes ─────────────────────────────────────────────────────────
+
+  async registerUserOnChain(userAddress, kycDocumentHash, roles) {
+    this._requireSigner();
+    const tx = await this.contracts.registry.registerUser(userAddress, kycDocumentHash, roles);
     const receipt = await tx.wait();
-    return {
-      success: true,
-      txHash: receipt.transactionHash
-    };
+    return { txHash: receipt.hash, explorerUrl: this.getExplorerUrl(receipt.hash) };
   }
-  
-  // ─────────────────────────────────────────────────────────────────────────
-  // REGISTRY OPERATIONS
-  // ─────────────────────────────────────────────────────────────────────────
-  
-  // Role IDs
-  static ROLES = {
-    HOUSEHOLD: 1,
-    LICENSEE: 2,
-    JEWELER: 3,
-    DESIGNER: 4,
-    RETURNEE: 5,
-    CONSULTANT: 6,
-    ADVERTISER: 7,
-    OMBUDSMAN: 8
-  };
-  
-  // Register user on blockchain
-  async registerUser(userAddress, kycDocumentHash, roles) {
-    const tx = await this.contracts.registry.registerUser(
-      userAddress,
-      kycDocumentHash,
-      roles,
-      { gasLimit: this.config.gas.gasLimit }
-    );
-    
+
+  async linkHouseholdOnChain(householdAddress, licenseeAddress) {
+    this._requireSigner();
+    const tx = await this.contracts.registry.linkHouseholdToLicensee(householdAddress, licenseeAddress);
     const receipt = await tx.wait();
-    return {
-      success: true,
-      txHash: receipt.transactionHash
-    };
+    return { txHash: receipt.hash, explorerUrl: this.getExplorerUrl(receipt.hash) };
   }
-  
-  // Link household to licensee
-  async linkHouseholdToLicensee(householdAddress, licenseeAddress) {
-    const tx = await this.contracts.registry.linkHouseholdToLicensee(
-      householdAddress,
-      licenseeAddress,
-      { gasLimit: this.config.gas.gasLimit }
-    );
-    
-    const receipt = await tx.wait();
-    return {
-      success: true,
-      txHash: receipt.transactionHash
-    };
-  }
-  
-  // Earmark gold (record gold tokenization)
-  async earmarkGold(userAddress, certificateHash, pureGoldGrams, tgdpAmount) {
+
+  async earmarkGoldOnChain(ownerAddress, certificateHash, goldMilligrams, tgdpWei) {
+    this._requireSigner();
     const tx = await this.contracts.registry.earmarkGold(
-      userAddress,
+      ownerAddress,
       certificateHash,
-      ethers.utils.parseUnits(pureGoldGrams.toString(), 3), // 3 decimals for grams
-      ethers.utils.parseUnits(tgdpAmount.toString(), 18),
-      { gasLimit: this.config.gas.gasLimit }
+      BigInt(goldMilligrams),
+      tgdpWei,
     );
-    
     const receipt = await tx.wait();
-    
-    // Extract earmarkId from event
-    const event = receipt.events.find(e => e.event === 'GoldEarmarked');
-    const earmarkId = event ? event.args.earmarkId : null;
-    
+    const event   = receipt.logs
+      .map(l => { try { return this.contracts.registry.interface.parseLog(l); } catch { return null; } })
+      .find(e => e && e.name === 'GoldEarmarked');
+
     return {
-      success: true,
-      txHash: receipt.transactionHash,
-      earmarkId: earmarkId
+      txHash:    receipt.hash,
+      earmarkId: event ? event.args.earmarkId : null,
+      explorerUrl: this.getExplorerUrl(receipt.hash),
     };
   }
-  
-  // ─────────────────────────────────────────────────────────────────────────
-  // IPR OPERATIONS (T-JDB)
-  // ─────────────────────────────────────────────────────────────────────────
-  
-  // Register design IPR
-  async registerDesignIPR(designHash, metadataUri, designerAddress) {
-    const tx = await this.contracts.ipr.registerDesign(
-      designHash,
-      metadataUri,
-      designerAddress,
-      { gasLimit: this.config.gas.gasLimit }
-    );
-    
+
+  // ── IPR reads / writes ──────────────────────────────────────────────────────
+
+  async registerDesignOnChain(designHash, metadataUri, designerAddress) {
+    this._requireSigner();
+    const tx = await this.contracts.ipr.registerDesign(designHash, metadataUri, designerAddress);
     const receipt = await tx.wait();
-    
-    // Extract designId from event
-    const event = receipt.events.find(e => e.event === 'DesignRegistered');
-    const designId = event ? event.args.designId.toString() : null;
-    
+    const event   = receipt.logs
+      .map(l => { try { return this.contracts.ipr.interface.parseLog(l); } catch { return null; } })
+      .find(e => e && e.name === 'DesignRegistered');
+
     return {
-      success: true,
-      txHash: receipt.transactionHash,
-      designId: designId
+      txHash:    receipt.hash,
+      designId:  event ? Number(event.args.designId) : null,
+      explorerUrl: this.getExplorerUrl(receipt.hash),
     };
   }
-  
-  // Verify design ownership
+
   async verifyDesignOwnership(designId, claimedOwner) {
     return await this.contracts.ipr.verifyOwnership(designId, claimedOwner);
   }
-  
-  // Get design details
-  async getDesign(designId) {
-    const design = await this.contracts.ipr.getDesign(designId);
+
+  async getDesignOnChain(designId) {
+    const d = await this.contracts.ipr.getDesign(designId);
     return {
-      hash: design.hash,
-      metadataUri: design.uri,
-      designer: design.designer,
-      timestamp: design.timestamp.toNumber(),
-      isActive: design.isActive
+      designHash:   d[0],
+      metadataUri:  d[1],
+      designer:     d[2],
+      registeredAt: Number(d[3]),
+      isActive:     d[4],
+      salesCount:   Number(d[5]),
+      totalRevenue: this._ethers.formatUnits(d[6], 18),
     };
   }
-  
-  // ─────────────────────────────────────────────────────────────────────────
-  // IPFS OPERATIONS
-  // ─────────────────────────────────────────────────────────────────────────
-  
-  // Upload file to IPFS via Pinata
-  async uploadToIPFS(file, metadata = {}) {
+
+  // ── IPFS upload ─────────────────────────────────────────────────────────────
+
+  async uploadToIPFS(file, metadata, pinataApiKey, pinataSecretKey) {
     const formData = new FormData();
     formData.append('file', file);
-    
-    const pinataMetadata = JSON.stringify({
-      name: metadata.name || 'TGDP Document',
-      keyvalues: metadata
-    });
-    formData.append('pinataMetadata', pinataMetadata);
-    
-    const response = await fetch(this.config.ipfs.pinataEndpoint, {
-      method: 'POST',
+    formData.append('pinataMetadata', JSON.stringify({
+      name:      metadata.name || 'TGDP Document',
+      keyvalues: metadata,
+    }));
+
+    const response = await fetch(IPFS_CONFIG.pinataEndpoint, {
+      method:  'POST',
       headers: {
-        'pinata_api_key': this.config.ipfs.pinataApiKey,
-        'pinata_secret_api_key': this.config.ipfs.pinataSecretKey
+        'pinata_api_key':        pinataApiKey,
+        'pinata_secret_api_key': pinataSecretKey,
       },
-      body: formData
+      body: formData,
     });
-    
+
+    if (!response.ok) {
+      const err = await response.text();
+      throw new Error(`Pinata upload failed: ${err}`);
+    }
+
     const result = await response.json();
     return {
-      success: true,
       ipfsHash: result.IpfsHash,
-      url: `${this.config.ipfs.gateway}${result.IpfsHash}`
+      url:      IPFS_CONFIG.gateway + result.IpfsHash,
     };
   }
-  
-  // Generate hash for document
-  generateDocumentHash(content) {
-    if (typeof ethers !== 'undefined') {
-      return ethers.utils.keccak256(ethers.utils.toUtf8Bytes(JSON.stringify(content)));
-    }
-    // Fallback: simple hash
-    return this.simpleHash(JSON.stringify(content));
+
+  // ── Hashing helpers ─────────────────────────────────────────────────────────
+
+  /**
+   * Compute keccak256 hash of any JSON-serialisable object.
+   * Used to create certificateHash and designHash before calling contracts.
+   */
+  hashDocument(content) {
+    const { ethers } = this._ethers ? { ethers: this._ethers } : require('ethers');
+    return ethers.keccak256(ethers.toUtf8Bytes(JSON.stringify(content)));
   }
-  
-  // Simple hash fallback
-  simpleHash(str) {
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-      const char = str.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
-      hash = hash & hash;
-    }
-    return '0x' + Math.abs(hash).toString(16).padStart(64, '0');
-  }
-  
-  // ─────────────────────────────────────────────────────────────────────────
-  // UTILITY FUNCTIONS
-  // ─────────────────────────────────────────────────────────────────────────
-  
-  // Get transaction details
-  async getTransaction(txHash) {
-    const tx = await this.provider.getTransaction(txHash);
-    const receipt = await this.provider.getTransactionReceipt(txHash);
-    
-    return {
-      hash: txHash,
-      blockNumber: receipt.blockNumber,
-      from: tx.from,
-      to: tx.to,
-      value: ethers.utils.formatEther(tx.value),
-      gasUsed: receipt.gasUsed.toString(),
-      status: receipt.status === 1 ? 'success' : 'failed',
-      timestamp: (await this.provider.getBlock(receipt.blockNumber)).timestamp
-    };
-  }
-  
-  // Get explorer URL for transaction
+
+  // ── Utility ─────────────────────────────────────────────────────────────────
+
   getExplorerUrl(txHash) {
-    return `${this.config.network.explorerUrl}/tx/${txHash}`;
+    return `${ACTIVE_NETWORK.explorerUrl}/tx/${txHash}`;
   }
-  
-  // Validate address
+
   isValidAddress(address) {
-    if (typeof ethers !== 'undefined') {
-      return ethers.utils.isAddress(address);
-    }
-    return /^0x[a-fA-F0-9]{40}$/.test(address);
+    const { ethers } = this._ethers ? { ethers: this._ethers } : require('ethers');
+    return ethers.isAddress(address);
+  }
+
+  async getNetworkInfo() {
+    const network = await this.provider.getNetwork();
+    return { chainId: Number(network.chainId), name: network.name };
   }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// BLOCKCHAIN TRANSACTION RECORDER
-// Records all transactions for audit and compliance
-// ─────────────────────────────────────────────────────────────────────────────
+// ─── Singleton for browser use ────────────────────────────────────────────────
 
-class BlockchainRecorder {
-  constructor() {
-    this.transactions = [];
-    this.pendingRecords = [];
-  }
-  
-  // Record a transaction
-  record(type, data, txHash = null, blockchainEnabled = false) {
-    const record = {
-      id: this.generateRecordId(),
-      type: type,
-      data: data,
-      txHash: txHash,
-      onChain: blockchainEnabled && txHash !== null,
-      timestamp: Date.now(),
-      status: txHash ? 'confirmed' : 'pending'
-    };
-    
-    this.transactions.push(record);
-    
-    // Store in localStorage for persistence
-    this.saveToLocalStorage();
-    
-    return record;
-  }
-  
-  // Transaction types
-  static TYPES = {
-    USER_REGISTRATION: 'USER_REGISTRATION',
-    KYC_VERIFICATION: 'KYC_VERIFICATION',
-    GOLD_EARMARK: 'GOLD_EARMARK',
-    TGDP_MINT: 'TGDP_MINT',
-    TGDP_TRANSFER: 'TGDP_TRANSFER',
-    TGDP_TRADE: 'TGDP_TRADE',
-    TGDP_BURN: 'TGDP_BURN',
-    FTR_SWAP: 'FTR_SWAP',
-    FTR_TRANSFER: 'FTR_TRANSFER',
-    FTR_REDEEM: 'FTR_REDEEM',
-    GIC_CREDIT: 'GIC_CREDIT',
-    GIC_REDEEM: 'GIC_REDEEM',
-    HOUSEHOLD_LINK: 'HOUSEHOLD_LINK',
-    JEWELRY_RETURN: 'JEWELRY_RETURN',
-    DESIGN_REGISTER: 'DESIGN_REGISTER',
-    DESIGN_PURCHASE: 'DESIGN_PURCHASE',
-    COMPLAINT_FILE: 'COMPLAINT_FILE',
-    COMPLAINT_RESOLVE: 'COMPLAINT_RESOLVE'
-  };
-  
-  generateRecordId() {
-    return 'REC' + Date.now().toString(36).toUpperCase() + Math.random().toString(36).substr(2, 5).toUpperCase();
-  }
-  
-  // Get records by type
-  getByType(type) {
-    return this.transactions.filter(t => t.type === type);
-  }
-  
-  // Get records by user
-  getByUser(userId) {
-    return this.transactions.filter(t => t.data.userId === userId || t.data.from === userId || t.data.to === userId);
-  }
-  
-  // Get records in date range
-  getByDateRange(startDate, endDate) {
-    return this.transactions.filter(t => t.timestamp >= startDate && t.timestamp <= endDate);
-  }
-  
-  // Save to localStorage
-  saveToLocalStorage() {
-    try {
-      localStorage.setItem('tgdp_blockchain_records', JSON.stringify(this.transactions));
-    } catch (e) {
-      console.warn('localStorage not available');
-    }
-  }
-  
-  // Load from localStorage
-  loadFromLocalStorage() {
-    try {
-      const stored = localStorage.getItem('tgdp_blockchain_records');
-      if (stored) {
-        this.transactions = JSON.parse(stored);
-      }
-    } catch (e) {
-      console.warn('localStorage not available');
-    }
-  }
-  
-  // Export records for audit
-  exportForAudit(format = 'json') {
-    const data = {
-      exportDate: new Date().toISOString(),
-      totalRecords: this.transactions.length,
-      onChainRecords: this.transactions.filter(t => t.onChain).length,
-      records: this.transactions
-    };
-    
-    if (format === 'json') {
-      return JSON.stringify(data, null, 2);
-    }
-    
-    // CSV format
-    const headers = ['ID', 'Type', 'Timestamp', 'TxHash', 'OnChain', 'Status', 'Data'];
-    const rows = this.transactions.map(t => [
-      t.id,
-      t.type,
-      new Date(t.timestamp).toISOString(),
-      t.txHash || '',
-      t.onChain,
-      t.status,
-      JSON.stringify(t.data)
-    ]);
-    
-    return [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
-  }
-}
+export const blockchainService = new BlockchainService();
 
-// ─────────────────────────────────────────────────────────────────────────────
-// GLOBAL INSTANCES
-// ─────────────────────────────────────────────────────────────────────────────
+// ─── FTR category constants (mirrors Solidity) ────────────────────────────────
 
-// Create global instances
-const blockchainService = new BlockchainService();
-const blockchainRecorder = new BlockchainRecorder();
+export const FTR_CATEGORIES = {
+  HOSPITALITY: 1,
+  HEALTHCARE:  2,
+  EDUCATION:   3,
+  RETAIL:      4,
+  TRAVEL:      5,
+};
 
-// Load existing records
-blockchainRecorder.loadFromLocalStorage();
+// ─── GIC stream type constants (mirrors Solidity) ─────────────────────────────
 
-// Export for use
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = {
-    BLOCKCHAIN_CONFIG,
-    BlockchainService,
-    BlockchainRecorder,
-    blockchainService,
-    blockchainRecorder
-  };
-}
+export const GIC_STREAMS = {
+  REGISTRATION: 1,
+  MINTING:      2,
+  TRADING:      3,
+};
+
+// ─── Role ID constants (mirrors TGDPRegistry.sol) ─────────────────────────────
+
+export const ROLES = {
+  HOUSEHOLD:  1,
+  LICENSEE:   2,
+  JEWELER:    3,
+  DESIGNER:   4,
+  RETURNEE:   5,
+  CONSULTANT: 6,
+  ADVERTISER: 7,
+  OMBUDSMAN:  8,
+};
