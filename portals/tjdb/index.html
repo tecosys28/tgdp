@@ -259,6 +259,47 @@
   </footer>
   
   <!-- Shared JavaScript -->
-  <script src="../../js/shared.txt"></script>
+  <script src="../../js/shared.js"></script>
+
+  <!-- ── Load live designs from Firestore ──────────────────────────────────── -->
+  <script type="module">
+    import { getDesigns, formatINR } from '../../js/firebase-client.js';
+
+    const EMOJI_MAP = {
+      ring:     '💍', necklace: '📿', earrings: '✨',
+      bangle:   '👑', pendant:  '🌟', chain:    '⛓️', general: '🎨',
+    };
+
+    function emoji(category) {
+      return EMOJI_MAP[(category || '').toLowerCase()] || '💎';
+    }
+
+    async function loadFeaturedDesigns() {
+      try {
+        const designs = await getDesigns(8);
+        if (!designs.length) return; // keep static placeholders
+
+        const gallery = document.querySelector('.design-gallery');
+        if (!gallery) return;
+
+        gallery.innerHTML = designs.slice(0, 4).map(d => `
+          <div class="design-card" onclick="window.location.href='dashboard.html'">
+            <div class="design-image">${emoji(d.category)}</div>
+            <div class="design-info">
+              <div class="design-name">${d.title}</div>
+              <div class="design-designer">by Designer</div>
+              <div style="display:flex;justify-content:space-between;align-items:center;margin-top:0.5rem;">
+                <span class="design-price">${d.price} TGDP</span>
+                <span style="font-size:0.75rem;color:var(--text-muted)">${d.salesCount || 0} sold</span>
+              </div>
+            </div>
+          </div>`).join('');
+      } catch (e) {
+        // Silently keep static placeholders if Firestore unavailable
+      }
+    }
+
+    loadFeaturedDesigns();
+  </script>
 </body>
 </html>

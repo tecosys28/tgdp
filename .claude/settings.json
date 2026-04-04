@@ -27,6 +27,9 @@
       "Bash(tail -1 grep -n \"</body>\" c:/Users/PRATHMESH/Downloads/tgdp/portals/tjdb/dashboard.html)",
       "Bash(tail -1 grep -n \"</body>\" c:/Users/PRATHMESH/Downloads/tgdp/portals/ombudsman/dashboard.html)",
       "Bash(tail -1 grep -n \"</body>\" c:/Users/PRATHMESH/Downloads/tgdp/admin/index.html)"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\PRATHMESH\\Downloads\\tgdp"
     ]
   }
 }

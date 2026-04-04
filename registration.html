@@ -419,56 +419,56 @@
 
           <div class="role-grid">
             <label class="role-card" id="role-household">
-              <input type="checkbox" name="roles" value="household" onchange="updateRoleSelection()">
+              <input type="checkbox" name="roles" value="household" onchange="updateRoleSelection(this)">
               <div class="role-check">✓</div>
               <div class="role-icon">🏠</div>
               <div class="role-name">Household</div>
               <div class="role-desc">Earmark gold jewelry and mint TGDPs</div>
             </label>
             <label class="role-card" id="role-licensee">
-              <input type="checkbox" name="roles" value="licensee" onchange="updateRoleSelection()">
+              <input type="checkbox" name="roles" value="licensee" onchange="updateRoleSelection(this)">
               <div class="role-check">✓</div>
               <div class="role-icon">📜</div>
               <div class="role-name">TGDP Licensee</div>
               <div class="role-desc">Register households, earn GIC income</div>
             </label>
             <label class="role-card" id="role-jeweler">
-              <input type="checkbox" name="roles" value="jeweler" onchange="updateRoleSelection()">
+              <input type="checkbox" name="roles" value="jeweler" onchange="updateRoleSelection(this)">
               <div class="role-check">✓</div>
               <div class="role-icon">💎</div>
               <div class="role-name">Registered Jeweler</div>
               <div class="role-desc">Accept T-Gold, fulfill design orders</div>
             </label>
             <label class="role-card" id="role-designer">
-              <input type="checkbox" name="roles" value="designer" onchange="updateRoleSelection()">
+              <input type="checkbox" name="roles" value="designer" onchange="updateRoleSelection(this)">
               <div class="role-check">✓</div>
               <div class="role-icon">🎨</div>
               <div class="role-name">Jewelry Designer</div>
               <div class="role-desc">List IPR-protected designs on T-JDB</div>
             </label>
             <label class="role-card" id="role-returnee">
-              <input type="checkbox" name="roles" value="returnee" onchange="updateRoleSelection()">
+              <input type="checkbox" name="roles" value="returnee" onchange="updateRoleSelection(this)">
               <div class="role-check">✓</div>
               <div class="role-icon">🔄</div>
               <div class="role-name">Jewelry Returnee</div>
               <div class="role-desc">Return old gold via T-JR at LBMA value</div>
             </label>
             <label class="role-card" id="role-consultant">
-              <input type="checkbox" name="roles" value="consultant" onchange="updateRoleSelection()">
+              <input type="checkbox" name="roles" value="consultant" onchange="updateRoleSelection(this)">
               <div class="role-check">✓</div>
               <div class="role-icon">💼</div>
               <div class="role-name">Gold Consultant</div>
               <div class="role-desc">Advisory services and referral income</div>
             </label>
             <label class="role-card" id="role-advertiser">
-              <input type="checkbox" name="roles" value="advertiser" onchange="updateRoleSelection()">
+              <input type="checkbox" name="roles" value="advertiser" onchange="updateRoleSelection(this)">
               <div class="role-check">✓</div>
               <div class="role-icon">📢</div>
               <div class="role-name">Advertiser</div>
               <div class="role-desc">Promote products to TGDP community</div>
             </label>
             <label class="role-card" id="role-ombudsman">
-              <input type="checkbox" name="roles" value="ombudsman" onchange="updateRoleSelection()">
+              <input type="checkbox" name="roles" value="ombudsman" onchange="updateRoleSelection(this)">
               <div class="role-check">✓</div>
               <div class="role-icon">⚖️</div>
               <div class="role-name">Ombudsman</div>
@@ -686,9 +686,9 @@
 
 <script>
   /* ── State ──────────────────────────────────────────────────────────────── */
-  let currentWizardStep = 1;
-  const totalWizardSteps = 4;
+  currentWizardStep = 1;
   let selectedRoles = [];
+  const REG_TOTAL_STEPS = 4;
 
   const DASHBOARDS = {
     household:'portals/tgold/dashboard.html', licensee:'portals/gic/dashboard.html',
@@ -717,16 +717,16 @@
       const line = document.getElementById('line' + i);
       if (line) line.classList.toggle('done', i < currentWizardStep);
     });
-    document.getElementById('progressFill').style.width = (currentWizardStep / totalWizardSteps * 100) + '%';
-    document.getElementById('topbarStepLabel').textContent = `Step ${currentWizardStep} of ${totalWizardSteps}`;
+    document.getElementById('progressFill').style.width = (currentWizardStep / REG_TOTAL_STEPS * 100) + '%';
+    document.getElementById('topbarStepLabel').textContent = `Step ${currentWizardStep} of ${REG_TOTAL_STEPS}`;
 
-    for (let i = 1; i <= totalWizardSteps; i++) {
+    for (let i = 1; i <= REG_TOTAL_STEPS; i++) {
       const el = document.getElementById('step' + i);
       if (el) el.style.display = i === currentWizardStep ? 'block' : 'none';
     }
     document.getElementById('wizardPrev').style.display   = currentWizardStep > 1 ? 'inline-flex' : 'none';
-    document.getElementById('wizardNext').style.display   = currentWizardStep < totalWizardSteps ? 'inline-flex' : 'none';
-    document.getElementById('wizardSubmit').style.display = currentWizardStep === totalWizardSteps ? 'inline-flex' : 'none';
+    document.getElementById('wizardNext').style.display   = currentWizardStep < REG_TOTAL_STEPS ? 'inline-flex' : 'none';
+    document.getElementById('wizardSubmit').style.display = currentWizardStep === REG_TOTAL_STEPS ? 'inline-flex' : 'none';
     updateContinueButton();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
@@ -743,7 +743,7 @@
       }
       return;
     }
-    if (currentWizardStep < totalWizardSteps) {
+    if (currentWizardStep < REG_TOTAL_STEPS) {
       currentWizardStep++;
       updateWizardUI();
       updateContinueButton();
@@ -754,32 +754,40 @@
   function goToStep(s) { if (s >= 1 && s <= currentWizardStep) { currentWizardStep = s; updateWizardUI(); } }
 
   /* ── Role selection ─────────────────────────────────────────────────────── */
-  function updateRoleSelection() {
+  function updateRoleSelection(changedInput) {
+    // Enforce ombudsman exclusivity
+    if (changedInput) {
+      if (changedInput.value === 'ombudsman' && changedInput.checked) {
+        // Deselect all other roles
+        document.querySelectorAll('input[name="roles"]').forEach(inp => {
+          if (inp.value !== 'ombudsman') inp.checked = false;
+        });
+      } else if (changedInput.checked) {
+        // Deselect ombudsman if any other role is selected
+        const ombInput = document.querySelector('input[name="roles"][value="ombudsman"]');
+        if (ombInput) ombInput.checked = false;
+      }
+    }
+
     selectedRoles = [...document.querySelectorAll('input[name="roles"]:checked')].map(c => c.value);
     document.querySelectorAll('.role-card').forEach(card => {
       card.classList.toggle('selected', card.querySelector('input').checked);
     });
+
     const incompatible = typeof getIncompatibleRoles === 'function' ? getIncompatibleRoles(selectedRoles) : [];
-    const hasConflict  = typeof isRoleCombinationValid === 'function' ? !isRoleCombinationValid(selectedRoles) : false;
     document.querySelectorAll('.role-card').forEach(card => {
       const inp = card.querySelector('input');
       const dis = incompatible.includes(inp.value) && !inp.checked;
       card.classList.toggle('disabled', dis);
       inp.disabled = dis;
     });
+
+    const hasConflict = typeof isRoleCombinationValid === 'function' ? !isRoleCombinationValid(selectedRoles) : false;
     const warn = document.getElementById('roleWarning');
-    if (hasConflict) {
-      warn.classList.add('visible');
-      document.getElementById('roleWarningText').textContent = 'Selected roles cannot be combined. Please remove a conflicting role.';
-    } else if (selectedRoles.includes('ombudsman') && selectedRoles.length > 1) {
-      warn.classList.add('visible');
-      document.getElementById('roleWarningText').textContent = 'Ombudsman is an exclusive role and cannot be combined with others.';
-    } else {
-      warn.classList.remove('visible');
-    }
-    // Enable/disable Continue button based on role selection
+    warn.classList.toggle('visible', hasConflict);
+    if (hasConflict) document.getElementById('roleWarningText').textContent = 'Selected roles cannot be combined. Please remove a conflicting role.';
+
     updateContinueButton();
-    // Remove error highlight when user selects a role
     document.querySelector('.role-grid').classList.remove('highlight-empty');
   }
 

@@ -177,72 +177,172 @@
     </main>
   </div>
   <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      loadStats();
-      updateTime();
-      setInterval(updateTime, 1000);
-    });
+    // Panel switching (non-module, uses globals set by module below)
     function showPanel(id) {
       document.querySelectorAll('.panel-section').forEach(p => p.classList.remove('active'));
       document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
       document.getElementById('panel-' + id)?.classList.add('active');
-      event.target.closest('.nav-item')?.classList.add('active');
-      const titles = {dashboard:'Dashboard',users:'Users',kyc:'KYC Queue',complaints:'Complaints',blockchain:'Blockchain',config:'Configuration'};
+      event.target.closest?.('.nav-item')?.classList.add('active');
+      const titles = { dashboard:'Dashboard', users:'All Users', kyc:'KYC Queue', complaints:'Complaints', blockchain:'Blockchain', config:'Configuration', audit:'Audit Logs', analytics:'Analytics', licensees:'Licensees', jewelers:'Jewelers', transactions:'Transactions' };
       document.getElementById('panel-title').textContent = titles[id] || 'Admin';
-      loadPanelData(id);
-    }
-    function loadStats() {
-      const users = JSON.parse(localStorage.getItem('tgdp_users')||'[]');
-      const mints = JSON.parse(localStorage.getItem('tgdp_mints')||'[]');
-      const tx = JSON.parse(localStorage.getItem('tgdp_transactions')||'[]');
-      document.getElementById('stat-tgdp').textContent = mints.reduce((s,m)=>s+(m.tgdpAmount||0),0).toLocaleString();
-      document.getElementById('stat-users').textContent = users.length;
-      document.getElementById('stat-licensees').textContent = users.filter(u=>u.roles?.includes('licensee')).length;
-      document.getElementById('stat-tx').textContent = tx.length;
-    }
-    function loadPanelData(id) {
-      if(id==='users') loadUsers();
-      if(id==='kyc') loadKYC();
-      if(id==='complaints') loadComplaints();
-    }
-    function loadUsers() {
-      const users = JSON.parse(localStorage.getItem('tgdp_users')||'[]');
-      const tbody = document.getElementById('users-table');
-      if(!users.length) { tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:#94a3b8;">No users</td></tr>'; return; }
-      tbody.innerHTML = users.map(u=>'<tr><td>'+u.id+'</td><td>'+(u.name||'-')+'</td><td>'+(u.email||'-')+'</td><td>'+(u.roles||[]).join(', ')+'</td><td><span class="status-badge '+(u.kycStatus==='approved'?'approved':'pending')+'">'+(u.kycStatus||'pending')+'</span></td><td><button class="action-btn view">View</button></td></tr>').join('');
-    }
-    function loadKYC() {
-      const kyc = JSON.parse(localStorage.getItem('tgdp_kyc')||'[]');
-      document.getElementById('kyc-count').textContent = kyc.filter(k=>k.status!=='approved').length;
-      const tbody = document.getElementById('kyc-table');
-      if(!kyc.length) { tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:#94a3b8;">No KYC requests</td></tr>'; return; }
-      tbody.innerHTML = kyc.map(k=>'<tr><td>'+k.userId+'</td><td>-</td><td>'+(k.documents||[]).length+' docs</td><td>'+new Date(k.submittedAt).toLocaleDateString()+'</td><td><span class="status-badge '+k.status+'">'+k.status+'</span></td><td><button class="action-btn approve" onclick="approveKYC(\''+k.id+'\')">Approve</button></td></tr>').join('');
-    }
-    function loadComplaints() {
-      const complaints = JSON.parse(localStorage.getItem('tgdp_complaints')||'[]');
-      document.getElementById('complaint-count').textContent = complaints.filter(c=>c.status!=='resolved').length;
-      const tbody = document.getElementById('complaints-table');
-      if(!complaints.length) { tbody.innerHTML='<tr><td colspan="6" style="text-align:center;color:#94a3b8;">No complaints</td></tr>'; return; }
-      tbody.innerHTML = complaints.map(c=>'<tr><td>'+c.id+'</td><td>'+c.portal+'</td><td>'+c.category+'</td><td>'+new Date(c.filedAt).toLocaleDateString()+'</td><td><span class="status-badge '+c.status+'">'+c.status+'</span></td><td><button class="action-btn view">View</button></td></tr>').join('');
-    }
-    function approveKYC(id) {
-      const kyc = JSON.parse(localStorage.getItem('tgdp_kyc')||'[]');
-      const idx = kyc.findIndex(k=>k.id===id);
-      if(idx>=0) { kyc[idx].status='approved'; localStorage.setItem('tgdp_kyc',JSON.stringify(kyc)); loadKYC(); alert('KYC Approved'); }
+      if (window._adminLoadPanel) window._adminLoadPanel(id);
     }
     function updateTime() {
-      document.getElementById('current-time').textContent = new Date().toLocaleString('en-IN',{weekday:'short',day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});
+      document.getElementById('current-time').textContent = new Date().toLocaleString('en-IN', { weekday:'short', day:'2-digit', month:'short', hour:'2-digit', minute:'2-digit' });
     }
+    updateTime();
+    setInterval(updateTime, 1000);
   </script>
 
-<!-- ── Auth Guard ─────────────────────────────────────────────────────────── -->
-<script type="module">
-  import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-  const _cfg = { apiKey:"AIzaSyAsHHiCqvvlwzt3Zx7nwbKCnpmkWG-HPpc", authDomain:"tgdp-d4a3d.firebaseapp.com", projectId:"tgdp-d4a3d", appId:"1:399267274832:web:202956b9af788eb96ff155" };
-  const _app = getApps().length ? getApps()[0] : initializeApp(_cfg, "guard");
-  const _auth = getAuth(_app);
-  onAuthStateChanged(_auth, user => { if (!user) window.location.replace("/login.html"); });
-</script>
+  <!-- ── Firebase Live Backend ──────────────────────────────────────────────── -->
+  <script type="module">
+    import {
+      requireAuth, logout, onLBMARate,
+      getAllUsers, getPendingKYC, getOpenComplaints, getTransactions,
+      callApproveKYC, callGetAdminStats, callUpdateComplaint,
+      formatINR, formatDate, statusBadge, timeSince
+    } from '../js/firebase-client.js';
+
+    // ── Auth guard: admin only ─────────────────────────────────────────────────
+    let currentUser = null;
+    try {
+      currentUser = await requireAuth('admin');
+    } catch (e) {
+      window.location.replace('/login.html');
+    }
+
+    // ── Live LBMA rate ─────────────────────────────────────────────────────────
+    onLBMARate((rate) => {
+      document.getElementById('lbma-rate').textContent = `LBMA: ₹${rate.toLocaleString('en-IN')}/g`;
+    });
+
+    // ── Load dashboard stats ───────────────────────────────────────────────────
+    async function loadDashboard() {
+      try {
+        const res   = await callGetAdminStats();
+        const stats = res.data;
+        document.getElementById('stat-users').textContent       = stats.totalUsers || 0;
+        document.getElementById('stat-tx').textContent          = stats.pendingKYC || 0;
+        document.getElementById('kyc-count').textContent        = stats.pendingKYC || 0;
+        document.getElementById('complaint-count').textContent  = stats.openComplaints || 0;
+
+        // Load recent activity
+        const txns  = await getTransactions(null, 10).catch(() => []);
+        const tbody = document.getElementById('activity-table');
+        if (!txns.length) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#94a3b8;">No recent activity.</td></tr>'; return; }
+        tbody.innerHTML = txns.map(tx => `<tr>
+          <td>${timeSince(tx.createdAt)}</td>
+          <td>${tx.type}</td>
+          <td class="mono" style="font-size:0.75rem">${(tx.userId || tx.fromUserId || '').slice(0,10)}...</td>
+          <td>${tx.description || '-'}</td>
+          <td><span class="status-badge ${tx.status === 'completed' ? 'approved' : 'pending'}">${tx.status}</span></td>
+        </tr>`).join('');
+      } catch (err) {
+        console.error('Dashboard stats error:', err);
+      }
+    }
+
+    // ── Load all users ─────────────────────────────────────────────────────────
+    async function loadUsers() {
+      const users = await getAllUsers();
+      const tbody = document.getElementById('users-table');
+      if (!users.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#94a3b8;">No users</td></tr>'; return; }
+      tbody.innerHTML = users.map(u => `<tr>
+        <td class="mono" style="font-size:0.75rem">${u.uid || u.id}</td>
+        <td>${u.firstName || ''} ${u.lastName || ''}</td>
+        <td>${u.email || '-'}</td>
+        <td>${(u.roles || []).join(', ') || '-'}</td>
+        <td><span class="status-badge ${u.status === 'active' ? 'approved' : 'pending'}">${u.status || 'pending_kyc'}</span></td>
+        <td>
+          <button class="action-btn view" onclick="window._viewUser('${u.uid || u.id}')">View</button>
+        </td>
+      </tr>`).join('');
+    }
+
+    // ── Load KYC queue ─────────────────────────────────────────────────────────
+    async function loadKYC() {
+      const kycList = await getPendingKYC();
+      document.getElementById('kyc-count').textContent = kycList.length;
+      const tbody = document.getElementById('kyc-table');
+      if (!kycList.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#94a3b8;">No pending KYC</td></tr>'; return; }
+      tbody.innerHTML = kycList.map(k => `<tr>
+        <td class="mono" style="font-size:0.75rem">${k.userId}</td>
+        <td>-</td>
+        <td>
+          ${k.panDocUrl     ? `<a href="${k.panDocUrl}" target="_blank">PAN</a> ` : ''}
+          ${k.aadhaarDocUrl ? `<a href="${k.aadhaarDocUrl}" target="_blank">Aadhaar</a> ` : ''}
+          ${k.photoDocUrl   ? `<a href="${k.photoDocUrl}" target="_blank">Photo</a>` : ''}
+        </td>
+        <td>${formatDate(k.submittedAt)}</td>
+        <td><span class="status-badge pending">${k.kycStatus}</span></td>
+        <td>
+          <button class="action-btn approve" onclick="window._approveKYC('${k.userId}', true)">Approve</button>
+          <button class="action-btn reject"  onclick="window._approveKYC('${k.userId}', false)">Reject</button>
+        </td>
+      </tr>`).join('');
+    }
+
+    // ── Load complaints ────────────────────────────────────────────────────────
+    async function loadComplaints() {
+      const complaints = await getOpenComplaints();
+      document.getElementById('complaint-count').textContent = complaints.length;
+      const tbody = document.getElementById('complaints-table');
+      if (!complaints.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#94a3b8;">No complaints</td></tr>'; return; }
+      tbody.innerHTML = complaints.map(c => `<tr>
+        <td class="mono" style="font-size:0.75rem">${c.complaintId}</td>
+        <td>${c.portal}</td>
+        <td>${c.category}</td>
+        <td>${formatDate(c.createdAt)}</td>
+        <td><span class="status-badge ${c.status === 'resolved' ? 'approved' : 'pending'}">${c.stage}</span></td>
+        <td>
+          <button class="action-btn approve" onclick="window._resolveComplaint('${c.complaintId}')">Resolve</button>
+          <button class="action-btn view"    onclick="alert('${c.subject}\\n\\n${(c.description||'').replace(/'/g,'&#39;')}')">View</button>
+        </td>
+      </tr>`).join('');
+    }
+
+    // ── Panel loader ───────────────────────────────────────────────────────────
+    window._adminLoadPanel = async function(id) {
+      if (id === 'dashboard')  await loadDashboard();
+      if (id === 'users')      await loadUsers();
+      if (id === 'kyc')        await loadKYC();
+      if (id === 'complaints') await loadComplaints();
+    };
+
+    // ── Approve / reject KYC ──────────────────────────────────────────────────
+    window._approveKYC = async function(userId, approved) {
+      const notes = approved ? '' : prompt('Rejection reason:') || '';
+      try {
+        await callApproveKYC({ targetUserId: userId, approved, notes });
+        alert(approved ? 'KYC Approved!' : 'KYC Rejected.');
+        await loadKYC();
+      } catch (err) {
+        alert('Error: ' + err.message);
+      }
+    };
+
+    // ── Resolve complaint ──────────────────────────────────────────────────────
+    window._resolveComplaint = async function(complaintId) {
+      const resolution = prompt('Resolution notes:');
+      if (!resolution) return;
+      try {
+        await callUpdateComplaint({ complaintId, newStage: 'resolved', note: resolution, resolution });
+        alert('Complaint resolved.');
+        await loadComplaints();
+      } catch (err) {
+        alert('Error: ' + err.message);
+      }
+    };
+
+    // ── View user ──────────────────────────────────────────────────────────────
+    window._viewUser = function(uid) {
+      alert('User ID: ' + uid + '\n(Full detail view coming soon)');
+    };
+
+    // ── Initial load ───────────────────────────────────────────────────────────
+    await loadDashboard();
+
+    window.tgdpLogout = logout;
+  </script>
 </body>
 </html>

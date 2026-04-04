@@ -770,50 +770,189 @@
   </div>
   
   <!-- Shared JavaScript -->
-  <script src="../../js/shared.txt"></script>
-  
-  <script>
-    // Custom form submission
-    document.getElementById('customForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      showLoading('Submitting your custom request...');
-      setTimeout(() => {
+  <script src="../../js/shared.js"></script>
+
+  <!-- ── Firebase Live Backend ──────────────────────────────────────────────── -->
+  <script type="module">
+    import {
+      requireAuth, logout,
+      getDesigns, getDesignerDesigns, getUserComplaints,
+      callRegisterDesign, callPurchaseDesign, callFileComplaint,
+      uploadDesignFile,
+      formatINR, formatDate, statusBadge
+    } from '../../js/firebase-client.js';
+
+    // ── Auth guard ─────────────────────────────────────────────────────────────
+    let currentUser = null;
+    try {
+      currentUser = await requireAuth();
+    } catch (e) {
+      window.location.replace('/login.html');
+    }
+
+    // ── Sidebar user info ──────────────────────────────────────────────────────
+    const initials = ((currentUser.firstName || '')[0] + (currentUser.lastName || '')[0]).toUpperCase();
+    document.querySelector('.sidebar-avatar') && (document.querySelector('.sidebar-avatar').textContent = initials || '?');
+    document.querySelector('.sidebar-name')   && (document.querySelector('.sidebar-name').textContent   = `${currentUser.firstName} ${currentUser.lastName}`);
+    document.querySelector('.sidebar-id')     && (document.querySelector('.sidebar-id').textContent     = currentUser.uid.slice(0, 12).toUpperCase());
+
+    const isDesigner = currentUser.roles && currentUser.roles.includes('designer');
+
+    // ── Render design card ─────────────────────────────────────────────────────
+    function designCard(d) {
+      return `<div class="design-card" onclick="window._purchaseDesign('${d.designId}', '${d.title}', ${d.price})">
+        <div class="design-image" style="background:linear-gradient(135deg,var(--rose-muted),var(--obsidian-light));display:flex;align-items:center;justify-content:center;font-size:3rem;">💍</div>
+        <div style="padding:1rem;">
+          <div style="font-weight:600;margin-bottom:0.25rem;">${d.title}</div>
+          <div style="font-size:0.8rem;color:var(--text-muted);margin-bottom:0.75rem;">${d.category}</div>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <span style="font-family:var(--font-mono);color:var(--gold);">${d.price} TGDP</span>
+            <span class="badge badge-rose">${d.salesCount || 0} sales</span>
+          </div>
+        </div>
+      </div>`;
+    }
+
+    // ── Load marketplace designs ───────────────────────────────────────────────
+    async function loadDesigns() {
+      const designs  = await getDesigns();
+      const grid     = document.querySelector('.design-grid');
+      if (!grid) return;
+      if (!designs.length) { grid.innerHTML = '<p style="color:var(--text-muted)">No designs available yet.</p>'; return; }
+      grid.innerHTML = designs.map(designCard).join('');
+    }
+
+    // ── Load my designs (designer view) ───────────────────────────────────────
+    async function loadMyDesigns() {
+      if (!isDesigner) return;
+      const designs = await getDesignerDesigns(currentUser.uid);
+      const tbody   = document.querySelector('#panel-my-designs tbody');
+      if (!tbody) return;
+      if (!designs.length) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted)">No designs registered yet.</td></tr>'; return; }
+      tbody.innerHTML = designs.map(d => `<tr>
+        <td class="mono">${d.designId}</td>
+        <td>${d.title}</td>
+        <td>${d.category}</td>
+        <td class="mono">${d.price} TGDP</td>
+        <td><span class="badge ${statusBadge(d.status)}">${d.status}</span></td>
+      </tr>`).join('');
+    }
+
+    // ── Load complaints ────────────────────────────────────────────────────────
+    async function loadComplaints() {
+      const cmps  = await getUserComplaints(currentUser.uid);
+      const tbody = document.querySelector('#panel-complaints tbody');
+      if (!tbody) return;
+      if (!cmps.length) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted)">No complaints.</td></tr>'; return; }
+      tbody.innerHTML = cmps.map(c => `<tr>
+        <td class="mono">${c.complaintId}</td>
+        <td>${c.subject}</td>
+        <td>${c.category}</td>
+        <td>${formatDate(c.createdAt)}</td>
+        <td><span class="badge ${statusBadge(c.status)}">${c.status}</span></td>
+      </tr>`).join('');
+    }
+
+    await Promise.all([loadDesigns(), loadMyDesigns(), loadComplaints()]);
+
+    // ── Purchase design ────────────────────────────────────────────────────────
+    window._purchaseDesign = async function(designId, title, price) {
+      if (!confirm(`Purchase "${title}" for ${price} TGDP?`)) return;
+      showLoading('Processing purchase...');
+      try {
+        const res = await callPurchaseDesign({ designId, tgdpAmount: price });
         hideLoading();
-        showToast('Custom design request submitted! Designer will respond within 48 hours.', 'success');
+        showToast(`Purchase complete! Order: ${res.data.orderId}`, 'success');
+        await loadDesigns();
+      } catch (err) {
+        hideLoading();
+        showToast(err.message || 'Purchase failed.', 'error');
+      }
+    };
+
+    // ── Register design form ───────────────────────────────────────────────────
+    document.getElementById('registerDesignForm') && document.getElementById('registerDesignForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const fd = new FormData(this);
+      showLoading('Registering design...');
+      try {
+        // Upload image if provided
+        let imageUrls = [];
+        const imgFile = fd.get('designImage');
+        if (imgFile && imgFile.size > 0) {
+          const url = await uploadDesignFile(currentUser.uid, imgFile, 'image');
+          imageUrls = [url];
+        }
+        const res = await callRegisterDesign({
+          title:       fd.get('title'),
+          description: fd.get('description') || '',
+          category:    fd.get('category') || 'general',
+          price:       parseInt(fd.get('price')),
+          imageUrls,
+        });
+        hideLoading();
+        showToast(`Design ${res.data.designId} registered!`, 'success');
         this.reset();
-      }, 1500);
+        await loadMyDesigns();
+        await loadDesigns();
+      } catch (err) {
+        hideLoading();
+        showToast(err.message || 'Registration failed.', 'error');
+      }
     });
-    
-    // Filter chips
+
+    // ── Custom order form ──────────────────────────────────────────────────────
+    document.getElementById('customForm') && document.getElementById('customForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const fd = new FormData(this);
+      showLoading('Submitting custom request...');
+      try {
+        const res = await callFileComplaint({
+          portal:      'T-JDB',
+          category:    'custom_order',
+          subject:     'Custom Design Request: ' + (fd.get('title') || 'Untitled'),
+          description: fd.get('requirements') || fd.get('description') || '',
+        });
+        hideLoading();
+        showToast(`Custom request ${res.data.complaintId} submitted! Designer will respond within 48 hours.`, 'success');
+        this.reset();
+      } catch (err) {
+        hideLoading();
+        showToast(err.message || 'Failed.', 'error');
+      }
+    });
+
+    // ── Filter chips ───────────────────────────────────────────────────────────
     document.querySelectorAll('.filter-chip').forEach(chip => {
       chip.addEventListener('click', function() {
         document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
         this.classList.add('active');
-        showToast(`Filtering by ${this.textContent}...`, 'info');
       });
     });
-    
-    // Complaint form submission
-    document.getElementById('complaintForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      showLoading('Submitting complaint to Ombudsman...');
-      setTimeout(() => {
-        hideLoading();
-        const refNo = 'OMB-2026-' + String(Math.floor(Math.random() * 90000) + 10000).padStart(5, '0');
-        showToast('Complaint ' + refNo + ' submitted! Acknowledgment within 24-48 hours.', 'success');
-        this.reset();
-      }, 1500);
-    });
-  </script>
 
-<!-- ── Auth Guard ─────────────────────────────────────────────────────────── -->
-<script type="module">
-  import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-  const _cfg = { apiKey:"AIzaSyAsHHiCqvvlwzt3Zx7nwbKCnpmkWG-HPpc", authDomain:"tgdp-d4a3d.firebaseapp.com", projectId:"tgdp-d4a3d", appId:"1:399267274832:web:202956b9af788eb96ff155" };
-  const _app = getApps().length ? getApps()[0] : initializeApp(_cfg, "guard");
-  const _auth = getAuth(_app);
-  onAuthStateChanged(_auth, user => { if (!user) window.location.replace("/login.html"); });
-</script>
+    // ── Complaint form ─────────────────────────────────────────────────────────
+    document.getElementById('complaintForm') && document.getElementById('complaintForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const fd = new FormData(this);
+      showLoading('Submitting complaint...');
+      try {
+        const res = await callFileComplaint({
+          portal:      'T-JDB',
+          category:    fd.get('category') || 'general',
+          subject:     fd.get('subject'),
+          description: fd.get('description'),
+        });
+        hideLoading();
+        showToast(`Complaint ${res.data.complaintId} submitted!`, 'success');
+        this.reset();
+        await loadComplaints();
+      } catch (err) {
+        hideLoading();
+        showToast(err.message || 'Failed.', 'error');
+      }
+    });
+
+    window.tgdpLogout = logout;
+  </script>
 </body>
 </html>

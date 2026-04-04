@@ -845,46 +845,178 @@
   </div>
   
   <!-- Shared JavaScript -->
-  <script src="../../js/shared.txt"></script>
-  
-  <script>
-    // Register household form
-    document.getElementById('registerHouseholdForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      showLoading('Registering household...');
-      setTimeout(() => {
-        hideLoading();
-        const id = 'HH-IND-' + Math.floor(Math.random() * 90000 + 10000);
-        showToast(`Household ${id} registered successfully! Invitation sent.`, 'success');
-        this.reset();
-      }, 1500);
+  <script src="../../js/shared.js"></script>
+
+  <!-- ── Firebase Live Backend ──────────────────────────────────────────────── -->
+  <script type="module">
+    import {
+      requireAuth, logout, onGICBalance, onLBMARate,
+      getLicenseeHouseholds, getGICCredits, getUserComplaints,
+      callLinkHousehold, callRedeemGIC, callFileComplaint,
+      formatINR, formatDate, statusBadge
+    } from '../../js/firebase-client.js';
+
+    // ── Auth guard: must be licensee ───────────────────────────────────────────
+    let currentUser = null;
+    try {
+      currentUser = await requireAuth('licensee');
+    } catch (e) {
+      window.location.replace('/login.html');
+    }
+
+    // ── Sidebar user info ──────────────────────────────────────────────────────
+    const initials = ((currentUser.firstName || '')[0] + (currentUser.lastName || '')[0]).toUpperCase();
+    document.querySelector('.sidebar-avatar').textContent = initials || '?';
+    document.querySelector('.sidebar-name').textContent   = `${currentUser.firstName} ${currentUser.lastName}`;
+    document.querySelector('.sidebar-id').textContent     = currentUser.uid.slice(0, 12).toUpperCase();
+
+    // ── Live GIC balance ───────────────────────────────────────────────────────
+    onGICBalance(currentUser.uid, (balance) => {
+      window._gicBalance = balance;
+      const redeemEl = document.querySelector('#panel-overview .stat-card.success .stat-value');
+      if (redeemEl) redeemEl.textContent = formatINR(balance);
     });
-    
-    // Redeem form
-    document.getElementById('redeemForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      const amount = document.querySelector('[name="redeemAmount"]').value;
-      if (parseInt(amount) < 5000) {
-        showToast('Minimum redemption amount is ₹5,000', 'error');
+
+    // ── Live LBMA rate ─────────────────────────────────────────────────────────
+    onLBMARate((rate) => { window._lbmaRate = rate; });
+
+    // ── Load households ────────────────────────────────────────────────────────
+    async function loadHouseholds() {
+      const households = await getLicenseeHouseholds(currentUser.uid);
+      window._households = households;
+
+      // Update stat
+      const statEl = document.querySelector('#panel-overview .stat-card.purple .stat-value');
+      if (statEl) statEl.textContent = households.length;
+
+      // Populate households table
+      const tbody = document.querySelector('#panel-households tbody');
+      if (!tbody) return;
+      if (!households.length) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:var(--text-muted)">No households registered yet.</td></tr>';
         return;
       }
-      showLoading('Processing redemption...');
-      setTimeout(() => {
-        hideLoading();
-        showToast(`GIC redemption of ₹${parseInt(amount).toLocaleString()} initiated! Will be processed within 24-48 hours.`, 'success');
-        this.reset();
-      }, 1500);
-    });
-  </script>
+      tbody.innerHTML = households.map(h => `<tr>
+        <td>${h.firstName} ${h.lastName}</td>
+        <td class="mono">${h.uid.slice(0, 10).toUpperCase()}</td>
+        <td>${h.email}</td>
+        <td>${h.phone || '-'}</td>
+        <td>${formatDate(h.linkedAt)}</td>
+        <td><span class="badge ${statusBadge(h.status)}">${h.status}</span></td>
+      </tr>`).join('');
 
-<!-- ── Auth Guard ─────────────────────────────────────────────────────────── -->
-<script type="module">
-  import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-  const _cfg = { apiKey:"AIzaSyAsHHiCqvvlwzt3Zx7nwbKCnpmkWG-HPpc", authDomain:"tgdp-d4a3d.firebaseapp.com", projectId:"tgdp-d4a3d", appId:"1:399267274832:web:202956b9af788eb96ff155" };
-  const _app = getApps().length ? getApps()[0] : initializeApp(_cfg, "guard");
-  const _auth = getAuth(_app);
-  onAuthStateChanged(_auth, user => { if (!user) window.location.replace("/login.html"); });
-</script>
+      // Also update nav badge
+      const badge = document.querySelector('.nav-badge');
+      if (badge) badge.textContent = households.length;
+    }
+
+    // ── Load GIC credit history ────────────────────────────────────────────────
+    async function loadGICCredits() {
+      const credits = await getGICCredits(currentUser.uid);
+      const tbody   = document.querySelector('#panel-gic-earnings tbody');
+      if (!tbody) return;
+      if (!credits.length) {
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted)">No GIC earnings yet.</td></tr>';
+        return;
+      }
+      const streamLabels = { registration: 'Registration', minting: 'Minting', trading: 'FTR Trading' };
+      tbody.innerHTML = credits.map(c => `<tr>
+        <td class="mono">${c.creditId}</td>
+        <td>${streamLabels[c.stream] || c.stream}</td>
+        <td class="mono" style="color:var(--success)">+${formatINR(c.amount)}</td>
+        <td>${c.sourceRef || '-'}</td>
+        <td>${formatDate(c.createdAt)}</td>
+      </tr>`).join('');
+
+      // Update total earned stat
+      const total = credits.reduce((s, c) => s + (c.amount || 0), 0);
+      const totalEl = document.querySelector('#panel-overview .stat-card.gold .stat-value');
+      if (totalEl) totalEl.textContent = formatINR(total);
+    }
+
+    // ── Load complaints ────────────────────────────────────────────────────────
+    async function loadComplaints() {
+      const cmps  = await getUserComplaints(currentUser.uid);
+      const tbody = document.querySelector('#panel-complaints tbody');
+      if (!tbody) return;
+      if (!cmps.length) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:var(--text-muted)">No complaints filed.</td></tr>'; return; }
+      tbody.innerHTML = cmps.map(c => `<tr>
+        <td class="mono">${c.complaintId}</td>
+        <td>${c.subject}</td>
+        <td><span class="badge badge-purple">${c.category}</span></td>
+        <td>${formatDate(c.createdAt)}</td>
+        <td><span class="badge ${statusBadge(c.status)}">${c.status}</span></td>
+      </tr>`).join('');
+    }
+
+    // ── Initial load ───────────────────────────────────────────────────────────
+    await Promise.all([loadHouseholds(), loadGICCredits(), loadComplaints()]);
+
+    // ── Register household form ────────────────────────────────────────────────
+    document.getElementById('registerHouseholdForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const fd = new FormData(this);
+      const householdUserId = fd.get('householdUserId')?.trim();
+      if (!householdUserId) { showToast('Please enter the household user ID.', 'error'); return; }
+      showLoading('Linking household...');
+      try {
+        const res = await callLinkHousehold({ householdUserId });
+        hideLoading();
+        showToast(`Household linked! Link ID: ${res.data.linkId}`, 'success');
+        this.reset();
+        await loadHouseholds();
+        await loadGICCredits();
+      } catch (err) {
+        hideLoading();
+        showToast(err.message || 'Linking failed.', 'error');
+      }
+    });
+
+    // ── Redeem GIC form ────────────────────────────────────────────────────────
+    document.getElementById('redeemForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const fd     = new FormData(this);
+      const amount = parseInt(fd.get('redeemAmount'));
+      if (amount < 5000) { showToast('Minimum redemption is ₹5,000', 'error'); return; }
+      showLoading('Processing redemption...');
+      try {
+        const res = await callRedeemGIC({
+          gicAmount:         amount,
+          bankAccountNumber: fd.get('bankAccount') || '',
+          ifscCode:          fd.get('ifsc') || '',
+        });
+        hideLoading();
+        showToast(`GIC redemption of ${formatINR(amount)} initiated! Ref: ${res.data.redeemId}`, 'success');
+        this.reset();
+      } catch (err) {
+        hideLoading();
+        showToast(err.message || 'Redemption failed.', 'error');
+      }
+    });
+
+    // ── Complaint form ─────────────────────────────────────────────────────────
+    document.getElementById('complaintForm') && document.getElementById('complaintForm').addEventListener('submit', async function(e) {
+      e.preventDefault();
+      const fd = new FormData(this);
+      showLoading('Submitting complaint...');
+      try {
+        const res = await callFileComplaint({
+          portal:      'GIC',
+          category:    fd.get('category') || 'general',
+          subject:     fd.get('subject'),
+          description: fd.get('description'),
+        });
+        hideLoading();
+        showToast(`Complaint ${res.data.complaintId} submitted!`, 'success');
+        this.reset();
+        await loadComplaints();
+      } catch (err) {
+        hideLoading();
+        showToast(err.message || 'Failed.', 'error');
+      }
+    });
+
+    window.tgdpLogout = logout;
+  </script>
 </body>
 </html>
