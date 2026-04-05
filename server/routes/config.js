@@ -7,27 +7,25 @@ const { apiError }            = require('../middleware/errorHandler');
 
 const router = express.Router();
 
-// GET /config/lbma — public (no auth) — clients poll this for the gold rate
+// GET /config/lbma — public
 router.get('/lbma', async (req, res, next) => {
   try {
     const r = await pool.query("SELECT value FROM config WHERE key = 'lbma'");
-    const val = r.rows[0]?.value || {};
-    const data = typeof val === 'string' ? JSON.parse(val) : val;
+    const data = r.rows[0]?.value || {};
     res.json({ ratePerGram: data.ratePerGram || 7342, ...data });
   } catch (err) { next(err); }
 });
 
-// GET /config/ipfs — authenticated — returns Pinata JWT for client-side uploads
+// GET /config/ipfs — authenticated
 router.get('/ipfs', verifyFirebaseToken, async (req, res, next) => {
   try {
     const r = await pool.query("SELECT value FROM config WHERE key = 'ipfs'");
-    const val = r.rows[0]?.value || {};
-    const data = typeof val === 'string' ? JSON.parse(val) : val;
+    const data = r.rows[0]?.value || {};
     res.json({ pinataJWT: data.pinataJWT || null });
   } catch (err) { next(err); }
 });
 
-// PATCH /config — admin only — update commissions, SLA
+// PATCH /config — admin only
 router.patch('/', verifyFirebaseToken, async (req, res, next) => {
   try {
     await requireAdmin(req.uid);
@@ -46,15 +44,14 @@ router.patch('/', verifyFirebaseToken, async (req, res, next) => {
         if (designerShare !== undefined && (designerShare < 0.5 || designerShare > 1))
           throw apiError(400, 'INVALID_ARGUMENT', 'Designer share must be 50–100%');
 
-        // Merge into existing commissions config
+        const patch = {};
+        if (ftrCommission !== undefined)   patch.ftrCommission   = ftrCommission;
+        if (gicShare !== undefined)        patch.gicShare        = gicShare;
+        if (designerShare !== undefined)   patch.designerShare   = designerShare;
+        if (minGICRedemption !== undefined)patch.minGICRedemption= minGICRedemption;
         await client.query(
           `UPDATE config SET value = value || $1::jsonb, updated_at = NOW() WHERE key = 'commissions'`,
-          [JSON.stringify({
-            ...(ftrCommission !== undefined && { ftrCommission }),
-            ...(gicShare !== undefined && { gicShare }),
-            ...(designerShare !== undefined && { designerShare }),
-            ...(minGICRedemption !== undefined && { minGICRedemption }),
-          })]
+          [JSON.stringify(patch)]
         );
       }
 
@@ -65,11 +62,10 @@ router.patch('/', verifyFirebaseToken, async (req, res, next) => {
         );
       }
 
-      // Audit log
-      const meRes = await client.query('SELECT id FROM users WHERE firebase_uid = $1', [req.uid]);
       await client.query(
-        `INSERT INTO audit_logs (action, admin_user_id, changes) VALUES ('config_updated', $1, $2)`,
-        [meRes.rows[0]?.id, JSON.stringify(req.body).slice(0, 500)]
+        `INSERT INTO audit_logs (action, actor_id, changes)
+         VALUES ('config_updated', $1, $2::jsonb)`,
+        [req.uid, JSON.stringify(req.body).slice(0, 500)]
       );
 
       await client.query('COMMIT');
@@ -84,12 +80,10 @@ router.patch('/', verifyFirebaseToken, async (req, res, next) => {
 });
 
 async function requireAdmin(uid) {
-  const res = await pool.query(
-    `SELECT ur.role FROM users u JOIN user_roles ur ON ur.user_id = u.id
-     WHERE u.firebase_uid = $1 AND ur.role = 'admin'`,
-    [uid]
+  const r = await pool.query(
+    `SELECT role FROM user_roles WHERE uid = $1 AND role = 'admin'`, [uid]
   );
-  if (!res.rows.length) throw apiError(403, 'FORBIDDEN', 'Admin access required.');
+  if (!r.rows.length) throw apiError(403, 'FORBIDDEN', 'Admin access required.');
 }
 
 module.exports = router;

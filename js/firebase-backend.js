@@ -1,6 +1,7 @@
 /* ═══════════════════════════════════════════════════════════════════════════
-   TGDP ECOSYSTEM - FIREBASE BACKEND
-   Handles: Auth, Firestore, Storage for Registration & Live Sync
+   TGDP ECOSYSTEM — FIREBASE BACKEND (PostgreSQL REST API edition)
+   Firebase Auth + Firebase Storage remain unchanged.
+   All Firestore reads/writes replaced with REST API calls.
    ═══════════════════════════════════════════════════════════════════════════ */
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -8,102 +9,114 @@ import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
          onAuthStateChanged, signOut, sendEmailVerification, sendPasswordResetEmail,
          GoogleAuthProvider, signInWithRedirect, getRedirectResult, connectAuthEmulator }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc, onSnapshot, serverTimestamp, connectFirestoreEmulator }
-  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { getStorage, ref, uploadBytes, getDownloadURL, connectStorageEmulator }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
 
-// ─── Firebase Init ───────────────────────────────────────────────────────────
+// ─── Init ─────────────────────────────────────────────────────────────────────
 const FIREBASE_CONFIG = {
-  apiKey: "AIzaSyAsHHiCqvvlwzt3Zx7nwbKCnpmkWG-HPpc",
-  authDomain: "tgdp-d4a3d.firebaseapp.com",
-  projectId: "tgdp-d4a3d",
-  storageBucket: "tgdp-d4a3d.firebasestorage.app",
+  apiKey:            "AIzaSyAsHHiCqvvlwzt3Zx7nwbKCnpmkWG-HPpc",
+  authDomain:        "tgdp-d4a3d.firebaseapp.com",
+  projectId:         "tgdp-d4a3d",
+  storageBucket:     "tgdp-d4a3d.firebasestorage.app",
   messagingSenderId: "399267274832",
-  appId: "1:399267274832:web:202956b9af788eb96ff155",
-  measurementId: "G-NHVPJS29MB"
+  appId:             "1:399267274832:web:202956b9af788eb96ff155",
+  measurementId:     "G-NHVPJS29MB"
 };
 
 const IS_LOCAL = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+const API_BASE = IS_LOCAL ? 'http://localhost:3001/api/v1' : '/api/v1';
 
 const app     = initializeApp(FIREBASE_CONFIG);
 const auth    = getAuth(app);
-const db      = getFirestore(app);
 const storage = getStorage(app);
 
 if (IS_LOCAL) {
   if (!auth.emulatorConfig) {
     connectAuthEmulator(auth, 'http://localhost:9099', { disableWarnings: true });
   }
-  connectFirestoreEmulator(db,    'localhost', 8080);
   connectStorageEmulator(storage, 'localhost', 9199);
 } else {
   getAnalytics(app);
 }
+
 const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({
   client_id: '399267274832-qe24nepg617svaitmv0skqas05pcluke.apps.googleusercontent.com',
   prompt: 'select_account'
 });
 
-// ─── Upload KYC Document to Firebase Storage ─────────────────────────────────
+// ─── REST API helper ──────────────────────────────────────────────────────────
+
+async function apiFetch(path, opts = {}) {
+  const user  = auth.currentUser;
+  const token = user ? await user.getIdToken() : null;
+  const headers = { 'Content-Type': 'application/json', ...(opts.headers || {}) };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(API_BASE + path, {
+    ...opts,
+    headers,
+    body: opts.body !== undefined
+      ? (typeof opts.body === 'string' ? opts.body : JSON.stringify(opts.body))
+      : undefined,
+  });
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const err = new Error(json.error?.message || `API error ${res.status}`);
+    err.code   = json.error?.code || 'UNKNOWN';
+    err.status = res.status;
+    throw err;
+  }
+  return json;
+}
+
+// ─── KYC Document Upload (Firebase Storage) ───────────────────────────────────
+
 async function uploadKYCDoc(uid, file, docType) {
   if (!file) return null;
   const storageRef = ref(storage, `kyc/${uid}/${docType}_${Date.now()}_${file.name}`);
-  const snapshot = await uploadBytes(storageRef, file);
-  const url = await getDownloadURL(snapshot.ref);
-  return url;
+  const snapshot   = await uploadBytes(storageRef, file);
+  return getDownloadURL(snapshot.ref);
 }
 
 // ─── Google Sign-In ───────────────────────────────────────────────────────────
-// Tries popup first; falls back to redirect if the browser blocks it.
-// For new Google users: creates a minimal Firestore profile with pending_kyc status.
-
-async function _saveGoogleProfile(user) {
-  const uid        = user.uid;
-  const userDocRef = doc(db, 'users', uid);
-  const userSnap   = await getDoc(userDocRef);
-  if (!userSnap.exists()) {
-    const nameParts = (user.displayName || '').split(' ');
-    await setDoc(userDocRef, {
-      uid,
-      firstName:     nameParts[0] || '',
-      lastName:      nameParts.slice(1).join(' ') || '',
-      email:         user.email,
-      phone:         user.phoneNumber || '',
-      pan:           '',
-      aadhaar:       '',
-      address:       '',
-      city:          '',
-      state:         '',
-      pincode:       '',
-      roles:         [],
-      primaryRole:   null,
-      status:        'pending_kyc',
-      emailVerified: user.emailVerified,
-      photoURL:      user.photoURL || null,
-      authProvider:  'google',
-      createdAt:     serverTimestamp(),
-      updatedAt:     serverTimestamp(),
-    });
-    return { uid, isNewUser: true, primaryRole: null };
-  }
-  return { uid, isNewUser: false, ...userSnap.data() };
-}
 
 window.firebaseGoogleSignIn = async function() {
-  // Always use redirect — avoids auth/popup-blocked across all browsers
   await signInWithRedirect(auth, googleProvider);
-  return null; // page reloads; result caught by checkGoogleRedirect()
+  return null;
 };
 
-// ─── Handle Google Redirect Result (call once on every page load) ─────────────
 window.checkGoogleRedirect = async function() {
   try {
     const result = await getRedirectResult(auth);
     if (!result) return null;
-    return await _saveGoogleProfile(result.user);
+    const user = result.user;
+    const uid  = user.uid;
+
+    // Create profile in PostgreSQL if it doesn't already exist
+    try {
+      const existing = await apiFetch('/users/me');
+      return { uid, isNewUser: false, ...existing };
+    } catch (e) {
+      if (e.status !== 404) throw e;
+    }
+
+    // New Google user — create profile
+    const nameParts = (user.displayName || '').split(' ');
+    await apiFetch('/users', {
+      method: 'POST',
+      body: {
+        email:       user.email,
+        firstName:   nameParts[0] || '',
+        lastName:    nameParts.slice(1).join(' ') || '',
+        roles:       [],
+        primaryRole: null,
+        authProvider:'google',
+        photoURL:    user.photoURL || null,
+      },
+    });
+    return { uid, isNewUser: true, primaryRole: null };
   } catch (err) {
     console.error('Google redirect error:', err);
     return null;
@@ -111,7 +124,7 @@ window.checkGoogleRedirect = async function() {
 };
 
 // ─── Register User ────────────────────────────────────────────────────────────
-// Called from registration.html on form submit
+
 window.firebaseRegisterUser = async function(formData) {
   const { email, password, firstName, lastName, phone, pan, aadhaar,
           address, city, state, pincode, roles,
@@ -127,7 +140,7 @@ window.firebaseRegisterUser = async function(formData) {
   // 2. Send email verification
   await sendEmailVerification(user);
 
-  // 3. Upload KYC documents to Storage
+  // 3. Upload KYC docs to Firebase Storage
   const [panDocUrl, aadhaarDocUrl, photoDocUrl, addressDocUrl] = await Promise.all([
     uploadKYCDoc(uid, panDoc,     'pan'),
     uploadKYCDoc(uid, aadhaarDoc, 'aadhaar'),
@@ -135,74 +148,58 @@ window.firebaseRegisterUser = async function(formData) {
     uploadKYCDoc(uid, addressDoc, 'address'),
   ]);
 
-  // 4. Save user profile to Firestore /users/{uid}
-  await setDoc(doc(db, 'users', uid), {
-    uid,
-    firstName,
-    lastName,
-    email,
-    phone,
-    pan:     pan.toUpperCase(),
-    aadhaar,
-    address,
-    city,
-    state,
-    pincode,
-    roles,
-    primaryRole:   roles[0],
-    status:        'pending_kyc',
-    emailVerified: false,
-    createdAt:     serverTimestamp(),
-    updatedAt:     serverTimestamp(),
-  });
-
-  // 5. Save KYC record to Firestore /kyc/{uid}
-  await setDoc(doc(db, 'kyc', uid), {
-    userId:         uid,
-    panDocUrl:      panDocUrl      || null,
-    aadhaarDocUrl:  aadhaarDocUrl  || null,
-    photoDocUrl:    photoDocUrl    || null,
-    addressDocUrl:  addressDocUrl  || null,
-    kycStatus:      'submitted',
-    submittedAt:    serverTimestamp(),
-    reviewedAt:     null,
-    reviewedBy:     null,
-    notes:          '',
+  // 4. Save user profile + KYC to PostgreSQL via REST API
+  await apiFetch('/users', {
+    method: 'POST',
+    body: {
+      email, firstName, lastName, phone,
+      pan: pan.toUpperCase(), aadhaar, address, city, state, pincode,
+      roles, primaryRole: roles[0], authProvider: 'email',
+      panDocUrl, aadhaarDocUrl, photoDocUrl, addressDocUrl,
+    },
   });
 
   return { uid, primaryRole: roles[0] };
 };
 
 // ─── Login ────────────────────────────────────────────────────────────────────
+
 window.firebaseLogin = async function(email, password) {
-  const userCredential = await signInWithEmailAndPassword(auth, email, password);
-  const user = userCredential.user;
-  const userDoc = await getDoc(doc(db, 'users', user.uid));
-  if (!userDoc.exists()) throw new Error('User profile not found');
-  return userDoc.data();
+  await signInWithEmailAndPassword(auth, email, password);
+  // Token is now available — fetch profile from REST API
+  const profile = await apiFetch('/users/me');
+  if (!profile || !profile.uid) throw new Error('User profile not found');
+  return profile;
 };
 
-// ─── Password Reset ─────────────────────────────────────────────────────────
+// ─── Password Reset ──────────────────────────────────────────────────────────
+
 window.firebaseResetPassword = async function(email) {
   await sendPasswordResetEmail(auth, email);
 };
 
 // ─── Logout ───────────────────────────────────────────────────────────────────
+
 window.firebaseLogout = async function() {
   await signOut(auth);
   window.location.href = '/login.html';
 };
 
-// ─── Auth State Observer ──────────────────────────────────────────────────────
-// Waits for SDK auth state to settle before checking — prevents redirect on the
-// transient null that fires before localStorage session is restored.
+// ─── Auth State Guard ─────────────────────────────────────────────────────────
+// Waits for auth state to settle, then fetches profile from REST API.
+
 window.initAuthGuard = function(requireAuth = true, redirectTo = '/registration.html') {
   return new Promise((resolve) => {
     const check = async (user) => {
       if (requireAuth && !user) { window.location.href = redirectTo; return; }
       if (user) {
-        const userDoc = await getDoc(doc(db, 'users', user.uid));
-        resolve(userDoc.exists() ? userDoc.data() : null);
+        try {
+          const profile = await apiFetch('/users/me');
+          resolve(profile || null);
+        } catch (e) {
+          if (e.status === 404) { window.location.href = redirectTo; return; }
+          resolve(null);
+        }
       } else {
         resolve(null);
       }
@@ -215,28 +212,29 @@ window.initAuthGuard = function(requireAuth = true, redirectTo = '/registration.
   });
 };
 
-// ─── Real-time User Profile Sync ──────────────────────────────────────────────
-// Call this on dashboard pages to keep UI in sync with Firestore
-window.syncUserProfile = function(uid, onUpdate) {
-  return onSnapshot(doc(db, 'users', uid), (snapshot) => {
-    if (snapshot.exists()) onUpdate(snapshot.data());
-  }, (err) => console.error('syncUserProfile error:', err));
+// ─── Polling-based profile + balance sync (replaces onSnapshot) ──────────────
+
+window.syncUserProfile = function(_uid, onUpdate) {
+  const fetch_ = () => apiFetch('/users/me').then(onUpdate).catch(() => {});
+  fetch_();
+  const id = setInterval(fetch_, 10000);
+  return () => clearInterval(id);
 };
 
-// ─── Real-time Balance Sync ───────────────────────────────────────────────────
-window.syncTGDPBalance = function(uid, onUpdate) {
-  return onSnapshot(doc(db, 'tgdp_balances', uid), (snapshot) => {
-    onUpdate(snapshot.exists() ? snapshot.data() : { balance: 0 });
-  }, (err) => console.error('syncTGDPBalance error:', err));
+window.syncTGDPBalance = function(_uid, onUpdate) {
+  const fetch_ = () => apiFetch('/balances/tgdp').then(onUpdate).catch(() => {});
+  fetch_();
+  const id = setInterval(fetch_, 5000);
+  return () => clearInterval(id);
 };
 
-window.syncFTRBalance = function(uid, onUpdate) {
-  return onSnapshot(doc(db, 'ftr_balances', uid), (snapshot) => {
-    onUpdate(snapshot.exists() ? snapshot.data() : { balance: 0 });
-  }, (err) => console.error('syncFTRBalance error:', err));
+window.syncFTRBalance = function(_uid, onUpdate) {
+  const fetch_ = () => apiFetch('/balances/ftr').then(onUpdate).catch(() => {});
+  fetch_();
+  const id = setInterval(fetch_, 5000);
+  return () => clearInterval(id);
 };
 
-// ─── Export for use in non-module scripts ────────────────────────────────────
+// ─── Exports for inline scripts ───────────────────────────────────────────────
 window.tgdpAuth    = auth;
-window.tgdpDB      = db;
 window.tgdpStorage = storage;

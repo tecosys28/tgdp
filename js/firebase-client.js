@@ -1,23 +1,14 @@
 // ═══════════════════════════════════════════════════════════════════════════
-// TGDP ECOSYSTEM — FIREBASE CLIENT
-// Shared module imported by all portal dashboards.
-// Provides: auth guard, real-time balance sync, Cloud Function calls,
-// Firestore reads for transactions / complaints / returns / designs.
+// TGDP ECOSYSTEM — CLIENT MODULE (PostgreSQL REST API edition)
+// Firebase Auth + Firebase Storage remain unchanged.
+// All Firestore reads and Cloud Function calls replaced with REST API calls.
 // ═══════════════════════════════════════════════════════════════════════════
 
-import { initializeApp }       from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { initializeApp }  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, signOut, connectAuthEmulator }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import {
-  getFirestore, doc, collection,
-  getDoc, getDocs, onSnapshot,
-  query, where, orderBy, limit,
-  serverTimestamp, connectFirestoreEmulator
-} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 import { getStorage, ref, uploadBytes, getDownloadURL, connectStorageEmulator }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
-import { getFunctions, httpsCallable, connectFunctionsEmulator }
-  from "https://www.gstatic.com/firebasejs/10.12.0/firebase-functions.js";
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 
@@ -32,81 +23,80 @@ const FIREBASE_CONFIG = {
 };
 
 const IS_LOCAL = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+const API_BASE = IS_LOCAL ? 'http://localhost:3001/api/v1' : '/api/v1';
 
-const app       = initializeApp(FIREBASE_CONFIG);
-const auth      = getAuth(app);
-const db        = getFirestore(app);
-const storage   = getStorage(app);
-const functions = getFunctions(app, 'asia-south1');
+const app     = initializeApp(FIREBASE_CONFIG);
+const auth    = getAuth(app);
+const storage = getStorage(app);
 
-// ─── Local emulator auto-connect ──────────────────────────────────────────────
-// Must connect immediately after get*() before any auth/db operations.
 if (IS_LOCAL) {
   if (!auth.emulatorConfig) {
     connectAuthEmulator(auth, 'http://localhost:9099', { disableWarnings: true });
   }
-  connectFirestoreEmulator(db,   'localhost', 8080);
-  connectStorageEmulator(storage,'localhost', 9199);
-  connectFunctionsEmulator(functions, 'localhost', 5001);
+  connectStorageEmulator(storage, 'localhost', 9199);
 }
 
-// ─── Callable function wrappers ───────────────────────────────────────────────
+// ─── REST API helper ──────────────────────────────────────────────────────────
 
-export const callMintTGDP              = (data) => httpsCallable(functions, 'mintTGDP')(data);
-export const callConfirmMint           = (data) => httpsCallable(functions, 'confirmMint')(data);
-export const callTradeTGDP             = (data) => httpsCallable(functions, 'tradeTGDP')(data);
-export const callSwapToFTR             = (data) => httpsCallable(functions, 'swapToFTR')(data);
-export const callRedeemFTR             = (data) => httpsCallable(functions, 'redeemFTR')(data);
-export const callWithdrawTGDP          = (data) => httpsCallable(functions, 'withdrawTGDP')(data);
-export const callLinkHousehold         = (data) => httpsCallable(functions, 'linkHouseholdToLicensee')(data);
-export const callRedeemGIC             = (data) => httpsCallable(functions, 'redeemGIC')(data);
-export const callFileComplaint         = (data) => httpsCallable(functions, 'fileComplaint')(data);
-export const callUpdateComplaint       = (data) => httpsCallable(functions, 'updateComplaint')(data);
-export const callSubmitJewelryReturn   = (data) => httpsCallable(functions, 'submitJewelryReturn')(data);
-export const callJewelerAssessment     = (data) => httpsCallable(functions, 'submitJewelerAssessment')(data);
-export const callProcessReturnPayment  = (data) => httpsCallable(functions, 'processReturnPayment')(data);
-export const callRegisterDesign        = (data) => httpsCallable(functions, 'registerDesign')(data);
-export const callPurchaseDesign        = (data) => httpsCallable(functions, 'purchaseDesign')(data);
-export const callApproveKYC            = (data) => httpsCallable(functions, 'approveKYC')(data);
-export const callGetAdminStats         = ()     => httpsCallable(functions, 'getAdminStats')();
+/**
+ * Make an authenticated REST API call.
+ * Automatically attaches the current user's Firebase ID token.
+ * @param {string} path  e.g. '/users/me'
+ * @param {object} [opts] fetch options (method, body, etc.)
+ * @returns {Promise<any>} parsed JSON response
+ */
+async function apiFetch(path, opts = {}) {
+  const user = auth.currentUser;
+  const token = user ? await user.getIdToken() : null;
+
+  const headers = { 'Content-Type': 'application/json', ...(opts.headers || {}) };
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(API_BASE + path, {
+    ...opts,
+    headers,
+    body: opts.body !== undefined
+      ? (typeof opts.body === 'string' ? opts.body : JSON.stringify(opts.body))
+      : undefined,
+  });
+
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    const err = new Error(json.error?.message || `API error ${res.status}`);
+    err.code   = json.error?.code || 'UNKNOWN';
+    err.status = res.status;
+    throw err;
+  }
+  return json;
+}
 
 // ─── Auth ──────────────────────────────────────────────────────────────────────
 
 /**
- * Require an authenticated, active user.
- * Returns the Firestore user profile doc.
- * If not authenticated → redirects to redirectTo.
- * If KYC pending → redirects to /registration.html to complete profile.
- * @param {string} requiredRole  - If set, also checks this role exists.
- * @param {string} redirectTo    - Where to send unauthenticated users.
+ * Require authenticated + active user. Returns user profile from REST API.
+ * Redirects unauthenticated users to redirectTo.
  */
 export function requireAuth(requiredRole = null, redirectTo = '/login.html') {
   return new Promise((resolve, reject) => {
-    // Use authStateReady() to wait until the SDK has restored auth state from
-    // localStorage before checking — avoids redirecting on the transient null
-    // that fires before the session token is verified.
     const check = async (user) => {
       if (!user) { window.location.href = redirectTo; return; }
       try {
-        const snap = await getDoc(doc(db, 'users', user.uid));
-        if (!snap.exists()) { window.location.href = '/registration.html'; return; }
-        const profile = snap.data();
+        const profile = await apiFetch('/users/me');
+        if (!profile || !profile.uid) { window.location.href = '/registration.html'; return; }
         if (requiredRole && (!profile.roles || !profile.roles.includes(requiredRole))) {
           window.location.href = '/index.html'; return;
         }
-        resolve({ uid: user.uid, ...profile });
-      } catch (err) { reject(err); }
+        resolve(profile);
+      } catch (err) {
+        if (err.status === 404) { window.location.href = '/registration.html'; return; }
+        reject(err);
+      }
     };
 
     if (typeof auth.authStateReady === 'function') {
-      // Firebase JS SDK v9.22+ — resolves once auth state is settled
       auth.authStateReady().then(() => check(auth.currentUser)).catch(reject);
     } else {
-      // Older SDK: unsubscribe after first non-null-checking call
-      const unsub = onAuthStateChanged(auth, user => {
-        unsub();
-        check(user);
-      });
+      const unsub = onAuthStateChanged(auth, user => { unsub(); check(user); });
     }
   });
 }
@@ -116,208 +106,88 @@ export async function logout() {
   window.location.href = '/login.html';
 }
 
-// ─── Real-time balance listeners ──────────────────────────────────────────────
+// ─── Polling-based "real-time" listeners ──────────────────────────────────────
+// Replace onSnapshot with setInterval polling every 5 seconds.
+// Each function returns a cleanup/unsubscribe function matching the old contract.
 
-/** Listen for TGDP balance changes. Returns unsubscribe fn. */
+/** Poll TGDP balance every 5 seconds. Returns unsubscribe fn. */
 export function onTGDPBalance(uid, cb) {
-  return onSnapshot(doc(db, 'tgdp_balances', uid), (snap) => {
-    cb(snap.exists() ? (snap.data().balance || 0) : 0);
-  });
+  const fetch_ = () => apiFetch('/balances/tgdp').then(d => cb(d.balance || 0)).catch(() => {});
+  fetch_();
+  const id = setInterval(fetch_, 5000);
+  return () => clearInterval(id);
 }
 
-/** Listen for FTR balance changes. Returns unsubscribe fn. */
+/** Poll FTR balance every 5 seconds. Returns unsubscribe fn. */
 export function onFTRBalance(uid, cb) {
-  return onSnapshot(doc(db, 'ftr_balances', uid), (snap) => {
-    cb(snap.exists() ? snap.data() : {});
-  });
+  const fetch_ = () => apiFetch('/balances/ftr').then(d => cb(d)).catch(() => {});
+  fetch_();
+  const id = setInterval(fetch_, 5000);
+  return () => clearInterval(id);
 }
 
-/** Listen for GIC balance changes. Returns unsubscribe fn. */
+/** Poll GIC balance every 5 seconds. Returns unsubscribe fn. */
 export function onGICBalance(uid, cb) {
-  return onSnapshot(doc(db, 'gic_balances', uid), (snap) => {
-    cb(snap.exists() ? (snap.data().balance || 0) : 0);
-  });
+  const fetch_ = () => apiFetch('/balances/gic').then(d => cb(d.balance || 0)).catch(() => {});
+  fetch_();
+  const id = setInterval(fetch_, 5000);
+  return () => clearInterval(id);
 }
 
-/** Listen for live LBMA rate from config. */
+/** Poll LBMA rate every 30 seconds (changes daily). Returns unsubscribe fn. */
 export function onLBMARate(cb) {
-  return onSnapshot(doc(db, 'config', 'lbma'), (snap) => {
-    cb(snap.exists() ? (snap.data().ratePerGram || 7342) : 7342);
-  });
+  const fetch_ = () => fetch(API_BASE + '/config/lbma')
+    .then(r => r.json()).then(d => cb(d.ratePerGram || 7342)).catch(() => {});
+  fetch_();
+  const id = setInterval(fetch_, 30000);
+  return () => clearInterval(id);
 }
 
-// ─── Firestore reads ───────────────────────────────────────────────────────────
+// ─── Data reads ───────────────────────────────────────────────────────────────
 
-/** Get user profile by uid. */
-export async function getUserProfile(uid) {
-  const snap = await getDoc(doc(db, 'users', uid));
-  return snap.exists() ? snap.data() : null;
-}
+export function getUserProfile(uid)         { return apiFetch(`/users/${uid}`); }
+export function getTransactions(uid, n=20)  { return apiFetch(`/tgdp/transactions?limit=${n}`); }
+export function getEarmarks(uid)            { return apiFetch('/tgdp/earmarks'); }
+export function getFTRSwaps(uid, n=20)      { return apiFetch(`/ftr/swaps?limit=${n}`); }
+export function getLicenseeHouseholds(uid)  { return apiFetch('/households'); }
+export function getGICCredits(uid, n=30)    { return apiFetch(`/gic/credits?limit=${n}`); }
+export function getUserComplaints(uid)      { return apiFetch('/complaints'); }
+export function getOpenComplaints(n=50)     { return apiFetch(`/complaints/open?limit=${n}`); }
+export function getUserReturns(uid)         { return apiFetch('/tjr/returns/mine'); }
+export function getJewelerReturns(uid)      { return apiFetch('/tjr/returns/assigned'); }
+export function getDesigns(n=50)            { return apiFetch(`/tjdb/designs?limit=${n}`); }
+export function getDesignerDesigns(uid)     { return apiFetch('/tjdb/designs/mine'); }
+export function getPendingKYC()             { return apiFetch('/kyc/pending'); }
+export function getAllUsers(n=100)          { return apiFetch(`/users?limit=${n}`); }
 
-/** Get recent TGDP transactions for a user (latest N). */
-export async function getTransactions(uid, n = 20) {
-  const q = query(
-    collection(db, 'tgdp_transactions'),
-    where('userId', '==', uid),
-    orderBy('createdAt', 'desc'),
-    limit(n)
-  );
-  const snap = await getDocs(q);
-  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
-}
+// ─── Mutation calls (replace httpsCallable) ───────────────────────────────────
 
-/** Get all earmarks (gold holdings) for a household. */
-export async function getEarmarks(uid) {
-  const q = query(
-    collection(db, 'earmarks'),
-    where('userId', '==', uid),
-    orderBy('createdAt', 'desc')
-  );
-  const snap = await getDocs(q);
-  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
-}
+export function callMintTGDP(data)             { return apiFetch('/tgdp/mint',               { method:'POST', body: data }); }
+export function callConfirmMint(data)          { return apiFetch(`/tgdp/mint/${data.mintId}/confirm`, { method:'POST', body: data }); }
+export function callTradeTGDP(data)            { return apiFetch('/tgdp/trade',              { method:'POST', body: data }); }
+export function callSwapToFTR(data)            { return apiFetch('/tgdp/swap',               { method:'POST', body: data }); }
+export function callRedeemFTR(data)            { return apiFetch('/ftr/redeem',              { method:'POST', body: data }); }
+export function callWithdrawTGDP(data)         { return apiFetch('/tgdp/withdraw',           { method:'POST', body: data }); }
+export function callLinkHousehold(data)        { return apiFetch('/households/link',         { method:'POST', body: data }); }
+export function callRedeemGIC(data)            { return apiFetch('/gic/redeem',              { method:'POST', body: data }); }
+export function callFileComplaint(data)        { return apiFetch('/complaints',              { method:'POST', body: data }); }
+export function callUpdateComplaint(data)      { return apiFetch(`/complaints/${data.complaintId}`, { method:'PATCH', body: data }); }
+export function callSubmitJewelryReturn(data)  { return apiFetch('/tjr/returns',             { method:'POST', body: data }); }
+export function callJewelerAssessment(data)    { return apiFetch(`/tjr/returns/${data.returnId}/assess`, { method:'PATCH', body: data }); }
+export function callProcessReturnPayment(data) { return apiFetch(`/tjr/returns/${data.returnId}/pay`,    { method:'POST', body: data }); }
+export function callRegisterDesign(data)       { return apiFetch('/tjdb/designs',            { method:'POST', body: data }); }
+export function callPurchaseDesign(data)       { return apiFetch(`/tjdb/designs/${data.designId}/purchase`, { method:'POST', body: data }); }
+export function callApproveKYC(data)           { return apiFetch('/kyc/approve',             { method:'POST', body: data }); }
+export function callGetAdminStats()            { return apiFetch('/admin/stats'); }
 
-/** Get FTR swaps for a user. */
-export async function getFTRSwaps(uid, n = 20) {
-  const q = query(
-    collection(db, 'ftr_swaps'),
-    where('userId', '==', uid),
-    orderBy('createdAt', 'desc'),
-    limit(n)
-  );
-  const snap = await getDocs(q);
-  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
-}
+// ─── Storage uploads (Firebase Storage — unchanged) ───────────────────────────
 
-/** Get all households linked to a licensee. */
-export async function getLicenseeHouseholds(licenseeUid) {
-  const q = query(
-    collection(db, 'household_links'),
-    where('licenseeId', '==', licenseeUid),
-    where('status', '==', 'active')
-  );
-  const snap = await getDocs(q);
-  const links = snap.docs.map(d => d.data());
-
-  // Fetch each household profile
-  const profiles = await Promise.all(
-    links.map(l => getUserProfile(l.householdId))
-  );
-  return profiles.filter(Boolean).map((p, i) => ({ ...p, linkId: links[i].linkId, linkedAt: links[i].linkedAt }));
-}
-
-/** Get GIC credit history for a licensee. */
-export async function getGICCredits(licenseeUid, n = 30) {
-  const q = query(
-    collection(db, 'gic_credits'),
-    where('licenseeId', '==', licenseeUid),
-    orderBy('createdAt', 'desc'),
-    limit(n)
-  );
-  const snap = await getDocs(q);
-  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
-}
-
-/** Get complaints filed by a user. */
-export async function getUserComplaints(uid) {
-  const q = query(
-    collection(db, 'complaints'),
-    where('complainantId', '==', uid),
-    orderBy('createdAt', 'desc')
-  );
-  const snap = await getDocs(q);
-  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
-}
-
-/** Get all open complaints (Ombudsman view). */
-export async function getOpenComplaints(n = 50) {
-  const q = query(
-    collection(db, 'complaints'),
-    where('status', 'in', ['filed', 'investigating', 'mediation']),
-    orderBy('createdAt', 'asc'),
-    limit(n)
-  );
-  const snap = await getDocs(q);
-  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
-}
-
-/** Get T-JR returns for a user. */
-export async function getUserReturns(uid) {
-  const q = query(
-    collection(db, 'tjr_returns'),
-    where('userId', '==', uid),
-    orderBy('createdAt', 'desc')
-  );
-  const snap = await getDocs(q);
-  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
-}
-
-/** Get returns assigned to a jeweler. */
-export async function getJewelerReturns(jewelerUid) {
-  const q = query(
-    collection(db, 'tjr_returns'),
-    where('jewelerId', '==', jewelerUid),
-    orderBy('createdAt', 'desc')
-  );
-  const snap = await getDocs(q);
-  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
-}
-
-/** Get T-JDB designs (marketplace). */
-export async function getDesigns(n = 50) {
-  const q = query(
-    collection(db, 'tjdb_designs'),
-    where('status', '==', 'active'),
-    orderBy('createdAt', 'desc'),
-    limit(n)
-  );
-  const snap = await getDocs(q);
-  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
-}
-
-/** Get designs by a specific designer. */
-export async function getDesignerDesigns(designerUid) {
-  const q = query(
-    collection(db, 'tjdb_designs'),
-    where('designerId', '==', designerUid),
-    orderBy('createdAt', 'desc')
-  );
-  const snap = await getDocs(q);
-  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
-}
-
-/** Get all pending KYC submissions (Admin). */
-export async function getPendingKYC() {
-  const q = query(
-    collection(db, 'kyc'),
-    where('kycStatus', '==', 'submitted'),
-    orderBy('submittedAt', 'asc')
-  );
-  const snap = await getDocs(q);
-  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
-}
-
-/** Get all users (Admin). */
-export async function getAllUsers(n = 100) {
-  const q = query(
-    collection(db, 'users'),
-    orderBy('createdAt', 'desc'),
-    limit(n)
-  );
-  const snap = await getDocs(q);
-  return snap.docs.map(d => ({ id: d.id, ...d.data() }));
-}
-
-// ─── Storage uploads ──────────────────────────────────────────────────────────
-
-/** Upload a design file/image to Firebase Storage. Returns download URL. */
 export async function uploadDesignFile(designerUid, file, fileType) {
   const storageRef = ref(storage, `designs/${designerUid}/${fileType}_${Date.now()}_${file.name}`);
   const snapshot   = await uploadBytes(storageRef, file);
   return getDownloadURL(snapshot.ref);
 }
 
-/** Upload a KYC document to Firebase Storage. Returns download URL. */
 export async function uploadKYCDocument(uid, file, docType) {
   const storageRef = ref(storage, `kyc/${uid}/${docType}_${Date.now()}_${file.name}`);
   const snapshot   = await uploadBytes(storageRef, file);
@@ -325,82 +195,48 @@ export async function uploadKYCDocument(uid, file, docType) {
 }
 
 // ─── IPFS / Pinata ───────────────────────────────────────────────────────────
-// Pinata API keys are fetched from Firestore /config/ipfs (admin-set, never hardcoded).
-// Only the browser-safe JWT is exposed here; secret key stays in Cloud Functions.
+// Pinata JWT now comes from REST API (/config/ipfs) instead of Firestore.
 
-const PINATA_GATEWAY = 'https://gateway.pinata.cloud/ipfs/';
-const PINATA_ENDPOINT = 'https://api.pinata.cloud/pinning/pinFileToIPFS';
-const PINATA_JSON_ENDPOINT = 'https://api.pinata.cloud/pinning/pinJSONToIPFS';
+const PINATA_GATEWAY      = 'https://gateway.pinata.cloud/ipfs/';
+const PINATA_ENDPOINT     = 'https://api.pinata.cloud/pinning/pinFileToIPFS';
+const PINATA_JSON_ENDPOINT= 'https://api.pinata.cloud/pinning/pinJSONToIPFS';
 
 let _pinataJWT = null;
 
-/** Load Pinata JWT from Firestore /config/ipfs (cached). */
 async function getPinataJWT() {
   if (_pinataJWT) return _pinataJWT;
-  const snap = await getDoc(doc(db, 'config', 'ipfs'));
-  if (!snap.exists() || !snap.data().pinataJWT) {
-    throw new Error('Pinata not configured. Set /config/ipfs.pinataJWT in Firestore.');
-  }
-  _pinataJWT = snap.data().pinataJWT;
+  const data = await apiFetch('/config/ipfs');
+  if (!data.pinataJWT) throw new Error('Pinata not configured. Set pinataJWT in server config.');
+  _pinataJWT = data.pinataJWT;
   return _pinataJWT;
 }
 
-/**
- * Pin a file (Blob/File) to IPFS via Pinata.
- * Used for: gold purity certificates, design files.
- * @param {File|Blob} file
- * @param {string}    name       Display name stored in Pinata metadata
- * @param {object}    keyvalues  Extra metadata key-values
- * @returns {{ ipfsHash, url }}
- */
 export async function pinFileToIPFS(file, name, keyvalues = {}) {
   const jwt = await getPinataJWT();
   const form = new FormData();
   form.append('file', file, name);
   form.append('pinataMetadata', JSON.stringify({ name, keyvalues }));
   form.append('pinataOptions',  JSON.stringify({ cidVersion: 1 }));
-
   const res = await fetch(PINATA_ENDPOINT, {
-    method:  'POST',
-    headers: { Authorization: `Bearer ${jwt}` },
-    body:    form,
+    method: 'POST', headers: { Authorization: `Bearer ${jwt}` }, body: form,
   });
   if (!res.ok) throw new Error(`Pinata upload failed: ${await res.text()}`);
   const json = await res.json();
   return { ipfsHash: json.IpfsHash, url: PINATA_GATEWAY + json.IpfsHash };
 }
 
-/**
- * Pin a JSON metadata object to IPFS via Pinata.
- * Used for: design metadata (T-JDB), legal agreement records.
- * @param {object} metadata   JSON-serialisable object
- * @param {string} name       Display name in Pinata
- * @returns {{ ipfsHash, url }}
- */
 export async function pinJSONToIPFS(metadata, name) {
   const jwt = await getPinataJWT();
   const res = await fetch(PINATA_JSON_ENDPOINT, {
-    method:  'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization:  `Bearer ${jwt}`,
-    },
-    body: JSON.stringify({
-      pinataContent:  metadata,
-      pinataMetadata: { name },
-      pinataOptions:  { cidVersion: 1 },
-    }),
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${jwt}` },
+    body: JSON.stringify({ pinataContent: metadata, pinataMetadata: { name }, pinataOptions: { cidVersion: 1 } }),
   });
   if (!res.ok) throw new Error(`Pinata JSON pin failed: ${await res.text()}`);
   const json = await res.json();
   return { ipfsHash: json.IpfsHash, url: PINATA_GATEWAY + json.IpfsHash };
 }
 
-/**
- * Hash a file's content using SHA-256 (browser Web Crypto API).
- * Returns hex string suitable for use as a document fingerprint.
- * Used client-side before upload so the hash can be stored on-chain.
- */
 export async function hashFile(file) {
   const buffer = await file.arrayBuffer();
   const digest = await crypto.subtle.digest('SHA-256', buffer);
@@ -438,28 +274,18 @@ export function timeSince(ts) {
 
 export function statusBadge(status) {
   const map = {
-    active:               'badge-success',
-    completed:            'badge-success',
-    approved:             'badge-success',
-    paid:                 'badge-success',
-    processing:           'badge-warning',
-    pending_verification: 'badge-warning',
-    pending_kyc:          'badge-warning',
-    submitted:            'badge-info',
-    assessed:             'badge-info',
-    filed:                'badge-info',
-    investigating:        'badge-warning',
-    mediation:            'badge-warning',
-    rejected:             'badge-danger',
-    resolved:             'badge-success',
-    closed:               'badge-success',
+    active:'badge-success', completed:'badge-success', approved:'badge-success',
+    paid:'badge-success', processing:'badge-warning', pending_verification:'badge-warning',
+    pending_kyc:'badge-warning', submitted:'badge-info', assessed:'badge-info',
+    filed:'badge-info', investigating:'badge-warning', mediation:'badge-warning',
+    rejected:'badge-danger', resolved:'badge-success', closed:'badge-success',
   };
   return map[status] || 'badge-info';
 }
 
 // ─── Expose on window for non-module scripts ──────────────────────────────────
 window.tgdpClient = {
-  auth, db, storage, functions,
+  auth, storage,
   requireAuth, logout,
   onTGDPBalance, onFTRBalance, onGICBalance, onLBMARate,
   getUserProfile, getTransactions, getEarmarks, getFTRSwaps,
@@ -476,5 +302,6 @@ window.tgdpClient = {
   callSubmitJewelryReturn, callJewelerAssessment, callProcessReturnPayment,
   callRegisterDesign, callPurchaseDesign,
   callApproveKYC, callGetAdminStats,
+  callConfirmMint,
   formatINR, formatTGDP, formatDate, timeSince, statusBadge,
 };
