@@ -1,37 +1,42 @@
 {
   "firestore": {
-    "rules": "firestore.rules"
-  },
-  "storage": {
-    "rules": "storage.rules"
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
   },
   "functions": [
     {
       "source": "functions",
       "codebase": "default",
-      "ignore": ["node_modules", ".git", "firebase-debug.log", "firebase-debug.*.log"]
+      "runtime": "nodejs20",
+      "ignore": [
+        "node_modules",
+        ".git",
+        "firebase-debug.log",
+        "firebase-debug.*.log"
+      ]
     }
   ],
+  "storage": {
+    "rules": "storage.rules"
+  },
   "hosting": {
     "public": ".",
     "ignore": [
       "firebase.json",
+      "firestore.rules",
+      "firestore.indexes.json",
+      "storage.rules",
       "**/.*",
       "**/node_modules/**",
+      "functions/**",
+      "blockchain/**",
+      "scripts/**",
+      "config/**",
+      "templates/**",
       "INSTRUCTIONS.md",
       "DEPLOYMENT.md",
       "FILE_RENAME_GUIDE.md",
-      "README.md",
-      "js/shared.txt",
-      "api/api-config.txt",
-      "blockchain/blockchain-service.txt",
-      "blockchain/contracts.sol",
-      "config/firebase-rules.txt",
-      "services/core-services.txt",
-      "firestore.rules",
-      "storage.rules",
-      "templates/**",
-      ".claude/**"
+      "README.md"
     ],
     "rewrites": [],
     "headers": [

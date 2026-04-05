@@ -76,7 +76,23 @@ async function seed() {
   });
   console.log('✓ FTR categories seeded');
 
-  // ── 6. Create first admin user (update UID below after creating in Firebase Auth) ─
+  // ── 6. IPFS / Pinata config ─────────────────────────────────────────────────
+  // Set your Pinata JWT here (or update via Firebase Console → Firestore → config/ipfs)
+  // Get it from https://app.pinata.cloud → API Keys → New Key
+  const PINATA_JWT = process.env.PINATA_JWT || 'YOUR_PINATA_JWT_HERE';
+  await db.collection('config').doc('ipfs').set({
+    pinataJWT:    PINATA_JWT === 'YOUR_PINATA_JWT_HERE' ? null : PINATA_JWT,
+    gateway:      'https://gateway.pinata.cloud/ipfs/',
+    // Documents pinned to IPFS:
+    // - Gold purity certificates (on confirmMint)
+    // - KYC approval records (on approveKYC)
+    // - Design metadata JSON (on registerDesign)
+    // - Legal agreement records (manual / future)
+    updatedAt:    admin.firestore.FieldValue.serverTimestamp(),
+  }, { merge: true });
+  console.log('✓ IPFS config seeded (set pinataJWT in /config/ipfs to enable)');
+
+  // ── 7. Create first admin user (update UID below after creating in Firebase Auth) ─
   // Steps:
   //   a) Go to Firebase Console → Authentication → Add User
   //   b) Create admin@trot-gold.com with a strong password
@@ -112,7 +128,7 @@ async function seed() {
   }
 
   console.log('\nSeed complete! Firestore collections initialised:');
-  console.log('  config/lbma, config/commissions, config/sla, config/revenue, config/ftr_categories');
+  console.log('  config/lbma, config/commissions, config/sla, config/revenue, config/ftr_categories, config/ipfs');
   console.log('\nCollections created on first write (no pre-seeding needed):');
   console.log('  users, kyc, tgdp_balances, ftr_balances, gic_balances');
   console.log('  tgdp_transactions, earmarks, ftr_swaps, ftr_redemptions');

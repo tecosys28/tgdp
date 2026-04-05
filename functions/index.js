@@ -121,6 +121,45 @@ async function getLBMARate() {
   return 7342; // safe fallback
 }
 
+// ─── IPFS / Pinata helper ─────────────────────────────────────────────────────
+// Pinata JWT stored in Firestore /config/ipfs.pinataJWT (admin-set).
+// Returns null if not configured — all IPFS ops are non-fatal.
+
+let _cfPinataJWT = null;
+async function getPinataJWT_CF() {
+  if (_cfPinataJWT) return _cfPinataJWT;
+  const snap = await db.collection('config').doc('ipfs').get();
+  if (!snap.exists || !snap.data().pinataJWT) return null;
+  _cfPinataJWT = snap.data().pinataJWT;
+  return _cfPinataJWT;
+}
+
+/**
+ * Pin a JSON object to IPFS via Pinata from Cloud Functions.
+ * Returns { ipfsHash, metadataUri } or null on failure.
+ */
+async function pinJSONToIPFS_CF(content, name, keyvalues = {}) {
+  try {
+    const jwt = await getPinataJWT_CF();
+    if (!jwt) return null;
+    const res = await fetch('https://api.pinata.cloud/pinning/pinJSONToIPFS', {
+      method:  'POST',
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${jwt}` },
+      body: JSON.stringify({
+        pinataContent:  content,
+        pinataMetadata: { name, keyvalues },
+        pinataOptions:  { cidVersion: 1 },
+      }),
+    });
+    if (!res.ok) { console.warn('[ipfs]', name, 'pin failed:', await res.text()); return null; }
+    const json = await res.json();
+    return { ipfsHash: json.IpfsHash, metadataUri: `ipfs://${json.IpfsHash}` };
+  } catch (e) {
+    console.warn('[ipfs] pinJSONToIPFS_CF error:', e.message);
+    return null;
+  }
+}
+
 // ─── Role compatibility (mirrors spec 4.2 and Solidity _validateRoles) ────────
 
 const ROLE_INCOMPATIBILITIES = {
@@ -188,6 +227,28 @@ exports.approveKYC = onCall(async (request) => {
   });
 
   await batch.commit();
+
+  // Pin KYC approval record to IPFS for immutable audit trail (non-fatal)
+  if (approved) {
+    const kycSnap = await db.collection('kyc').doc(targetUserId).get();
+    const kycData = kycSnap.exists ? kycSnap.data() : {};
+    const ipfsResult = await pinJSONToIPFS_CF({
+      event:        'kyc_approved',
+      userId:       targetUserId,
+      approvedBy:   adminUid,
+      kycDocTypes:  kycData.documentTypes || [],
+      approvedAt:   new Date().toISOString(),
+      // Document URLs are NOT included — only their presence is recorded for privacy
+    }, `kyc-approval-${targetUserId}`, { userId: targetUserId, event: 'kyc_approved' });
+
+    if (ipfsResult) {
+      await db.collection('kyc').doc(targetUserId).update({
+        kycIpfsHash:   ipfsResult.ipfsHash,
+        kycIpfsUri:    ipfsResult.metadataUri,
+      });
+    }
+  }
+
   return { success: true, status };
 });
 
@@ -309,11 +370,44 @@ exports.confirmMint = onCall(async (request) => {
 
   await batch.commit();
 
+  // ── IPFS: pin purity certificate record (best-effort, post-commit) ─────────
+  if (approved) {
+    const certRecord = {
+      event:            'gold_earmarked',
+      mintId,
+      userId:           earmark.userId,
+      goldGrams:        earmark.goldGrams,
+      purity:           earmark.purity,
+      pureGoldGrams:    earmark.pureGoldGrams,
+      tgdpAmount:       earmark.tgdpAmount,
+      itemDescription:  earmark.itemDescription || '',
+      approvedBy:       adminUid,
+      approvedAt:       new Date().toISOString(),
+      platform:         'TGDP Ecosystem — TROT Gold Pvt. Ltd.',
+    };
+    const certIPFS = await pinJSONToIPFS_CF(
+      certRecord,
+      `purity-cert-${mintId}`,
+      { mintId, userId: earmark.userId, event: 'gold_earmarked' }
+    );
+    if (certIPFS) {
+      await db.collection('earmarks').doc(mintId).update({
+        certIpfsHash: certIPFS.ipfsHash,
+        certIpfsUri:  certIPFS.metadataUri,
+      });
+    }
+  }
+
   // ── Blockchain recording (best-effort, post-commit) ──────────────────────
   if (approved) {
     const goldMilligrams = Math.round(earmark.pureGoldGrams * 1000);
-    const certHash       = ethers.keccak256(ethers.toUtf8Bytes(mintId));
-    const tgdpWei        = ethers.parseUnits(String(earmark.tgdpAmount), 18);
+    // Use IPFS hash as certificate hash if available, else hash mintId
+    const earmarkDoc  = await db.collection('earmarks').doc(mintId).get();
+    const certIpfsHash = earmarkDoc.data()?.certIpfsHash;
+    const certHash     = certIpfsHash
+      ? ethers.keccak256(ethers.toUtf8Bytes(certIpfsHash))
+      : ethers.keccak256(ethers.toUtf8Bytes(mintId));
+    const tgdpWei      = ethers.parseUnits(String(earmark.tgdpAmount), 18);
 
     // 1. Earmark gold in Registry
     await recordOnChain('earmarkGold', async (signer, addr) => {
@@ -901,15 +995,59 @@ exports.registerDesign = onCall(async (request) => {
   await requireKYC(uid);
   await requireRole(uid, 'designer');
 
-  const { title, description, category, price, imageUrls, fileUrls } = request.data;
+  const { title, description, category, price, imageUrls, fileUrls, designHash: clientHash } = request.data;
   if (!title || !price) throw new HttpsError('invalid-argument', 'title and price required.');
 
   const designId = generateId('DES');
 
-  // Compute design hash from content (mirrors what browser hashes before upload)
+  // Compute design hash server-side from canonical content
   const designHash = ethers.keccak256(
     ethers.toUtf8Bytes(JSON.stringify({ designId, uid, title, category, price }))
   );
+
+  // 1. Pin design metadata JSON to IPFS via Pinata (server-side, no browser key exposure)
+  let metadataUri = `ipfs://tgdp-designs/${designId}`; // fallback if Pinata not configured
+  let ipfsHash    = null;
+  try {
+    const pinataJWT = await getPinataJWT_CF();
+    if (pinataJWT) {
+      const metadata = {
+        name:        title,
+        description: description || '',
+        category,
+        price,
+        designerId:  uid,
+        designId,
+        designHash,
+        imageUrls:   imageUrls || [],
+        fileUrls:    fileUrls  || [],
+        createdAt:   new Date().toISOString(),
+        platform:    'TGDP Ecosystem — TROT Gold Pvt. Ltd.',
+      };
+      const pinRes = await fetch('https://api.pinata.cloud/pinning/pinJSONToIPFS', {
+        method:  'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization:  `Bearer ${pinataJWT}`,
+        },
+        body: JSON.stringify({
+          pinataContent:  metadata,
+          pinataMetadata: { name: `design-${designId}`, keyvalues: { designId, designerId: uid } },
+          pinataOptions:  { cidVersion: 1 },
+        }),
+      });
+      if (pinRes.ok) {
+        const pinJson = await pinRes.json();
+        ipfsHash    = pinJson.IpfsHash;
+        metadataUri = `ipfs://${ipfsHash}`;
+        console.log(`[ipfs] Design ${designId} metadata pinned: ${metadataUri}`);
+      } else {
+        console.warn(`[ipfs] Pinata pin failed: ${await pinRes.text()}`);
+      }
+    }
+  } catch (ipfsErr) {
+    console.warn('[ipfs] Pinata error (non-fatal):', ipfsErr.message);
+  }
 
   await db.collection('tjdb_designs').doc(designId).set({
     designId,
@@ -921,6 +1059,8 @@ exports.registerDesign = onCall(async (request) => {
     imageUrls:      imageUrls || [],
     fileUrls:       fileUrls  || [],
     designHash,
+    metadataUri,
+    ipfsHash,
     iprRegistered:  false,
     blockchainTxHash: null,
     status:         'active',
@@ -929,8 +1069,7 @@ exports.registerDesign = onCall(async (request) => {
     updatedAt:      admin.firestore.FieldValue.serverTimestamp(),
   });
 
-  // Register IPR on-chain (best-effort)
-  const metadataUri = `ipfs://tgdp-designs/${designId}`;   // real IPFS hash written after Pinata upload
+  // 2. Register IPR on-chain with the real IPFS metadataUri (best-effort)
   await recordOnChain('registerDesignIPR', async (signer, addr) => {
     const IPR_ABI = [
       'function registerDesign(bytes32 designHash, string metadataUri, address designer) returns (uint256)',
@@ -941,10 +1080,9 @@ exports.registerDesign = onCall(async (request) => {
     return { txHash: receipt.hash };
   }, `tjdb_designs/${designId}`);
 
-  // Mark IPR registered in Firestore
   await db.collection('tjdb_designs').doc(designId).update({ iprRegistered: true });
 
-  return { success: true, designId, designHash };
+  return { success: true, designId, designHash, metadataUri, ipfsHash };
 });
 
 // ─── 17. PURCHASE DESIGN (T-JDB) ─────────────────────────────────────────────
@@ -1284,6 +1422,63 @@ exports.verifyRazorpayPayment = onCall(async (request) => {
       });
     }
   }
+
+  return { success: true };
+});
+
+
+// ─── 23. UPDATE CONFIG (Admin) ────────────────────────────────────────────────
+// Allows admin to update commission rates and SLA settings from the Admin Panel.
+
+exports.updateConfig = onCall(async (request) => {
+  const uid = requireAuth(request);
+  await requireRole(uid, 'admin');
+
+  const { ftrCommission, gicShare, designerShare, sla, minGICRedemption } = request.data;
+  const batch = db.batch();
+
+  if (ftrCommission !== undefined || gicShare !== undefined || designerShare !== undefined) {
+    const commissions = { updatedAt: admin.firestore.FieldValue.serverTimestamp() };
+    if (ftrCommission !== undefined) {
+      if (ftrCommission < 0 || ftrCommission > 0.2) throw new HttpsError('invalid-argument', 'FTR commission must be 0–20%');
+      commissions.ftrCommission = ftrCommission;
+    }
+    if (gicShare !== undefined) {
+      if (gicShare < 0 || gicShare > 0.5) throw new HttpsError('invalid-argument', 'GIC share must be 0–50%');
+      commissions.gicShare = gicShare;
+    }
+    if (designerShare !== undefined) {
+      if (designerShare < 0.5 || designerShare > 1) throw new HttpsError('invalid-argument', 'Designer share must be 50–100%');
+      commissions.designerShare = designerShare;
+    }
+    batch.set(db.collection('config').doc('commissions'), commissions, { merge: true });
+  }
+
+  if (sla) {
+    const slaUpdate = { updatedAt: admin.firestore.FieldValue.serverTimestamp() };
+    if (sla.acknowledgmentHours) slaUpdate.acknowledgmentHours = sla.acknowledgmentHours;
+    if (sla.investigationDays)   slaUpdate.investigationDays   = sla.investigationDays;
+    if (sla.mediationDays)       slaUpdate.mediationDays       = sla.mediationDays;
+    if (sla.resolutionDays)      slaUpdate.resolutionDays      = sla.resolutionDays;
+    if (sla.appealWindowDays)    slaUpdate.appealWindowDays    = sla.appealWindowDays;
+    batch.set(db.collection('config').doc('sla'), slaUpdate, { merge: true });
+  }
+
+  if (minGICRedemption !== undefined) {
+    batch.set(db.collection('config').doc('commissions'), {
+      minGICRedemption,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    }, { merge: true });
+  }
+
+  await batch.commit();
+
+  await db.collection('audit_logs').add({
+    action:    'config_updated',
+    adminUid:  uid,
+    changes:   JSON.stringify(request.data).slice(0, 500),
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+  });
 
   return { success: true };
 });

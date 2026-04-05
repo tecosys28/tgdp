@@ -11,6 +11,8 @@
     .legal-header h1 { color: #fb7185; }
     .legal-section { margin-bottom: 24px; }
     .legal-section h2 { border-left: 3px solid #fb7185; padding-left: 12px; }
+    .legal-section p, .legal-section li { line-height: 1.8; color: #475569; }
+    .highlight-box { background: rgba(251,113,133,0.08); padding: 16px; border-radius: 8px; margin: 12px 0; }
   </style>
 </head>
 <body style="background: #f8fafc;">
@@ -18,31 +20,60 @@
     <div class="legal-header">
       <h1>DESIGNER IPR AGREEMENT</h1>
       <p>T-JDB Intellectual Property Rights Agreement</p>
+      <p>Agreement No: <strong>IPR-[AUTO]</strong> | Date: <strong>[DATE]</strong></p>
     </div>
+
     <div class="legal-section">
-      <h2>1. IPR REGISTRATION</h2>
-      <p>All designs uploaded to T-JDB will be registered for IPR protection.</p>
-      <p>Designer retains full ownership of their designs.</p>
-      <p>Company acts as licensing agent for the designs.</p>
+      <h2>1. COPYRIGHT RETENTION</h2>
+      <p>1.1 The Designer retains full and exclusive copyright ownership of all designs uploaded to T-JDB. This Agreement does not constitute an assignment of copyright.</p>
+      <p>1.2 The Company is granted a non-exclusive, worldwide license to display, market, and facilitate the licensing of the Designer's work on the T-JDB platform only.</p>
+      <p>1.3 The Designer may withdraw their designs at any time, subject to fulfillment of any outstanding purchase orders already in progress.</p>
+      <p>1.4 The Designer warrants that all uploaded designs are original works and do not infringe the intellectual property rights of any third party.</p>
     </div>
+
     <div class="legal-section">
-      <h2>2. REVENUE SHARING</h2>
-      <p><strong>Designer Share:</strong> 85% of design license fee</p>
-      <p><strong>Platform Commission:</strong> 15% of design license fee</p>
+      <h2>2. BLOCKCHAIN REGISTRATION</h2>
+      <p>2.1 Upon upload, each design is assigned a unique <strong>keccak256 hash</strong> computed from its content and registered on the <strong>Polygon blockchain</strong> via the IPRRegistry smart contract.</p>
+      <p>2.2 The on-chain record provides an immutable, timestamped proof of existence for the design, establishing priority of creation.</p>
+      <p>2.3 Design metadata is additionally pinned to <strong>IPFS</strong> via Pinata, creating a permanent, content-addressed record. The IPFS CID is recorded in the blockchain entry.</p>
+      <p>2.4 The Designer may verify their on-chain registration at any time via Polygonscan using the transaction hash provided at registration.</p>
     </div>
+
     <div class="legal-section">
-      <h2>3. DESIGN PROTECTION</h2>
-      <p>Blockchain-based timestamp for design registration</p>
-      <p>WIPO integration for international protection</p>
-      <p>Automated infringement monitoring</p>
+      <h2>3. REVENUE SHARING</h2>
+      <div class="highlight-box">
+        <p><strong>Designer Share:</strong> 85% of each design license fee</p>
+        <p><strong>Platform Commission:</strong> 15% of each design license fee</p>
+        <p><strong>Payment Currency:</strong> TGDP tokens, credited to Designer's balance within 24 hours of each sale</p>
+        <p><strong>INR Option:</strong> Buyers may also purchase via Razorpay (INR); Designer receives equivalent TGDP</p>
+      </div>
     </div>
+
     <div class="legal-section">
-      <h2>4. PROHIBITED CONTENT</h2>
+      <h2>4. DESIGN PROTECTION</h2>
+      <ul>
+        <li>Blockchain-based timestamp on Polygon (IPRRegistry contract)</li>
+        <li>IPFS content-addressed storage (Pinata) for tamper-proof metadata</li>
+        <li>Hash comparison for automated duplicate/infringement detection</li>
+        <li>WIPO integration for international protection (future roadmap)</li>
+      </ul>
+    </div>
+
+    <div class="legal-section">
+      <h2>5. PROHIBITED CONTENT</h2>
       <ul>
         <li>Copied or plagiarized designs</li>
         <li>Culturally offensive imagery</li>
         <li>Trademarked symbols without permission</li>
+        <li>Designs previously registered by another party on-chain</li>
       </ul>
+    </div>
+
+    <div class="legal-section">
+      <h2>6. DISPUTE RESOLUTION</h2>
+      <p>6.1 IPR disputes shall be submitted through the T-JDB portal and routed to the Ombudsman.</p>
+      <p>6.2 On-chain registration timestamp serves as primary evidence of design ownership priority.</p>
+      <p>6.3 Resolution timeline follows the standard SLA: acknowledgment within 48 hours, resolution within 14 days.</p>
     </div>
   </div>
 </body>

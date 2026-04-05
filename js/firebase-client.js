@@ -292,11 +292,101 @@ export async function getAllUsers(n = 100) {
 
 // ─── Storage uploads ──────────────────────────────────────────────────────────
 
-/** Upload a design file/image. Returns download URL. */
+/** Upload a design file/image to Firebase Storage. Returns download URL. */
 export async function uploadDesignFile(designerUid, file, fileType) {
   const storageRef = ref(storage, `designs/${designerUid}/${fileType}_${Date.now()}_${file.name}`);
   const snapshot   = await uploadBytes(storageRef, file);
   return getDownloadURL(snapshot.ref);
+}
+
+/** Upload a KYC document to Firebase Storage. Returns download URL. */
+export async function uploadKYCDocument(uid, file, docType) {
+  const storageRef = ref(storage, `kyc/${uid}/${docType}_${Date.now()}_${file.name}`);
+  const snapshot   = await uploadBytes(storageRef, file);
+  return getDownloadURL(snapshot.ref);
+}
+
+// ─── IPFS / Pinata ───────────────────────────────────────────────────────────
+// Pinata API keys are fetched from Firestore /config/ipfs (admin-set, never hardcoded).
+// Only the browser-safe JWT is exposed here; secret key stays in Cloud Functions.
+
+const PINATA_GATEWAY = 'https://gateway.pinata.cloud/ipfs/';
+const PINATA_ENDPOINT = 'https://api.pinata.cloud/pinning/pinFileToIPFS';
+const PINATA_JSON_ENDPOINT = 'https://api.pinata.cloud/pinning/pinJSONToIPFS';
+
+let _pinataJWT = null;
+
+/** Load Pinata JWT from Firestore /config/ipfs (cached). */
+async function getPinataJWT() {
+  if (_pinataJWT) return _pinataJWT;
+  const snap = await getDoc(doc(db, 'config', 'ipfs'));
+  if (!snap.exists() || !snap.data().pinataJWT) {
+    throw new Error('Pinata not configured. Set /config/ipfs.pinataJWT in Firestore.');
+  }
+  _pinataJWT = snap.data().pinataJWT;
+  return _pinataJWT;
+}
+
+/**
+ * Pin a file (Blob/File) to IPFS via Pinata.
+ * Used for: gold purity certificates, design files.
+ * @param {File|Blob} file
+ * @param {string}    name       Display name stored in Pinata metadata
+ * @param {object}    keyvalues  Extra metadata key-values
+ * @returns {{ ipfsHash, url }}
+ */
+export async function pinFileToIPFS(file, name, keyvalues = {}) {
+  const jwt = await getPinataJWT();
+  const form = new FormData();
+  form.append('file', file, name);
+  form.append('pinataMetadata', JSON.stringify({ name, keyvalues }));
+  form.append('pinataOptions',  JSON.stringify({ cidVersion: 1 }));
+
+  const res = await fetch(PINATA_ENDPOINT, {
+    method:  'POST',
+    headers: { Authorization: `Bearer ${jwt}` },
+    body:    form,
+  });
+  if (!res.ok) throw new Error(`Pinata upload failed: ${await res.text()}`);
+  const json = await res.json();
+  return { ipfsHash: json.IpfsHash, url: PINATA_GATEWAY + json.IpfsHash };
+}
+
+/**
+ * Pin a JSON metadata object to IPFS via Pinata.
+ * Used for: design metadata (T-JDB), legal agreement records.
+ * @param {object} metadata   JSON-serialisable object
+ * @param {string} name       Display name in Pinata
+ * @returns {{ ipfsHash, url }}
+ */
+export async function pinJSONToIPFS(metadata, name) {
+  const jwt = await getPinataJWT();
+  const res = await fetch(PINATA_JSON_ENDPOINT, {
+    method:  'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization:  `Bearer ${jwt}`,
+    },
+    body: JSON.stringify({
+      pinataContent:  metadata,
+      pinataMetadata: { name },
+      pinataOptions:  { cidVersion: 1 },
+    }),
+  });
+  if (!res.ok) throw new Error(`Pinata JSON pin failed: ${await res.text()}`);
+  const json = await res.json();
+  return { ipfsHash: json.IpfsHash, url: PINATA_GATEWAY + json.IpfsHash };
+}
+
+/**
+ * Hash a file's content using SHA-256 (browser Web Crypto API).
+ * Returns hex string suitable for use as a document fingerprint.
+ * Used client-side before upload so the hash can be stored on-chain.
+ */
+export async function hashFile(file) {
+  const buffer = await file.arrayBuffer();
+  const digest = await crypto.subtle.digest('SHA-256', buffer);
+  return '0x' + Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
 // ─── Formatting helpers ───────────────────────────────────────────────────────
@@ -360,7 +450,8 @@ window.tgdpClient = {
   getUserReturns, getJewelerReturns,
   getDesigns, getDesignerDesigns,
   getPendingKYC, getAllUsers,
-  uploadDesignFile,
+  uploadDesignFile, uploadKYCDocument,
+  pinFileToIPFS, pinJSONToIPFS, hashFile,
   callMintTGDP, callTradeTGDP, callSwapToFTR, callRedeemFTR,
   callWithdrawTGDP, callLinkHousehold, callRedeemGIC,
   callFileComplaint, callUpdateComplaint,

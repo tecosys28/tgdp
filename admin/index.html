@@ -157,19 +157,171 @@
             </div>
           </div>
         </section>
-        <section class="panel-section" id="panel-config">
+        <!-- ── Transactions panel ──────────────────────────────────────────── -->
+        <section class="panel-section" id="panel-transactions">
+          <div class="admin-card" style="margin-bottom:16px;">
+            <div class="admin-card-header">
+              <h3>Transaction Ledger</h3>
+              <div style="display:flex;gap:8px;align-items:center;">
+                <select id="tx-filter-type" class="filter-select" style="padding:6px 10px;border:1px solid #e2e8f0;border-radius:6px;font-size:0.85rem;">
+                  <option value="">All Types</option>
+                  <option value="mint">Mint</option>
+                  <option value="trade">Trade</option>
+                  <option value="ftr_swap">FTR Swap</option>
+                  <option value="withdrawal">Withdrawal</option>
+                  <option value="jewelry_return">Jewelry Return</option>
+                </select>
+                <button class="action-btn view" onclick="window._exportTxCSV()">Export CSV</button>
+              </div>
+            </div>
+            <div class="admin-card-body" style="padding:0;">
+              <table class="admin-table">
+                <thead><tr><th>TX ID</th><th>Type</th><th>User</th><th>Amount</th><th>Description</th><th>Date</th><th>Status</th></tr></thead>
+                <tbody id="tx-table"><tr><td colspan="7" style="text-align:center;color:#94a3b8;padding:24px;">Loading...</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ── Licensees panel ─────────────────────────────────────────────── -->
+        <section class="panel-section" id="panel-licensees">
           <div class="admin-card">
-            <div class="admin-card-header"><h3>System Configuration</h3></div>
+            <div class="admin-card-header"><h3>GIC Licensees</h3></div>
+            <div class="admin-card-body" style="padding:0;">
+              <table class="admin-table">
+                <thead><tr><th>User ID</th><th>Name</th><th>Email</th><th>Households</th><th>GIC Earned</th><th>License Paid</th><th>Status</th><th>Actions</th></tr></thead>
+                <tbody id="licensees-table"><tr><td colspan="8" style="text-align:center;color:#94a3b8;padding:24px;">Loading...</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ── Jewelers panel ──────────────────────────────────────────────── -->
+        <section class="panel-section" id="panel-jewelers">
+          <div class="admin-card">
+            <div class="admin-card-header"><h3>Partner Jewelers</h3></div>
+            <div class="admin-card-body" style="padding:0;">
+              <table class="admin-table">
+                <thead><tr><th>User ID</th><th>Name</th><th>Email</th><th>BIS License</th><th>Assessments</th><th>Avg Rating</th><th>Status</th><th>Actions</th></tr></thead>
+                <tbody id="jewelers-table"><tr><td colspan="8" style="text-align:center;color:#94a3b8;padding:24px;">Loading...</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ── Analytics panel ────────────────────────────────────────────── -->
+        <section class="panel-section" id="panel-analytics">
+          <div class="stats-grid" id="analytics-stats">
+            <div class="stat-card"><div class="stat-icon gold">🪙</div><div class="stat-value" id="ana-tgdp-supply">—</div><div class="stat-label">Total TGDP Supply</div></div>
+            <div class="stat-card"><div class="stat-icon teal">💱</div><div class="stat-value" id="ana-ftr-swaps">—</div><div class="stat-label">FTR Swaps (Total)</div></div>
+            <div class="stat-card"><div class="stat-icon purple">🏆</div><div class="stat-value" id="ana-gic-total">—</div><div class="stat-label">GIC Issued (Total)</div></div>
+            <div class="stat-card"><div class="stat-icon pink">📐</div><div class="stat-value" id="ana-designs">—</div><div class="stat-label">Designs Registered</div></div>
+          </div>
+          <div class="admin-card">
+            <div class="admin-card-header"><h3>Revenue Breakdown</h3></div>
             <div class="admin-card-body">
-              <h4>Commission Rates</h4>
-              <p>Trading Fee: <strong>0%</strong></p>
-              <p>FTR Swap: <strong>4%</strong></p>
-              <p>GIC Share: <strong>25%</strong></p>
-              <p>Designer Share: <strong>85%</strong></p>
-              <h4 style="margin-top:20px;">SLA Configuration</h4>
-              <p>Acknowledgment: <strong>48 hours</strong></p>
-              <p>Investigation: <strong>7 days</strong></p>
-              <p>Resolution: <strong>14 days</strong></p>
+              <table class="admin-table">
+                <thead><tr><th>Stream</th><th>Total Revenue (TGDP)</th><th>Platform Share</th></tr></thead>
+                <tbody id="revenue-table"><tr><td colspan="3" style="text-align:center;color:#94a3b8;">Loading...</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ── Audit Logs panel ────────────────────────────────────────────── -->
+        <section class="panel-section" id="panel-audit">
+          <div class="admin-card">
+            <div class="admin-card-header">
+              <h3>Audit Log</h3>
+              <button class="action-btn view" onclick="window._exportAuditCSV()">Export CSV</button>
+            </div>
+            <div class="admin-card-body" style="padding:0;">
+              <table class="admin-table">
+                <thead><tr><th>Timestamp</th><th>Action</th><th>Actor</th><th>Target</th><th>Details</th></tr></thead>
+                <tbody id="audit-table"><tr><td colspan="5" style="text-align:center;color:#94a3b8;padding:24px;">Loading...</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </section>
+
+        <!-- ── Configuration panel ────────────────────────────────────────── -->
+        <section class="panel-section" id="panel-config">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+            <div class="admin-card">
+              <div class="admin-card-header"><h3>Commission Rates</h3></div>
+              <div class="admin-card-body">
+                <form id="config-commission-form">
+                  <div style="margin-bottom:16px;">
+                    <label style="display:block;font-size:0.85rem;color:#64748b;margin-bottom:4px;">Trading Fee (%)</label>
+                    <input type="number" id="cfg-trading-fee" value="0" min="0" max="10" step="0.1" style="width:100%;padding:8px;border:1px solid #e2e8f0;border-radius:6px;">
+                  </div>
+                  <div style="margin-bottom:16px;">
+                    <label style="display:block;font-size:0.85rem;color:#64748b;margin-bottom:4px;">FTR Swap Commission (%)</label>
+                    <input type="number" id="cfg-ftr-commission" value="4" min="0" max="20" step="0.1" style="width:100%;padding:8px;border:1px solid #e2e8f0;border-radius:6px;">
+                  </div>
+                  <div style="margin-bottom:16px;">
+                    <label style="display:block;font-size:0.85rem;color:#64748b;margin-bottom:4px;">GIC Revenue Share (%)</label>
+                    <input type="number" id="cfg-gic-share" value="25" min="0" max="50" step="1" style="width:100%;padding:8px;border:1px solid #e2e8f0;border-radius:6px;">
+                  </div>
+                  <div style="margin-bottom:16px;">
+                    <label style="display:block;font-size:0.85rem;color:#64748b;margin-bottom:4px;">Designer Revenue Share (%)</label>
+                    <input type="number" id="cfg-designer-share" value="85" min="50" max="100" step="1" style="width:100%;padding:8px;border:1px solid #e2e8f0;border-radius:6px;">
+                  </div>
+                  <button type="submit" class="action-btn approve" style="width:100%;padding:10px;">Save Commission Config</button>
+                </form>
+              </div>
+            </div>
+            <div class="admin-card">
+              <div class="admin-card-header"><h3>SLA Configuration</h3></div>
+              <div class="admin-card-body">
+                <form id="config-sla-form">
+                  <div style="margin-bottom:16px;">
+                    <label style="display:block;font-size:0.85rem;color:#64748b;margin-bottom:4px;">Acknowledgment (hours)</label>
+                    <input type="number" id="cfg-ack-hours" value="48" min="1" max="168" style="width:100%;padding:8px;border:1px solid #e2e8f0;border-radius:6px;">
+                  </div>
+                  <div style="margin-bottom:16px;">
+                    <label style="display:block;font-size:0.85rem;color:#64748b;margin-bottom:4px;">Investigation (days)</label>
+                    <input type="number" id="cfg-inv-days" value="7" min="1" max="30" style="width:100%;padding:8px;border:1px solid #e2e8f0;border-radius:6px;">
+                  </div>
+                  <div style="margin-bottom:16px;">
+                    <label style="display:block;font-size:0.85rem;color:#64748b;margin-bottom:4px;">Mediation (days)</label>
+                    <input type="number" id="cfg-med-days" value="10" min="1" max="30" style="width:100%;padding:8px;border:1px solid #e2e8f0;border-radius:6px;">
+                  </div>
+                  <div style="margin-bottom:16px;">
+                    <label style="display:block;font-size:0.85rem;color:#64748b;margin-bottom:4px;">Resolution (days)</label>
+                    <input type="number" id="cfg-res-days" value="14" min="1" max="60" style="width:100%;padding:8px;border:1px solid #e2e8f0;border-radius:6px;">
+                  </div>
+                  <div style="margin-bottom:16px;">
+                    <label style="display:block;font-size:0.85rem;color:#64748b;margin-bottom:4px;">Appeal Window (days)</label>
+                    <input type="number" id="cfg-appeal-days" value="7" min="1" max="30" style="width:100%;padding:8px;border:1px solid #e2e8f0;border-radius:6px;">
+                  </div>
+                  <button type="submit" class="action-btn approve" style="width:100%;padding:10px;">Save SLA Config</button>
+                </form>
+              </div>
+            </div>
+            <div class="admin-card" style="grid-column:1/-1;">
+              <div class="admin-card-header"><h3>System Parameters</h3></div>
+              <div class="admin-card-body">
+                <form id="config-system-form" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;">
+                  <div>
+                    <label style="display:block;font-size:0.85rem;color:#64748b;margin-bottom:4px;">TGDP per gram gold</label>
+                    <input type="number" id="cfg-tgdp-per-gram" value="10" disabled style="width:100%;padding:8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;">
+                    <small style="color:#94a3b8;">Fixed by smart contract</small>
+                  </div>
+                  <div>
+                    <label style="display:block;font-size:0.85rem;color:#64748b;margin-bottom:4px;">FTR Validity (months)</label>
+                    <input type="number" id="cfg-ftr-validity" value="12" disabled style="width:100%;padding:8px;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;">
+                    <small style="color:#94a3b8;">Fixed by smart contract</small>
+                  </div>
+                  <div>
+                    <label style="display:block;font-size:0.85rem;color:#64748b;margin-bottom:4px;">Min GIC Redemption</label>
+                    <input type="number" id="cfg-min-gic" value="100" min="1" style="width:100%;padding:8px;border:1px solid #e2e8f0;border-radius:6px;">
+                  </div>
+                  <div style="grid-column:1/-1;">
+                    <button type="submit" class="action-btn approve" style="padding:10px 24px;">Save System Params</button>
+                  </div>
+                </form>
+              </div>
             </div>
           </div>
         </section>
@@ -183,7 +335,7 @@
       document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
       document.getElementById('panel-' + id)?.classList.add('active');
       event.target.closest?.('.nav-item')?.classList.add('active');
-      const titles = { dashboard:'Dashboard', users:'All Users', kyc:'KYC Queue', complaints:'Complaints', blockchain:'Blockchain', config:'Configuration', audit:'Audit Logs', analytics:'Analytics', licensees:'Licensees', jewelers:'Jewelers', transactions:'Transactions' };
+      const titles = { dashboard:'Dashboard', users:'All Users', kyc:'KYC Verification', complaints:'Complaints', blockchain:'Blockchain', config:'Configuration', audit:'Audit Logs', analytics:'Analytics', licensees:'Licensees', jewelers:'Jewelers', transactions:'Transactions' };
       document.getElementById('panel-title').textContent = titles[id] || 'Admin';
       if (window._adminLoadPanel) window._adminLoadPanel(id);
     }
@@ -202,6 +354,27 @@
       callApproveKYC, callGetAdminStats, callUpdateComplaint,
       formatINR, formatDate, statusBadge, timeSince
     } from '../js/firebase-client.js';
+
+    // ── Helpers not yet in firebase-client ────────────────────────────────────
+    import { getFirestore, collection, getDocs, query, orderBy, limit as fsLimit, doc, setDoc }
+      from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+    import { getApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+    import { getFunctions, httpsCallable }
+      from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-functions.js';
+
+    const _db  = getFirestore(getApp());
+    const _fns = getFunctions(getApp());
+
+    async function getAuditLogs(n = 50) {
+      const q   = query(collection(_db, 'audit_logs'), orderBy('createdAt', 'desc'), fsLimit(n));
+      const snp = await getDocs(q);
+      return snp.docs.map(d => ({ id: d.id, ...d.data() }));
+    }
+
+    async function callUpdateConfig(updates) {
+      const fn = httpsCallable(_fns, 'updateConfig');
+      return fn(updates);
+    }
 
     // ── Auth guard: admin only ─────────────────────────────────────────────────
     let currentUser = null;
@@ -301,12 +474,261 @@
       </tr>`).join('');
     }
 
+    // ── Load transactions ──────────────────────────────────────────────────────
+    async function loadTransactions() {
+      const typeFilter = document.getElementById('tx-filter-type')?.value || '';
+      const txns = await getTransactions(null, 100).catch(() => []);
+      const filtered = typeFilter ? txns.filter(tx => tx.type === typeFilter) : txns;
+      const tbody = document.getElementById('tx-table');
+      if (!filtered.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#94a3b8;padding:24px;">No transactions.</td></tr>'; return; }
+      tbody.innerHTML = filtered.map(tx => `<tr>
+        <td class="mono" style="font-size:0.75rem">${(tx.txId || tx.id || '').slice(0,14)}</td>
+        <td><span class="status-badge active">${tx.type}</span></td>
+        <td class="mono" style="font-size:0.75rem">${(tx.userId || tx.fromUserId || '').slice(0,10)}...</td>
+        <td class="mono">${tx.amount ? tx.amount + ' TGDP' : '-'}</td>
+        <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${tx.description || '-'}</td>
+        <td>${formatDate(tx.createdAt)}</td>
+        <td><span class="status-badge ${tx.status === 'completed' ? 'approved' : 'pending'}">${tx.status || '-'}</span></td>
+      </tr>`).join('');
+      window._txData = filtered;
+    }
+    document.getElementById('tx-filter-type')?.addEventListener('change', loadTransactions);
+
+    // ── Load licensees ─────────────────────────────────────────────────────────
+    async function loadLicensees() {
+      const users = await getAllUsers();
+      const licensees = users.filter(u => (u.roles || []).includes('licensee'));
+      const tbody = document.getElementById('licensees-table');
+      if (!licensees.length) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#94a3b8;padding:24px;">No licensees.</td></tr>'; return; }
+      tbody.innerHTML = licensees.map(u => `<tr>
+        <td class="mono" style="font-size:0.75rem">${(u.uid || u.id).slice(0,10)}...</td>
+        <td>${u.firstName || ''} ${u.lastName || ''}</td>
+        <td>${u.email || '-'}</td>
+        <td class="mono" id="hh-${u.uid || u.id}">—</td>
+        <td class="mono" id="gic-${u.uid || u.id}">—</td>
+        <td><span class="status-badge ${u.gicLicenseActive ? 'approved' : 'pending'}">${u.gicLicenseActive ? 'Paid' : 'Unpaid'}</span></td>
+        <td><span class="status-badge ${u.status === 'active' ? 'approved' : 'pending'}">${u.status || 'pending'}</span></td>
+        <td><button class="action-btn view" onclick="window._viewUser('${u.uid || u.id}')">View</button></td>
+      </tr>`).join('');
+    }
+
+    // ── Load jewelers ──────────────────────────────────────────────────────────
+    async function loadJewelers() {
+      const users = await getAllUsers();
+      const jewelers = users.filter(u => (u.roles || []).includes('jeweler'));
+      const tbody = document.getElementById('jewelers-table');
+      if (!jewelers.length) { tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#94a3b8;padding:24px;">No jewelers.</td></tr>'; return; }
+      tbody.innerHTML = jewelers.map(u => `<tr>
+        <td class="mono" style="font-size:0.75rem">${(u.uid || u.id).slice(0,10)}...</td>
+        <td>${u.firstName || ''} ${u.lastName || ''}</td>
+        <td>${u.email || '-'}</td>
+        <td>${u.bisLicense || '—'}</td>
+        <td class="mono">—</td>
+        <td>—</td>
+        <td><span class="status-badge ${u.status === 'active' ? 'approved' : 'pending'}">${u.status || 'pending'}</span></td>
+        <td><button class="action-btn view" onclick="window._viewUser('${u.uid || u.id}')">View</button></td>
+      </tr>`).join('');
+    }
+
+    // ── Load analytics ─────────────────────────────────────────────────────────
+    async function loadAnalytics() {
+      try {
+        const stats = (await callGetAdminStats()).data;
+        document.getElementById('ana-tgdp-supply').textContent = stats.totalTGDPMinted   || '—';
+        document.getElementById('ana-ftr-swaps').textContent   = stats.totalFTRSwaps     || '—';
+        document.getElementById('ana-gic-total').textContent   = formatINR(stats.totalFTRCommission || 0);
+        document.getElementById('ana-designs').textContent     = stats.totalDesigns       || '—';
+
+        const revenueRows = [
+          { stream: 'FTR Swap Commission (4%)', total: stats.totalFTRCommission || 0, share: (stats.totalFTRCommission || 0) * 0.75 },
+          { stream: 'Design Sales (15%)',       total: stats.totalDesignRevenue  || 0, share: (stats.totalDesignRevenue  || 0) * 0.15 },
+        ];
+        document.getElementById('revenue-table').innerHTML = revenueRows.map(r => `<tr>
+          <td>${r.stream}</td>
+          <td class="mono">${r.total.toLocaleString('en-IN')} TGDP</td>
+          <td class="mono">${r.share.toLocaleString('en-IN')} TGDP</td>
+        </tr>`).join('');
+      } catch (e) {
+        console.error('Analytics error:', e);
+      }
+    }
+
+    // ── Load audit logs ────────────────────────────────────────────────────────
+    async function loadAuditLogs() {
+      const logs = await getAuditLogs(50).catch(() => []);
+      const tbody = document.getElementById('audit-table');
+      if (!logs.length) { tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#94a3b8;padding:24px;">No audit logs.</td></tr>'; return; }
+      tbody.innerHTML = logs.map(l => `<tr>
+        <td class="mono" style="font-size:0.75rem">${formatDate(l.createdAt)}</td>
+        <td><span class="status-badge active">${l.action}</span></td>
+        <td class="mono" style="font-size:0.75rem">${(l.adminUid || l.userId || '').slice(0,10)}...</td>
+        <td class="mono" style="font-size:0.75rem">${(l.targetUserId || l.mintId || l.complaintId || '-').slice(0,14)}</td>
+        <td style="font-size:0.8rem;color:#64748b;">${l.notes || '-'}</td>
+      </tr>`).join('');
+      window._auditData = logs;
+    }
+
+    // ── Load blockchain addresses from Firestore ───────────────────────────────
+    async function loadBlockchain() {
+      const contractsSnap = await import('../js/firebase-client.js').then(async m => {
+        const { db } = m;
+        // db not exported; re-use getDoc via client module workaround
+        return null;
+      }).catch(() => null);
+
+      // Direct Firestore call via callGetAdminStats returns contracts too
+      const stats = await callGetAdminStats().catch(() => ({ data: {} }));
+      const contracts = stats.data?.contracts || {};
+      const network   = stats.data?.blockchainNetwork || 'amoy';
+
+      const panel = document.getElementById('panel-blockchain');
+      const contractsDiv = panel.querySelector('.admin-card-body');
+      if (contractsDiv) {
+        const explorerBase = network === 'polygon'
+          ? 'https://polygonscan.com/address/'
+          : 'https://amoy.polygonscan.com/address/';
+        const row = (label, addr) => addr && addr !== '0x0000000000000000000000000000000000000000'
+          ? `<p><strong>${label}:</strong> <a href="${explorerBase}${addr}" target="_blank" class="mono" style="font-size:0.85rem;">${addr}</a></p>`
+          : `<p><strong>${label}:</strong> <code style="color:#94a3b8;">Not deployed</code></p>`;
+        contractsDiv.innerHTML = `
+          <p><strong>Network:</strong> <span class="status-badge ${network === 'polygon' ? 'approved' : 'pending'}">${network === 'polygon' ? 'Polygon Mainnet' : 'Amoy Testnet'}</span></p>
+          ${row('TGDP Token',   contracts.tgdpToken)}
+          ${row('FTR Token',    contracts.ftrToken)}
+          ${row('GIC Token',    contracts.gicToken)}
+          ${row('Registry',     contracts.registry)}
+          ${row('IPR Registry', contracts.iprRegistry)}
+          <p style="margin-top:16px;"><strong>Blockchain Records:</strong>
+            <span class="mono">${stats.data?.blockchainRecords || 0}</span> confirmed transactions</p>`;
+      }
+    }
+
+    // ── Load config from Firestore ─────────────────────────────────────────────
+    async function loadConfig() {
+      const stats = await callGetAdminStats().catch(() => ({ data: {} }));
+      const cfg = stats.data?.config || {};
+      if (cfg.ftrCommission)  document.getElementById('cfg-ftr-commission').value = (cfg.ftrCommission * 100).toFixed(1);
+      if (cfg.gicShare)       document.getElementById('cfg-gic-share').value       = (cfg.gicShare * 100).toFixed(0);
+      if (cfg.designerShare)  document.getElementById('cfg-designer-share').value  = (cfg.designerShare * 100).toFixed(0);
+      if (cfg.sla) {
+        if (cfg.sla.acknowledgmentHours) document.getElementById('cfg-ack-hours').value  = cfg.sla.acknowledgmentHours;
+        if (cfg.sla.investigationDays)   document.getElementById('cfg-inv-days').value   = cfg.sla.investigationDays;
+        if (cfg.sla.mediationDays)       document.getElementById('cfg-med-days').value   = cfg.sla.mediationDays;
+        if (cfg.sla.resolutionDays)      document.getElementById('cfg-res-days').value   = cfg.sla.resolutionDays;
+        if (cfg.sla.appealWindowDays)    document.getElementById('cfg-appeal-days').value = cfg.sla.appealWindowDays;
+      }
+    }
+
+    // ── Config save forms ──────────────────────────────────────────────────────
+    document.getElementById('config-commission-form')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        await callUpdateConfig({
+          ftrCommission:  parseFloat(document.getElementById('cfg-ftr-commission').value) / 100,
+          gicShare:       parseFloat(document.getElementById('cfg-gic-share').value) / 100,
+          designerShare:  parseFloat(document.getElementById('cfg-designer-share').value) / 100,
+        });
+        alert('Commission config saved.');
+      } catch (err) { alert('Error: ' + err.message); }
+    });
+
+    document.getElementById('config-sla-form')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        await callUpdateConfig({
+          sla: {
+            acknowledgmentHours: parseInt(document.getElementById('cfg-ack-hours').value),
+            investigationDays:   parseInt(document.getElementById('cfg-inv-days').value),
+            mediationDays:       parseInt(document.getElementById('cfg-med-days').value),
+            resolutionDays:      parseInt(document.getElementById('cfg-res-days').value),
+            appealWindowDays:    parseInt(document.getElementById('cfg-appeal-days').value),
+          },
+        });
+        alert('SLA config saved.');
+      } catch (err) { alert('Error: ' + err.message); }
+    });
+
+    document.getElementById('config-system-form')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      try {
+        await callUpdateConfig({ minGICRedemption: parseInt(document.getElementById('cfg-min-gic').value) });
+        alert('System params saved.');
+      } catch (err) { alert('Error: ' + err.message); }
+    });
+
+    // ── CSV export ─────────────────────────────────────────────────────────────
+    function toCSV(rows, headers) {
+      const escape = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
+      return [headers.join(','), ...rows.map(r => headers.map(h => escape(r[h])).join(','))].join('\n');
+    }
+    function downloadCSV(content, filename) {
+      const a = document.createElement('a');
+      a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(content);
+      a.download = filename;
+      a.click();
+    }
+    window._exportTxCSV = function() {
+      const data = (window._txData || []).map(tx => ({
+        txId: tx.txId || tx.id, type: tx.type, userId: tx.userId || tx.fromUserId,
+        amount: tx.amount, description: tx.description, date: tx.createdAt?.toDate?.()?.toISOString() || tx.createdAt, status: tx.status,
+      }));
+      downloadCSV(toCSV(data, ['txId','type','userId','amount','description','date','status']), `tgdp-transactions-${Date.now()}.csv`);
+    };
+    window._exportAuditCSV = function() {
+      const data = (window._auditData || []).map(l => ({
+        timestamp: l.createdAt?.toDate?.()?.toISOString() || l.createdAt,
+        action: l.action, actor: l.adminUid || l.userId, target: l.targetUserId || l.mintId || l.complaintId, notes: l.notes,
+      }));
+      downloadCSV(toCSV(data, ['timestamp','action','actor','target','notes']), `tgdp-audit-${Date.now()}.csv`);
+    };
+
+    // ── Enhanced complaints with SLA breach ───────────────────────────────────
+    const SLA_DAYS = { acknowledgment: 2, investigation: 7, mediation: 10, resolution: 14 };
+
+    // Override loadComplaints with SLA breach tracking
+    const _origLoadComplaints = loadComplaints;
+    async function loadComplaintsWithSLA() {
+      const complaints = await getOpenComplaints();
+      document.getElementById('complaint-count').textContent = complaints.length;
+      const tbody = document.getElementById('complaints-table');
+      if (!complaints.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#94a3b8;padding:24px;">No complaints</td></tr>'; return; }
+      tbody.innerHTML = complaints.map(c => {
+        const filed     = c.createdAt?.toDate ? c.createdAt.toDate() : new Date(c.createdAt || 0);
+        const stageDays = SLA_DAYS[c.stage] || 14;
+        const deadline  = new Date(filed.getTime() + stageDays * 24 * 60 * 60 * 1000);
+        const breached  = Date.now() > deadline.getTime();
+        const daysLeft  = Math.ceil((deadline - Date.now()) / 86400000);
+        return `<tr style="${breached ? 'background:rgba(239,68,68,0.04);' : ''}">
+          <td class="mono" style="font-size:0.75rem">${c.complaintId}</td>
+          <td>${c.portal}</td>
+          <td>${c.category}</td>
+          <td>${formatDate(c.createdAt)}</td>
+          <td>
+            <span class="status-badge ${c.status === 'resolved' ? 'approved' : 'pending'}">${c.stage}</span>
+            ${breached ? ' <span style="color:#ef4444;font-size:0.7rem;font-weight:600;">SLA BREACHED</span>'
+              : daysLeft <= 1 ? ' <span style="color:#f59e0b;font-size:0.7rem;">due today</span>'
+              : ` <span style="color:#94a3b8;font-size:0.7rem;">${daysLeft}d left</span>`}
+          </td>
+          <td>
+            <button class="action-btn approve" onclick="window._resolveComplaint('${c.complaintId}')">Resolve</button>
+            <button class="action-btn view"    onclick="alert('${c.subject}\\n\\n${(c.description||'').replace(/'/g,'&#39;')}')">View</button>
+          </td>
+        </tr>`;
+      }).join('');
+    }
+
     // ── Panel loader ───────────────────────────────────────────────────────────
     window._adminLoadPanel = async function(id) {
-      if (id === 'dashboard')  await loadDashboard();
-      if (id === 'users')      await loadUsers();
-      if (id === 'kyc')        await loadKYC();
-      if (id === 'complaints') await loadComplaints();
+      if (id === 'dashboard')    await loadDashboard();
+      if (id === 'users')        await loadUsers();
+      if (id === 'kyc')          await loadKYC();
+      if (id === 'complaints')   await loadComplaintsWithSLA();
+      if (id === 'transactions') await loadTransactions();
+      if (id === 'licensees')    await loadLicensees();
+      if (id === 'jewelers')     await loadJewelers();
+      if (id === 'analytics')    await loadAnalytics();
+      if (id === 'audit')        await loadAuditLogs();
+      if (id === 'blockchain')   await loadBlockchain();
+      if (id === 'config')       await loadConfig();
     };
 
     // ── Approve / reject KYC ──────────────────────────────────────────────────
@@ -341,6 +763,7 @@
 
     // ── Initial load ───────────────────────────────────────────────────────────
     await loadDashboard();
+    await loadComplaintsWithSLA(); // pre-load so complaint-count badge is accurate
 
     window.tgdpLogout = logout;
   </script>

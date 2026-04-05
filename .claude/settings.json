@@ -26,10 +26,17 @@
       "Bash(tail -1 grep -n \"</body>\" c:/Users/PRATHMESH/Downloads/tgdp/portals/tjr/dashboard.html)",
       "Bash(tail -1 grep -n \"</body>\" c:/Users/PRATHMESH/Downloads/tgdp/portals/tjdb/dashboard.html)",
       "Bash(tail -1 grep -n \"</body>\" c:/Users/PRATHMESH/Downloads/tgdp/portals/ombudsman/dashboard.html)",
-      "Bash(tail -1 grep -n \"</body>\" c:/Users/PRATHMESH/Downloads/tgdp/admin/index.html)"
+      "Bash(tail -1 grep -n \"</body>\" c:/Users/PRATHMESH/Downloads/tgdp/admin/index.html)",
+      "Read(//c/Users/PRATHMESH/Downloads/tgdp/**)",
+      "Bash(firebase projects:list)",
+      "Bash(npm install:*)",
+      "Bash(firebase hosting:sites:list)",
+      "Bash(firebase hosting:channel:list)"
     ],
     "additionalDirectories": [
-      "c:\\Users\\PRATHMESH\\Downloads\\tgdp"
+      "c:\\Users\\PRATHMESH\\Downloads\\tgdp",
+      "C:\\Users\\PRATHMESH\\Downloads\\tgdp\\js",
+      "C:\\Users\\PRATHMESH\\Downloads\\tgdp\\functions"
     ]
   }
 }
