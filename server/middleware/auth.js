@@ -1,24 +1,26 @@
 // ─── Firebase token verification middleware ───────────────────────────────────
-// Verifies the Authorization: Bearer <idToken> on every protected route.
+// Verifies Authorization: Bearer <idToken> on every protected route.
 // Works with both the live Firebase project and the local Auth emulator.
 
 const admin = require('firebase-admin');
+
+if (!process.env.FIREBASE_PROJECT_ID) {
+  process.stderr.write('[auth] WARNING: FIREBASE_PROJECT_ID not set in environment\n');
+}
 
 // Initialise Firebase Admin once (idempotent)
 if (!admin.apps.length) {
   if (process.env.FIREBASE_AUTH_EMULATOR_HOST) {
     // Emulator mode — no real credentials needed
-    admin.initializeApp({ projectId: process.env.FIREBASE_PROJECT_ID || 'tgdp-d4a3d' });
+    admin.initializeApp({ projectId: process.env.FIREBASE_PROJECT_ID });
   } else {
-    // Production — uses GOOGLE_APPLICATION_CREDENTIALS env var
-    admin.initializeApp();
+    // Production — uses GOOGLE_APPLICATION_CREDENTIALS or ADC
+    admin.initializeApp(
+      process.env.FIREBASE_PROJECT_ID ? { projectId: process.env.FIREBASE_PROJECT_ID } : {}
+    );
   }
 }
 
-/**
- * Express middleware.  Attaches req.uid (string) and req.firebaseUser (decoded token).
- * Returns 401 if missing / invalid token.
- */
 async function verifyFirebaseToken(req, res, next) {
   const header = req.headers.authorization;
   if (!header || !header.startsWith('Bearer ')) {
@@ -26,11 +28,11 @@ async function verifyFirebaseToken(req, res, next) {
   }
   const token = header.slice(7);
   try {
-    const decoded = await admin.auth().verifyIdToken(token);
+    const decoded    = await admin.auth().verifyIdToken(token);
     req.uid          = decoded.uid;
     req.firebaseUser = decoded;
     next();
-  } catch (err) {
+  } catch {
     return res.status(401).json({ error: { code: 'INVALID_TOKEN', message: 'Invalid or expired token.', status: 401 } });
   }
 }

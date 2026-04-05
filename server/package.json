@@ -4,7 +4,7 @@
   "description": "TGDP Ecosystem REST API — PostgreSQL backend",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
+    "start": "NODE_ENV=production node index.js",
     "dev": "node --watch index.js"
   },
   "dependencies": {

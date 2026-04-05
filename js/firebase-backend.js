@@ -12,17 +12,7 @@ import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
 import { getStorage, ref, uploadBytes, getDownloadURL, connectStorageEmulator }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
-
-// ─── Init ─────────────────────────────────────────────────────────────────────
-const FIREBASE_CONFIG = {
-  apiKey:            "AIzaSyAsHHiCqvvlwzt3Zx7nwbKCnpmkWG-HPpc",
-  authDomain:        "tgdp-d4a3d.firebaseapp.com",
-  projectId:         "tgdp-d4a3d",
-  storageBucket:     "tgdp-d4a3d.firebasestorage.app",
-  messagingSenderId: "399267274832",
-  appId:             "1:399267274832:web:202956b9af788eb96ff155",
-  measurementId:     "G-NHVPJS29MB"
-};
+import { FIREBASE_CONFIG, GOOGLE_CLIENT_ID } from './firebase-config.js';
 
 const IS_LOCAL = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
 const API_BASE = IS_LOCAL ? 'http://localhost:3001/api/v1' : '/api/v1';
@@ -42,7 +32,7 @@ if (IS_LOCAL) {
 
 const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({
-  client_id: '399267274832-qe24nepg617svaitmv0skqas05pcluke.apps.googleusercontent.com',
+  client_id: GOOGLE_CLIENT_ID,
   prompt: 'select_account'
 });
 

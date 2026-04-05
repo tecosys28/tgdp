@@ -9,18 +9,9 @@ import { getAuth, onAuthStateChanged, signOut, connectAuthEmulator }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { getStorage, ref, uploadBytes, getDownloadURL, connectStorageEmulator }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
+import { FIREBASE_CONFIG } from './firebase-config.js';
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
-
-const FIREBASE_CONFIG = {
-  apiKey:            "AIzaSyAsHHiCqvvlwzt3Zx7nwbKCnpmkWG-HPpc",
-  authDomain:        "tgdp-d4a3d.firebaseapp.com",
-  projectId:         "tgdp-d4a3d",
-  storageBucket:     "tgdp-d4a3d.firebasestorage.app",
-  messagingSenderId: "399267274832",
-  appId:             "1:399267274832:web:202956b9af788eb96ff155",
-  measurementId:     "G-NHVPJS29MB"
-};
 
 const IS_LOCAL = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
 const API_BASE = IS_LOCAL ? 'http://localhost:3001/api/v1' : '/api/v1';

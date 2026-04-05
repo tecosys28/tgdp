@@ -1,9 +1,14 @@
 # Secrets — never commit these
 .env
+.env.*
+!.env.example
+!.env.production.example
 functions/.env
 blockchain/.env
 **/serviceAccountKey.json
 **/deployed-*.json
+*.pem
+*.key
 
 # Dependencies
 node_modules/

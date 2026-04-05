@@ -3,9 +3,17 @@
 // Version: 1.0.0
 // ═══════════════════════════════════════════════════════════════════════════
 
+// Determine API base URL at runtime:
+// - In the browser: same-origin /api/v1 (relative), works for both dev and prod
+// - In Node (if ever required): reads API_BASE_URL env var
+const _runtimeBase = (typeof window !== 'undefined')
+  ? (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+      ? 'http://localhost:3001'
+      : '')
+  : (process.env.API_BASE_URL || '');
+
 const API_CONFIG = {
-  // Base URLs
-  baseUrl: 'https://api.trot-gold.com',
+  baseUrl: _runtimeBase,
   version: 'v1',
   
   // Endpoints
