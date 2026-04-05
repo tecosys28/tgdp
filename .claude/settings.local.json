@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(java -version)",
+      "Bash(firebase emulators:start --only firestore,functions,hosting,storage --import=./emulator-data --export-on-exit=./emulator-data)",
+      "Bash(echo \"EMULATOR_PID=$!\")",
+      "Bash(curl -s http://localhost:5000)",
+      "Bash(curl -sv http://localhost:5000)"
+    ]
+  }
+}

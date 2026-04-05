@@ -75,15 +75,18 @@
       
       <div class="sidebar-footer">
         <div class="sidebar-user">
-          <div class="sidebar-avatar" style="background: linear-gradient(135deg, var(--teal-dark), var(--teal));">RK</div>
+          <div class="sidebar-avatar" style="background: linear-gradient(135deg, var(--teal-dark), var(--teal));">--</div>
           <div>
-            <div class="sidebar-name">Rajesh Kumar</div>
-            <div class="sidebar-id">RET-IND-54321</div>
+            <div class="sidebar-name">Loading…</div>
+            <div class="sidebar-id">--</div>
           </div>
         </div>
         <a href="../../index.html" class="btn btn-outline btn-sm" style="width: 100%;">
           ← Back to Ecosystem
         </a>
+        <button onclick="window.tgdpLogout()" class="btn btn-outline btn-sm" style="width:100%;margin-top:.5rem;border-color:rgba(239,68,68,.5);color:#ef4444;">
+          Sign Out
+        </button>
       </div>
     </aside>
     
@@ -404,32 +407,7 @@
               </div>
             </div>
             <div class="card-body">
-              <div style="display: grid; gap: 1rem;">
-                <div style="background: var(--obsidian); border: 1px solid var(--obsidian-border); border-radius: var(--radius-lg); padding: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
-                  <div>
-                    <div style="font-weight: 600; margin-bottom: 0.25rem;">Sharma Gold Palace</div>
-                    <div style="font-size: 0.85rem; color: var(--text-muted);">Shop 12, Gold Market, Zaveri Bazaar, Mumbai - 400002</div>
-                    <div style="font-size: 0.8rem; color: var(--teal); margin-top: 0.5rem;">⭐ 4.8 (234 reviews) · 1.2 km away</div>
-                  </div>
-                  <button class="btn btn-outline btn-sm" style="border-color: var(--teal); color: var(--teal);">View Details</button>
-                </div>
-                <div style="background: var(--obsidian); border: 1px solid var(--obsidian-border); border-radius: var(--radius-lg); padding: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
-                  <div>
-                    <div style="font-weight: 600; margin-bottom: 0.25rem;">Tanishq - Linking Road</div>
-                    <div style="font-size: 0.85rem; color: var(--text-muted);">15, Linking Road, Bandra West, Mumbai - 400050</div>
-                    <div style="font-size: 0.8rem; color: var(--teal); margin-top: 0.5rem;">⭐ 4.6 (512 reviews) · 3.5 km away</div>
-                  </div>
-                  <button class="btn btn-outline btn-sm" style="border-color: var(--teal); color: var(--teal);">View Details</button>
-                </div>
-                <div style="background: var(--obsidian); border: 1px solid var(--obsidian-border); border-radius: var(--radius-lg); padding: 1.5rem; display: flex; justify-content: space-between; align-items: center;">
-                  <div>
-                    <div style="font-weight: 600; margin-bottom: 0.25rem;">Kalyan Jewellers - Dadar</div>
-                    <div style="font-size: 0.85rem; color: var(--text-muted);">Ranade Road, Dadar West, Mumbai - 400028</div>
-                    <div style="font-size: 0.8rem; color: var(--teal); margin-top: 0.5rem;">⭐ 4.7 (387 reviews) · 4.8 km away</div>
-                  </div>
-                  <button class="btn btn-outline btn-sm" style="border-color: var(--teal); color: var(--teal);">View Details</button>
-                </div>
-              </div>
+              <div style="text-align:center;color:var(--text-muted);padding:2rem">No registered jewellers found.</div>
             </div>
           </div>
         </div>
@@ -445,7 +423,7 @@
               <div class="form-row">
                 <div class="form-group">
                   <label class="form-label">Full Name</label>
-                  <input type="text" class="form-input" value="Rajesh Kumar" disabled>
+                  <input type="text" class="form-input" name="profileName" value="" disabled>
                 </div>
                 <div class="form-group">
                   <label class="form-label">Email</label>
@@ -455,7 +433,7 @@
               
               <h4 style="margin: 2rem 0 1rem;">Default Pickup Address</h4>
               <div class="form-group">
-                <textarea class="form-textarea" rows="2">123, Gold Lane, Andheri West, Mumbai - 400058</textarea>
+                <textarea class="form-textarea" name="profileAddress" rows="2"></textarea>
               </div>
               <button class="btn btn-outline">Update Address</button>
               
@@ -465,8 +443,8 @@
               <div style="background: var(--obsidian); border-radius: var(--radius-lg); padding: 1rem; margin-bottom: 1rem;">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                   <div>
-                    <div style="font-weight: 600;">HDFC Bank ****4521</div>
-                    <div style="font-size: 0.85rem; color: var(--text-muted);">Savings Account</div>
+                    <div style="font-weight: 600; color: var(--text-muted);">No bank account linked</div>
+                    <div style="font-size: 0.85rem; color: var(--text-muted);">Add one below</div>
                   </div>
                   <span class="badge badge-success">Primary</span>
                 </div>
@@ -697,6 +675,10 @@
     });
 
     window.tgdpLogout = logout;
+    if (sessionStorage.getItem('openPanel') === 'profile') {
+      sessionStorage.removeItem('openPanel');
+      showPanel('settings');
+    }
   </script>
 </body>
 </html>

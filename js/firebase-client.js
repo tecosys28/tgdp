@@ -6,17 +6,17 @@
 // ═══════════════════════════════════════════════════════════════════════════
 
 import { initializeApp }       from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, onAuthStateChanged, signOut }
+import { getAuth, onAuthStateChanged, signOut, connectAuthEmulator }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import {
   getFirestore, doc, collection,
   getDoc, getDocs, onSnapshot,
   query, where, orderBy, limit,
-  serverTimestamp
+  serverTimestamp, connectFirestoreEmulator
 } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import { getStorage, ref, uploadBytes, getDownloadURL }
+import { getStorage, ref, uploadBytes, getDownloadURL, connectStorageEmulator }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
-import { getFunctions, httpsCallable }
+import { getFunctions, httpsCallable, connectFunctionsEmulator }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-functions.js";
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
@@ -31,11 +31,24 @@ const FIREBASE_CONFIG = {
   measurementId:     "G-NHVPJS29MB"
 };
 
+const IS_LOCAL = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+
 const app       = initializeApp(FIREBASE_CONFIG);
 const auth      = getAuth(app);
 const db        = getFirestore(app);
 const storage   = getStorage(app);
 const functions = getFunctions(app, 'asia-south1');
+
+// ─── Local emulator auto-connect ──────────────────────────────────────────────
+// Must connect immediately after get*() before any auth/db operations.
+if (IS_LOCAL) {
+  if (!auth.emulatorConfig) {
+    connectAuthEmulator(auth, 'http://localhost:9099', { disableWarnings: true });
+  }
+  connectFirestoreEmulator(db,   'localhost', 8080);
+  connectStorageEmulator(storage,'localhost', 9199);
+  connectFunctionsEmulator(functions, 'localhost', 5001);
+}
 
 // ─── Callable function wrappers ───────────────────────────────────────────────
 
@@ -69,33 +82,38 @@ export const callGetAdminStats         = ()     => httpsCallable(functions, 'get
  */
 export function requireAuth(requiredRole = null, redirectTo = '/login.html') {
   return new Promise((resolve, reject) => {
-    onAuthStateChanged(auth, async (user) => {
-      if (!user) {
-        window.location.href = redirectTo;
-        return;
-      }
+    // Use authStateReady() to wait until the SDK has restored auth state from
+    // localStorage before checking — avoids redirecting on the transient null
+    // that fires before the session token is verified.
+    const check = async (user) => {
+      if (!user) { window.location.href = redirectTo; return; }
       try {
         const snap = await getDoc(doc(db, 'users', user.uid));
-        if (!snap.exists()) {
-          window.location.href = '/registration.html';
-          return;
-        }
+        if (!snap.exists()) { window.location.href = '/registration.html'; return; }
         const profile = snap.data();
         if (requiredRole && (!profile.roles || !profile.roles.includes(requiredRole))) {
-          window.location.href = '/index.html';
-          return;
+          window.location.href = '/index.html'; return;
         }
         resolve({ uid: user.uid, ...profile });
-      } catch (err) {
-        reject(err);
-      }
-    });
+      } catch (err) { reject(err); }
+    };
+
+    if (typeof auth.authStateReady === 'function') {
+      // Firebase JS SDK v9.22+ — resolves once auth state is settled
+      auth.authStateReady().then(() => check(auth.currentUser)).catch(reject);
+    } else {
+      // Older SDK: unsubscribe after first non-null-checking call
+      const unsub = onAuthStateChanged(auth, user => {
+        unsub();
+        check(user);
+      });
+    }
   });
 }
 
 export async function logout() {
   await signOut(auth);
-  window.location.href = '/index.html';
+  window.location.href = '/login.html';
 }
 
 // ─── Real-time balance listeners ──────────────────────────────────────────────

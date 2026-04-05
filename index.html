@@ -42,6 +42,44 @@
     .nav-hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 4px; }
     .nav-hamburger span { width: 24px; height: 2px; background: var(--text-primary); border-radius: 2px; transition: .3s; }
 
+    /* ── Auth profile widget ──────────────────────────────────────────────── */
+    .nav-profile { position: relative; display: flex; align-items: center; gap: .6rem; cursor: pointer; }
+    .nav-avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: linear-gradient(135deg, #b8860b, var(--gold));
+      display: flex; align-items: center; justify-content: center;
+      font-size: .85rem; font-weight: 700; color: #000;
+      border: 2px solid rgba(212,175,55,.4);
+      flex-shrink: 0;
+    }
+    .nav-profile-name { font-size: .9rem; font-weight: 500; color: #fff; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .nav-profile-role { font-size: .72rem; color: var(--gold); text-transform: capitalize; }
+    .nav-dropdown {
+      position: absolute; top: calc(100% + .75rem); right: 0;
+      background: #13131a; border: 1px solid rgba(212,175,55,.18);
+      border-radius: 14px; padding: .5rem; min-width: 220px;
+      box-shadow: 0 16px 40px rgba(0,0,0,.6);
+      opacity: 0; pointer-events: none; transform: translateY(-6px);
+      transition: opacity .18s, transform .18s;
+      z-index: 200;
+    }stt
+    .nav-profile:focus-within .nav-dropdown,
+    .nav-profile.open .nav-dropdown { opacity: 1; pointer-events: all; transform: translateY(0); }
+    .nav-dd-header { padding: .75rem 1rem .6rem; border-bottom: 1px solid rgba(255,255,255,.07); margin-bottom: .35rem; }
+    .nav-dd-name { font-weight: 600; color: #fff; font-size: .95rem; }
+    .nav-dd-email { font-size: .78rem; color: var(--text-muted); margin-top: .15rem; word-break: break-all; }
+    .nav-dd-role { display: inline-block; margin-top: .4rem; font-size: .72rem; padding: .2rem .6rem; border-radius: 50px; background: rgba(212,175,55,.12); color: var(--gold); text-transform: capitalize; }
+    .nav-dd-item {
+      display: flex; align-items: center; gap: .65rem;
+      padding: .6rem 1rem; border-radius: 9px; font-size: .88rem;
+      color: var(--text-secondary); text-decoration: none; cursor: pointer;
+      transition: background .15s, color .15s; border: none; background: none; width: 100%; text-align: left;
+    }
+    .nav-dd-item:hover { background: rgba(255,255,255,.06); color: #fff; }
+    .nav-dd-item.danger { color: #f87171; }
+    .nav-dd-item.danger:hover { background: rgba(239,68,68,.1); color: #ef4444; }
+    .nav-dd-divider { height: 1px; background: rgba(255,255,255,.07); margin: .35rem 0; }
+
     /* ── Gold ticker bar ──────────────────────────────────────────────────── */
     .ticker {
       position: fixed; top: 68px; left: 0; right: 0; z-index: 99;
@@ -336,8 +374,11 @@
       <a href="#roles">Roles</a>
       <a href="faq.html">FAQ</a>
       <a href="#protocol">Resolution</a>
-      <a href="login.html">Sign In</a>
-      <a href="registration.html" class="nav-cta">Get Started</a>
+      <!-- auth slot: replaced by JS when logged in -->
+      <span id="nav-auth-slot">
+        <a href="login.html">Sign In</a>
+        <a href="registration.html" class="nav-cta">Get Started</a>
+      </span>
     </div>
     <div class="nav-hamburger" id="hamburger" onclick="toggleMenu()">
       <span></span><span></span><span></span>
@@ -577,6 +618,111 @@
   </footer>
 
   <script src="js/shared.js"></script>
+
+  <!-- Auth-aware navbar -->
+  <script type="module">
+    import { initializeApp, getApps } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+    import { getAuth, onAuthStateChanged, signOut, connectAuthEmulator } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+    import { getFirestore, doc, getDoc, connectFirestoreEmulator } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+
+    const FIREBASE_CONFIG = {
+      apiKey: 'AIzaSyAsHHiCqvvlwzt3Zx7nwbKCnpmkWG-HPpc',
+      authDomain: 'tgdp-d4a3d.firebaseapp.com',
+      projectId: 'tgdp-d4a3d',
+      storageBucket: 'tgdp-d4a3d.firebasestorage.app',
+      messagingSenderId: '399267274832',
+      appId: '1:399267274832:web:202956b9af788eb96ff155',
+    };
+
+    const IS_LOCAL = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+    const app  = getApps().length ? getApps()[0] : initializeApp(FIREBASE_CONFIG);
+    const auth = getAuth(app);
+    const db   = getFirestore(app);
+
+    if (IS_LOCAL) {
+      if (!auth.emulatorConfig)  connectAuthEmulator(auth, 'http://localhost:9099', { disableWarnings: true });
+      try { connectFirestoreEmulator(db, 'localhost', 8080); } catch (_) {}
+    }
+
+    const DASHBOARDS = {
+      admin:      'admin.html',
+      household:  'portals/tgold/dashboard.html',
+      licensee:   'portals/gic/dashboard.html',
+      jeweler:    'portals/tjr/dashboard.html',
+      designer:   'portals/tjdb/dashboard.html',
+      returnee:   'portals/tjr/dashboard.html',
+      consultant: 'portals/tgold/dashboard.html',
+      advertiser: 'portals/tgold/dashboard.html',
+      ombudsman:  'portals/ombudsman/dashboard.html',
+    };
+
+    function initials(first, last) {
+      return ((first || '')[0] + (last || '')[0]).toUpperCase() || '?';
+    }
+
+    function renderLoggedIn(user, profile) {
+      const slot    = document.getElementById('nav-auth-slot');
+      const role    = profile.primaryRole || (profile.roles && profile.roles[0]) || '';
+      const dash    = DASHBOARDS[role] || 'portals/tgold/dashboard.html';
+      const ini     = initials(profile.firstName, profile.lastName);
+      const name    = `${profile.firstName || ''} ${profile.lastName || ''}`.trim() || user.email;
+      const roleLabel = role.charAt(0).toUpperCase() + role.slice(1);
+
+      slot.innerHTML = `
+        <div class="nav-profile" id="navProfile" tabindex="0">
+          <div class="nav-avatar">${ini}</div>
+          <div>
+            <div class="nav-profile-name">${name}</div>
+            <div class="nav-profile-role">${roleLabel}</div>
+          </div>
+          <div class="nav-dropdown">
+            <div class="nav-dd-header">
+              <div class="nav-dd-name">${name}</div>
+              <div class="nav-dd-email">${user.email}</div>
+              <span class="nav-dd-role">${roleLabel}</span>
+            </div>
+            <a href="${dash}" class="nav-dd-item">🏠 &nbsp;My Dashboard</a>
+            <a href="${dash}#profile" class="nav-dd-item" onclick="sessionStorage.setItem('openPanel','profile')">👤 &nbsp;My Profile</a>
+            <div class="nav-dd-divider"></div>
+            <button class="nav-dd-item danger" id="navSignOut">🚪 &nbsp;Sign Out</button>
+          </div>
+        </div>`;
+
+      // Toggle dropdown on click
+      const profile_el = document.getElementById('navProfile');
+      profile_el.addEventListener('click', e => {
+        // Don't toggle if clicking a link or button inside
+        if (e.target.closest('a, button')) return;
+        profile_el.classList.toggle('open');
+      });
+      // Close on outside click
+      document.addEventListener('click', e => {
+        if (!profile_el.contains(e.target)) profile_el.classList.remove('open');
+      });
+      // Sign out
+      document.getElementById('navSignOut').addEventListener('click', async () => {
+        await signOut(auth);
+        window.location.href = 'login.html';
+      });
+    }
+
+    // Wait for auth to settle then check
+    if (typeof auth.authStateReady === 'function') {
+      await auth.authStateReady();
+      const user = auth.currentUser;
+      if (user) {
+        const snap = await getDoc(doc(db, 'users', user.uid));
+        if (snap.exists()) renderLoggedIn(user, snap.data());
+      }
+    } else {
+      onAuthStateChanged(auth, async user => {
+        if (!user) return;
+        const snap = await getDoc(doc(db, 'users', user.uid));
+        if (snap.exists()) renderLoggedIn(user, snap.data());
+      });
+    }
+  </script>
+
   <script>
     // Navbar scroll effect
     const nav = document.getElementById('mainNav');

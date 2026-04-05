@@ -284,7 +284,7 @@ body{font-family:'Syne',sans-serif;background:var(--ink);color:var(--text);min-h
     <div class="sb-bot">
       <div class="ni" onclick="showAudit()"><span class="ic">🔍</span>Audit Trail<span class="nb ng" id="audit-count">—</span></div>
       <div class="ni" onclick="exitToSelector()"><span class="ic">⟵</span>All Roles</div>
-      <div class="ni" onclick="window.location.href='login.html'" style="margin-top:4px;"><span class="ic">🚪</span>Sign Out</div>
+      <div class="ni" onclick="adminSignOut()" style="margin-top:4px;"><span class="ic">🚪</span>Sign Out</div>
     </div>
   </nav>
   <div class="main">
@@ -643,6 +643,20 @@ function dashApproval() {
 // Init
 buildSelector();
 toast('Admin Dashboard · 12 Roles · TGDP Platform', 'g');
+
+async function adminSignOut() {
+  try {
+    const { initializeApp, getApps } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js');
+    const { getAuth, signOut, connectAuthEmulator } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js');
+    const app  = getApps().length ? getApps()[0] : initializeApp({ apiKey:'AIzaSyAsHHiCqvvlwzt3Zx7nwbKCnpmkWG-HPpc', authDomain:'tgdp-d4a3d.firebaseapp.com', projectId:'tgdp-d4a3d' });
+    const auth = getAuth(app);
+    if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
+      if (!auth.emulatorConfig) connectAuthEmulator(auth, 'http://localhost:9099', { disableWarnings: true });
+    }
+    await signOut(auth);
+  } catch(e) { console.warn('signOut error:', e); }
+  window.location.href = '/login.html';
+}
 </script>
 </body>
 </html>

@@ -182,15 +182,18 @@
       
       <div class="sidebar-footer">
         <div class="sidebar-user">
-          <div class="sidebar-avatar" style="background: linear-gradient(135deg, var(--ombudsman-dark), var(--ombudsman));">JT</div>
+          <div class="sidebar-avatar" style="background: linear-gradient(135deg, var(--ombudsman-dark), var(--ombudsman));">--</div>
           <div>
-            <div class="sidebar-name">Justice Tidke</div>
-            <div class="sidebar-id">OMB-IND-00001</div>
+            <div class="sidebar-name">Loading…</div>
+            <div class="sidebar-id">--</div>
           </div>
         </div>
         <a href="../../index.html" class="btn btn-outline btn-sm" style="width: 100%;">
           ← Back to Ecosystem
         </a>
+        <button onclick="window.tgdpLogout()" class="btn btn-outline btn-sm" style="width:100%;margin-top:.5rem;border-color:rgba(239,68,68,.5);color:#ef4444;">
+          Sign Out
+        </button>
       </div>
     </aside>
     
@@ -764,11 +767,11 @@
           <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; font-size: 0.9rem;">
             <div>
               <span style="color: var(--text-muted);">Complainant:</span><br>
-              <span class="mono">LIC-IND-12345</span> (Suresh Kapoor)
+              <span class="mono">LIC-IND-12345</span>
             </div>
             <div>
               <span style="color: var(--text-muted);">Respondent:</span><br>
-              <span class="mono">HH-IND-98765</span> (Priya Sharma)
+              <span class="mono">HH-IND-98765</span>
             </div>
             <div>
               <span style="color: var(--text-muted);">Category:</span><br>
@@ -982,6 +985,10 @@
     });
 
     window.tgdpLogout = logout;
+    if (sessionStorage.getItem('openPanel') === 'profile') {
+      sessionStorage.removeItem('openPanel');
+      showPanel('settings');
+    }
   </script>
 </body>
 </html>

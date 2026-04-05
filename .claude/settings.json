@@ -31,7 +31,12 @@
       "Bash(firebase projects:list)",
       "Bash(npm install:*)",
       "Bash(firebase hosting:sites:list)",
-      "Bash(firebase hosting:channel:list)"
+      "Bash(firebase hosting:channel:list)",
+      "Bash(npm --version)",
+      "Bash(firebase --version)",
+      "Bash(curl -s http://localhost:4000)",
+      "Bash(curl -s http://localhost:8080)",
+      "Bash(jobs -l)"
     ],
     "additionalDirectories": [
       "c:\\Users\\PRATHMESH\\Downloads\\tgdp",

@@ -106,15 +106,18 @@
       
       <div class="sidebar-footer">
         <div class="sidebar-user">
-          <div class="sidebar-avatar" style="background: linear-gradient(135deg, var(--purple-dark), var(--purple));">SK</div>
+          <div class="sidebar-avatar" style="background: linear-gradient(135deg, var(--purple-dark), var(--purple));">--</div>
           <div>
-            <div class="sidebar-name">Suresh Kapoor</div>
-            <div class="sidebar-id">LIC-IND-12345</div>
+            <div class="sidebar-name">Loading…</div>
+            <div class="sidebar-id">--</div>
           </div>
         </div>
         <a href="../../index.html" class="btn btn-outline btn-sm" style="width: 100%;">
           ← Back to Ecosystem
         </a>
+        <button onclick="window.tgdpLogout()" class="btn btn-outline btn-sm" style="width:100%;margin-top:.5rem;border-color:rgba(239,68,68,.5);color:#ef4444;">
+          Sign Out
+        </button>
       </div>
     </aside>
     
@@ -206,30 +209,7 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    <td class="mono">HH-IND-98765</td>
-                    <td>Priya Sharma</td>
-                    <td>25 Mar 2026</td>
-                    <td class="mono">125g</td>
-                    <td class="mono" style="color: var(--purple);">₹8,500</td>
-                    <td><span class="badge badge-success">Active</span></td>
-                  </tr>
-                  <tr>
-                    <td class="mono">HH-IND-98764</td>
-                    <td>Amit Patel</td>
-                    <td>22 Mar 2026</td>
-                    <td class="mono">85g</td>
-                    <td class="mono" style="color: var(--purple);">₹5,200</td>
-                    <td><span class="badge badge-success">Active</span></td>
-                  </tr>
-                  <tr>
-                    <td class="mono">HH-IND-98763</td>
-                    <td>Meera Reddy</td>
-                    <td>18 Mar 2026</td>
-                    <td class="mono">200g</td>
-                    <td class="mono" style="color: var(--purple);">₹12,000</td>
-                    <td><span class="badge badge-success">Active</span></td>
-                  </tr>
+                  <tr><td colspan="6" style="text-align:center;color:var(--text-muted)">Loading…</td></tr>
                 </tbody>
               </table>
             </div>
@@ -261,56 +241,7 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    <td class="mono">HH-IND-98765</td>
-                    <td>Priya Sharma</td>
-                    <td>Mumbai, MH</td>
-                    <td>25 Mar 2026</td>
-                    <td class="mono">125g</td>
-                    <td class="mono">1,250</td>
-                    <td class="mono" style="color: var(--purple);">₹8,500</td>
-                    <td><span class="badge badge-success">Active</span></td>
-                  </tr>
-                  <tr>
-                    <td class="mono">HH-IND-98764</td>
-                    <td>Amit Patel</td>
-                    <td>Ahmedabad, GJ</td>
-                    <td>22 Mar 2026</td>
-                    <td class="mono">85g</td>
-                    <td class="mono">850</td>
-                    <td class="mono" style="color: var(--purple);">₹5,200</td>
-                    <td><span class="badge badge-success">Active</span></td>
-                  </tr>
-                  <tr>
-                    <td class="mono">HH-IND-98763</td>
-                    <td>Meera Reddy</td>
-                    <td>Hyderabad, TG</td>
-                    <td>18 Mar 2026</td>
-                    <td class="mono">200g</td>
-                    <td class="mono">2,000</td>
-                    <td class="mono" style="color: var(--purple);">₹12,000</td>
-                    <td><span class="badge badge-success">Active</span></td>
-                  </tr>
-                  <tr>
-                    <td class="mono">HH-IND-98762</td>
-                    <td>Vikram Singh</td>
-                    <td>Delhi, DL</td>
-                    <td>15 Mar 2026</td>
-                    <td class="mono">150g</td>
-                    <td class="mono">1,500</td>
-                    <td class="mono" style="color: var(--purple);">₹9,800</td>
-                    <td><span class="badge badge-success">Active</span></td>
-                  </tr>
-                  <tr>
-                    <td class="mono">HH-IND-98761</td>
-                    <td>Anjali Gupta</td>
-                    <td>Jaipur, RJ</td>
-                    <td>10 Mar 2026</td>
-                    <td class="mono">75g</td>
-                    <td class="mono">750</td>
-                    <td class="mono" style="color: var(--purple);">₹4,500</td>
-                    <td><span class="badge badge-warning">Pending KYC</span></td>
-                  </tr>
+                  <tr><td colspan="8" style="text-align:center;color:var(--text-muted)">Loading…</td></tr>
                 </tbody>
               </table>
             </div>
@@ -498,8 +429,6 @@
                   <label class="form-label required">Bank Account</label>
                   <select class="form-select" name="bankAccount" required>
                     <option value="">Select Account</option>
-                    <option value="icici">ICICI Bank ****6789</option>
-                    <option value="hdfc">HDFC Bank ****1234</option>
                     <option value="add">+ Add New Account</option>
                   </select>
                 </div>
@@ -526,20 +455,7 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    <td class="mono">GIC-RDM-2026-00045</td>
-                    <td>15 Mar 2026</td>
-                    <td class="mono">₹50,000</td>
-                    <td>ICICI ****6789</td>
-                    <td><span class="badge badge-success">Completed</span></td>
-                  </tr>
-                  <tr>
-                    <td class="mono">GIC-RDM-2026-00032</td>
-                    <td>28 Feb 2026</td>
-                    <td class="mono">₹75,000</td>
-                    <td>HDFC ****1234</td>
-                    <td><span class="badge badge-success">Completed</span></td>
-                  </tr>
+                  <tr><td colspan="5" style="text-align:center;color:var(--text-muted)">No redemptions yet.</td></tr>
                 </tbody>
               </table>
             </div>
@@ -826,11 +742,11 @@
               <div class="form-row">
                 <div class="form-group">
                   <label class="form-label">Full Name</label>
-                  <input type="text" class="form-input" value="Suresh Kapoor" disabled>
+                  <input type="text" class="form-input" name="profileName" value="" disabled>
                 </div>
                 <div class="form-group">
                   <label class="form-label">Email</label>
-                  <input type="email" class="form-input" value="suresh.kapoor@email.com" disabled>
+                  <input type="email" class="form-input" name="profileEmail" value="" disabled>
                 </div>
               </div>
               <button class="btn btn-outline" style="margin-top: 1rem;">Request Profile Update</button>
@@ -1020,6 +936,10 @@
     });
 
     window.tgdpLogout = logout;
+    if (sessionStorage.getItem('openPanel') === 'profile') {
+      sessionStorage.removeItem('openPanel');
+      showPanel('settings');
+    }
 
     // ── GIC license fee payment via Razorpay ────────────────────────────────
     window.payLicenseFee = function() {

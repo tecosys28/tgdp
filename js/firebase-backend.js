@@ -6,11 +6,11 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword,
          onAuthStateChanged, signOut, sendEmailVerification, sendPasswordResetEmail,
-         GoogleAuthProvider, signInWithRedirect, getRedirectResult }
+         GoogleAuthProvider, signInWithRedirect, getRedirectResult, connectAuthEmulator }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, doc, setDoc, getDoc, onSnapshot, serverTimestamp }
+import { getFirestore, doc, setDoc, getDoc, onSnapshot, serverTimestamp, connectFirestoreEmulator }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import { getStorage, ref, uploadBytes, getDownloadURL }
+import { getStorage, ref, uploadBytes, getDownloadURL, connectStorageEmulator }
   from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-analytics.js";
 
@@ -25,11 +25,22 @@ const FIREBASE_CONFIG = {
   measurementId: "G-NHVPJS29MB"
 };
 
-const app         = initializeApp(FIREBASE_CONFIG);
-const auth        = getAuth(app);
-const db          = getFirestore(app);
-const storage     = getStorage(app);
-getAnalytics(app);
+const IS_LOCAL = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+
+const app     = initializeApp(FIREBASE_CONFIG);
+const auth    = getAuth(app);
+const db      = getFirestore(app);
+const storage = getStorage(app);
+
+if (IS_LOCAL) {
+  if (!auth.emulatorConfig) {
+    connectAuthEmulator(auth, 'http://localhost:9099', { disableWarnings: true });
+  }
+  connectFirestoreEmulator(db,    'localhost', 8080);
+  connectStorageEmulator(storage, 'localhost', 9199);
+} else {
+  getAnalytics(app);
+}
 const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({
   client_id: '399267274832-qe24nepg617svaitmv0skqas05pcluke.apps.googleusercontent.com',
@@ -179,25 +190,28 @@ window.firebaseResetPassword = async function(email) {
 // ─── Logout ───────────────────────────────────────────────────────────────────
 window.firebaseLogout = async function() {
   await signOut(auth);
-  window.location.href = '/index.html';
+  window.location.href = '/login.html';
 };
 
 // ─── Auth State Observer ──────────────────────────────────────────────────────
-// Fires on every page load — redirects unauthenticated users from dashboards
+// Waits for SDK auth state to settle before checking — prevents redirect on the
+// transient null that fires before localStorage session is restored.
 window.initAuthGuard = function(requireAuth = true, redirectTo = '/registration.html') {
   return new Promise((resolve) => {
-    onAuthStateChanged(auth, async (user) => {
-      if (requireAuth && !user) {
-        window.location.href = redirectTo;
-        return;
-      }
+    const check = async (user) => {
+      if (requireAuth && !user) { window.location.href = redirectTo; return; }
       if (user) {
         const userDoc = await getDoc(doc(db, 'users', user.uid));
         resolve(userDoc.exists() ? userDoc.data() : null);
       } else {
         resolve(null);
       }
-    });
+    };
+    if (typeof auth.authStateReady === 'function') {
+      auth.authStateReady().then(() => check(auth.currentUser));
+    } else {
+      const unsub = onAuthStateChanged(auth, user => { unsub(); check(user); });
+    }
   });
 };
 

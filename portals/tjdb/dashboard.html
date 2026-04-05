@@ -208,15 +208,18 @@
       
       <div class="sidebar-footer">
         <div class="sidebar-user">
-          <div class="sidebar-avatar" style="background: linear-gradient(135deg, var(--rose-dark), var(--rose));">RK</div>
+          <div class="sidebar-avatar" style="background: linear-gradient(135deg, var(--rose-dark), var(--rose));">--</div>
           <div>
-            <div class="sidebar-name">Rajesh Kumar</div>
-            <div class="sidebar-id">HH-IND-54321</div>
+            <div class="sidebar-name">Loading…</div>
+            <div class="sidebar-id">--</div>
           </div>
         </div>
         <a href="../../index.html" class="btn btn-outline btn-sm" style="width: 100%;">
           ← Back to Ecosystem
         </a>
+        <button onclick="window.tgdpLogout()" class="btn btn-outline btn-sm" style="width:100%;margin-top:.5rem;border-color:rgba(239,68,68,.5);color:#ef4444;">
+          Sign Out
+        </button>
       </div>
     </aside>
     
@@ -259,100 +262,9 @@
             </div>
           </div>
           
-          <!-- Design Grid -->
-          <div class="design-grid">
-            <div class="design-card" onclick="openModal('design-detail')">
-              <div class="design-image">
-                💍
-                <span class="design-badge">New</span>
-                <div class="design-favorite">🤍</div>
-              </div>
-              <div class="design-info">
-                <div class="design-name">Lotus Bloom Ring</div>
-                <div class="design-designer">by Priya Mehta</div>
-              </div>
-              <div class="design-footer">
-                <span class="design-price">₹45,000</span>
-                <span class="design-rating">⭐ 4.9</span>
-              </div>
-            </div>
-            
-            <div class="design-card">
-              <div class="design-image">
-                📿
-                <div class="design-favorite">🤍</div>
-              </div>
-              <div class="design-info">
-                <div class="design-name">Temple Necklace</div>
-                <div class="design-designer">by Arjun Sharma</div>
-              </div>
-              <div class="design-footer">
-                <span class="design-price">₹2,85,000</span>
-                <span class="design-rating">⭐ 4.8</span>
-              </div>
-            </div>
-            
-            <div class="design-card">
-              <div class="design-image">
-                ✨
-                <span class="design-badge">Trending</span>
-                <div class="design-favorite">❤️</div>
-              </div>
-              <div class="design-info">
-                <div class="design-name">Peacock Earrings</div>
-                <div class="design-designer">by Meera Reddy</div>
-              </div>
-              <div class="design-footer">
-                <span class="design-price">₹78,000</span>
-                <span class="design-rating">⭐ 5.0</span>
-              </div>
-            </div>
-            
-            <div class="design-card">
-              <div class="design-image">
-                👑
-                <div class="design-favorite">🤍</div>
-              </div>
-              <div class="design-info">
-                <div class="design-name">Royal Bangle Set</div>
-                <div class="design-designer">by Vikram Arts</div>
-              </div>
-              <div class="design-footer">
-                <span class="design-price">₹1,65,000</span>
-                <span class="design-rating">⭐ 4.7</span>
-              </div>
-            </div>
-            
-            <div class="design-card">
-              <div class="design-image">
-                💎
-                <span class="design-badge">Premium</span>
-                <div class="design-favorite">🤍</div>
-              </div>
-              <div class="design-info">
-                <div class="design-name">Diamond Pendant</div>
-                <div class="design-designer">by Anjali Jewels</div>
-              </div>
-              <div class="design-footer">
-                <span class="design-price">₹3,45,000</span>
-                <span class="design-rating">⭐ 4.9</span>
-              </div>
-            </div>
-            
-            <div class="design-card">
-              <div class="design-image">
-                🌸
-                <div class="design-favorite">🤍</div>
-              </div>
-              <div class="design-info">
-                <div class="design-name">Floral Anklet</div>
-                <div class="design-designer">by Traditional Touch</div>
-              </div>
-              <div class="design-footer">
-                <span class="design-price">₹32,000</span>
-                <span class="design-rating">⭐ 4.6</span>
-              </div>
-            </div>
+          <!-- Design Grid — populated by loadDesigns() -->
+          <div class="design-grid" id="design-grid">
+            <div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:2rem">Loading designs…</div>
           </div>
           
           <!-- Pagination -->
@@ -372,47 +284,7 @@
               <h3 class="card-title">Featured Designers</h3>
             </div>
             <div class="card-body">
-              <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem;">
-                <div style="background: var(--obsidian); border: 1px solid var(--obsidian-border); border-radius: var(--radius-lg); padding: 1.5rem; display: flex; gap: 1rem;">
-                  <div style="width: 64px; height: 64px; background: linear-gradient(135deg, var(--rose-dark), var(--rose)); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">PM</div>
-                  <div style="flex: 1;">
-                    <div style="font-weight: 600;">Priya Mehta</div>
-                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">Mumbai · Contemporary Designs</div>
-                    <div style="font-size: 0.8rem; color: var(--rose);">⭐ 4.9 · 45 designs · 230 orders</div>
-                  </div>
-                  <button class="btn btn-outline btn-sm" style="border-color: var(--rose); color: var(--rose);">View</button>
-                </div>
-                
-                <div style="background: var(--obsidian); border: 1px solid var(--obsidian-border); border-radius: var(--radius-lg); padding: 1.5rem; display: flex; gap: 1rem;">
-                  <div style="width: 64px; height: 64px; background: linear-gradient(135deg, var(--gold-dark), var(--gold)); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">AS</div>
-                  <div style="flex: 1;">
-                    <div style="font-weight: 600;">Arjun Sharma</div>
-                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">Jaipur · Traditional Temple Jewelry</div>
-                    <div style="font-size: 0.8rem; color: var(--rose);">⭐ 4.8 · 62 designs · 185 orders</div>
-                  </div>
-                  <button class="btn btn-outline btn-sm" style="border-color: var(--rose); color: var(--rose);">View</button>
-                </div>
-                
-                <div style="background: var(--obsidian); border: 1px solid var(--obsidian-border); border-radius: var(--radius-lg); padding: 1.5rem; display: flex; gap: 1rem;">
-                  <div style="width: 64px; height: 64px; background: linear-gradient(135deg, var(--purple-dark), var(--purple)); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">MR</div>
-                  <div style="flex: 1;">
-                    <div style="font-weight: 600;">Meera Reddy</div>
-                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">Hyderabad · South Indian Designs</div>
-                    <div style="font-size: 0.8rem; color: var(--rose);">⭐ 5.0 · 38 designs · 156 orders</div>
-                  </div>
-                  <button class="btn btn-outline btn-sm" style="border-color: var(--rose); color: var(--rose);">View</button>
-                </div>
-                
-                <div style="background: var(--obsidian); border: 1px solid var(--obsidian-border); border-radius: var(--radius-lg); padding: 1.5rem; display: flex; gap: 1rem;">
-                  <div style="width: 64px; height: 64px; background: linear-gradient(135deg, var(--teal-dark), var(--teal)); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem;">VA</div>
-                  <div style="flex: 1;">
-                    <div style="font-weight: 600;">Vikram Arts Studio</div>
-                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.5rem;">Delhi · Fusion & Bridal</div>
-                    <div style="font-size: 0.8rem; color: var(--rose);">⭐ 4.7 · 89 designs · 312 orders</div>
-                  </div>
-                  <button class="btn btn-outline btn-sm" style="border-color: var(--rose); color: var(--rose);">View</button>
-                </div>
-              </div>
+              <div style="text-align:center;color:var(--text-muted);padding:2rem">No featured designers yet.</div>
             </div>
           </div>
         </div>
@@ -470,33 +342,7 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    <td class="mono">JDB-2026-00234</td>
-                    <td>Lotus Bloom Ring</td>
-                    <td>Priya Mehta</td>
-                    <td class="mono">₹45,000</td>
-                    <td><span class="badge badge-gold">T-Gold</span></td>
-                    <td>25 Mar 2026</td>
-                    <td><span class="badge badge-warning">In Production</span></td>
-                  </tr>
-                  <tr>
-                    <td class="mono">JDB-2026-00198</td>
-                    <td>Peacock Earrings</td>
-                    <td>Meera Reddy</td>
-                    <td class="mono">₹78,000</td>
-                    <td><span class="badge badge-info">Bank</span></td>
-                    <td>18 Mar 2026</td>
-                    <td><span class="badge badge-purple">Shipping</span></td>
-                  </tr>
-                  <tr>
-                    <td class="mono">JDB-2026-00156</td>
-                    <td>Diamond Pendant</td>
-                    <td>Anjali Jewels</td>
-                    <td class="mono">₹3,45,000</td>
-                    <td><span class="badge badge-gold">T-Gold</span></td>
-                    <td>05 Mar 2026</td>
-                    <td><span class="badge badge-success">Delivered</span></td>
-                  </tr>
+                  <tr><td colspan="7" style="text-align:center;color:var(--text-muted)">Loading…</td></tr>
                 </tbody>
               </table>
             </div>
@@ -524,10 +370,6 @@
                     <label class="form-label required">Select Designer</label>
                     <select class="form-select" name="designer" required>
                       <option value="">Choose a designer</option>
-                      <option value="priya">Priya Mehta - Contemporary</option>
-                      <option value="arjun">Arjun Sharma - Temple</option>
-                      <option value="meera">Meera Reddy - South Indian</option>
-                      <option value="vikram">Vikram Arts - Fusion</option>
                     </select>
                   </div>
                   <div class="form-group">
@@ -597,21 +439,8 @@
               <h3 class="card-title">My Favorites</h3>
             </div>
             <div class="card-body">
-              <div class="design-grid">
-                <div class="design-card">
-                  <div class="design-image">
-                    ✨
-                    <div class="design-favorite">❤️</div>
-                  </div>
-                  <div class="design-info">
-                    <div class="design-name">Peacock Earrings</div>
-                    <div class="design-designer">by Meera Reddy</div>
-                  </div>
-                  <div class="design-footer">
-                    <span class="design-price">₹78,000</span>
-                    <button class="btn btn-rose btn-sm">Buy Now</button>
-                  </div>
-                </div>
+              <div class="design-grid" id="favorites-grid">
+                <div style="grid-column:1/-1;text-align:center;color:var(--text-muted);padding:2rem">No favourites yet.</div>
               </div>
             </div>
           </div>
@@ -628,7 +457,7 @@
               <div class="form-row">
                 <div class="form-group">
                   <label class="form-label">Full Name</label>
-                  <input type="text" class="form-input" value="Rajesh Kumar" disabled>
+                  <input type="text" class="form-input" name="profileName" value="" disabled>
                 </div>
                 <div class="form-group">
                   <label class="form-label">Email</label>
@@ -640,7 +469,7 @@
               
               <h4 style="margin-bottom: 1rem;">Shipping Address</h4>
               <div class="form-group">
-                <textarea class="form-textarea" rows="2">123, Gold Lane, Andheri West, Mumbai - 400058</textarea>
+                <textarea class="form-textarea" name="profileAddress" rows="2"></textarea>
               </div>
               <button class="btn btn-outline">Update Address</button>
             </div>
@@ -733,7 +562,7 @@
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
           <div>
             <div style="font-size: 0.85rem; color: var(--text-muted);">Designer</div>
-            <div style="font-weight: 600;">Priya Mehta</div>
+            <div style="font-weight: 600;" id="modal-designer-name">—</div>
           </div>
           <div style="text-align: right;">
             <div style="font-size: 0.85rem; color: var(--text-muted);">Price</div>
@@ -983,6 +812,10 @@
     });
 
     window.tgdpLogout = logout;
+    if (sessionStorage.getItem('openPanel') === 'profile') {
+      sessionStorage.removeItem('openPanel');
+      showPanel('settings');
+    }
   </script>
 </body>
 </html>

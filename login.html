@@ -145,6 +145,15 @@
     }
     .login-input:focus { outline: none; border-color: rgba(212,175,55,.5); background: rgba(212,175,55,.04); }
     .login-input::placeholder { color: var(--text-muted); }
+    .pw-wrap { position: relative; }
+    .pw-wrap .login-input { padding-right: 2.8rem; }
+    .pw-toggle {
+      position: absolute; right: .85rem; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer; padding: 0;
+      color: var(--text-muted); line-height: 1; font-size: 1.1rem;
+      transition: color .2s;
+    }
+    .pw-toggle:hover { color: var(--gold); }
 
     .login-options {
       display: flex; align-items: center; justify-content: space-between;
@@ -308,7 +317,10 @@
 
         <div class="login-form-group">
           <label class="login-label" for="loginPassword">Password</label>
-          <input type="password" id="loginPassword" class="login-input" placeholder="Enter your password" required>
+          <div class="pw-wrap">
+            <input type="password" id="loginPassword" class="login-input" placeholder="Enter your password" required>
+            <button type="button" class="pw-toggle" onclick="togglePw('loginPassword',this)" aria-label="Show password">👁</button>
+          </div>
         </div>
 
         <div class="login-options">
@@ -356,10 +368,10 @@
 
 <script>
   /* ── Dashboard routing ──────────────────────────────────────────────────── */
-  const ADMIN_EMAIL = 'prathmeshwalimbe2004@gmail.com';
   const ADMIN_DASHBOARD = 'admin.html';
 
   const DASHBOARDS = {
+    admin:    'admin.html',
     household:'portals/tgold/dashboard.html', licensee:'portals/gic/dashboard.html',
     jeweler:'portals/tjr/dashboard.html',     designer:'portals/tjdb/dashboard.html',
     returnee:'portals/tjr/dashboard.html',    consultant:'portals/tgold/dashboard.html',
@@ -367,12 +379,7 @@
   };
 
   function redirectByRole(profile) {
-    // Admin override — always goes to admin dashboard
-    if (profile.email === ADMIN_EMAIL) {
-      window.location.href = ADMIN_DASHBOARD;
-      return;
-    }
-    const r = profile.primaryRole;
+    const r = profile.primaryRole || (profile.roles && profile.roles[0]);
     window.location.href = (r && DASHBOARDS[r]) ? DASHBOARDS[r] : 'portals/tgold/dashboard.html';
   }
 
@@ -413,13 +420,6 @@
     waitForFn('firebaseLogin', () => {
       window.firebaseLogin(email, pwd)
         .then(profile => {
-          // Admin shortcut — redirect immediately if admin email
-          if (email === ADMIN_EMAIL) {
-            showLoginSuccess('Welcome, Admin! Redirecting to platform dashboard...');
-            btn.textContent = 'Redirecting...';
-            setTimeout(() => { window.location.href = ADMIN_DASHBOARD; }, 1500);
-            return;
-          }
           showLoginSuccess('Signed in! Redirecting to your dashboard...');
           btn.textContent = 'Redirecting...';
           setTimeout(() => redirectByRole(profile), 1500);
@@ -512,6 +512,14 @@
       });
     });
   });
+
+  function togglePw(inputId, btn) {
+    const input = document.getElementById(inputId);
+    const show = input.type === 'password';
+    input.type = show ? 'text' : 'password';
+    btn.textContent = show ? '🙈' : '👁';
+    btn.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+  }
 </script>
 </body>
 </html>

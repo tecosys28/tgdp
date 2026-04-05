@@ -1,0 +1,18 @@
+{
+  "name": "tgdp-server",
+  "version": "1.0.0",
+  "description": "TGDP Ecosystem REST API — PostgreSQL backend",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "ethers": "^6.13.0",
+    "express": "^4.19.2",
+    "firebase-admin": "^12.0.0",
+    "pg": "^8.12.0"
+  }
+}

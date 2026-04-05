@@ -191,6 +191,15 @@
       transition: border-color .2s, background .2s;
       width: 100%;
     }
+    .pw-wrap { position: relative; }
+    .pw-wrap .form-input { padding-right: 2.8rem; }
+    .pw-toggle {
+      position: absolute; right: .85rem; top: 50%; transform: translateY(-50%);
+      background: none; border: none; cursor: pointer; padding: 0;
+      color: var(--text-muted); line-height: 1; font-size: 1.1rem;
+      transition: color .2s;
+    }
+    .pw-toggle:hover { color: var(--gold); }
     .form-input:focus, .form-select:focus, .form-textarea:focus {
       outline: none; border-color: rgba(212,175,55,.5);
       background: rgba(212,175,55,.04);
@@ -570,12 +579,18 @@
           <div class="form-row">
             <div class="form-group">
               <label class="form-label">Password <span class="req">*</span></label>
-              <input type="password" class="form-input" name="password" required placeholder="Min 8 chars, 1 upper, 1 number">
+              <div class="pw-wrap">
+                <input type="password" class="form-input" name="password" id="regPassword" required placeholder="Min 8 chars, 1 upper, 1 number">
+                <button type="button" class="pw-toggle" onclick="togglePw('regPassword',this)" aria-label="Show password">👁</button>
+              </div>
               <span class="form-hint">Must include uppercase, number, and special character</span>
             </div>
             <div class="form-group">
               <label class="form-label">Confirm Password <span class="req">*</span></label>
-              <input type="password" class="form-input" name="confirmPassword" required placeholder="Re-enter password">
+              <div class="pw-wrap">
+                <input type="password" class="form-input" name="confirmPassword" id="regConfirmPassword" required placeholder="Re-enter password">
+                <button type="button" class="pw-toggle" onclick="togglePw('regConfirmPassword',this)" aria-label="Show password">👁</button>
+              </div>
             </div>
           </div>
         </div>
@@ -941,6 +956,14 @@
       });
     });
   });
+
+  function togglePw(inputId, btn) {
+    const input = document.getElementById(inputId);
+    const show = input.type === 'password';
+    input.type = show ? 'text' : 'password';
+    btn.textContent = show ? '🙈' : '👁';
+    btn.setAttribute('aria-label', show ? 'Hide password' : 'Show password');
+  }
 </script>
 </body>
 </html>

@@ -86,15 +86,18 @@
       
       <div class="sidebar-footer">
         <div class="sidebar-user">
-          <div class="sidebar-avatar">RK</div>
+          <div class="sidebar-avatar">--</div>
           <div>
-            <div class="sidebar-name">Rajesh Kumar</div>
-            <div class="sidebar-id">HH-IND-54321</div>
+            <div class="sidebar-name">Loading…</div>
+            <div class="sidebar-id">--</div>
           </div>
         </div>
         <a href="../../index.html" class="btn btn-outline btn-sm" style="width: 100%;">
           ← Back to Ecosystem
         </a>
+        <button onclick="window.tgdpLogout()" class="btn btn-outline btn-sm" style="width:100%;margin-top:.5rem;border-color:rgba(239,68,68,.5);color:#ef4444;">
+          Sign Out
+        </button>
       </div>
     </aside>
     
@@ -160,41 +163,7 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    <td>28 Mar 2026</td>
-                    <td><span class="badge badge-gold">Mint</span></td>
-                    <td>Gold Earmarking - 22K Necklace</td>
-                    <td class="mono">+50 TGDPs</td>
-                    <td><span class="badge badge-warning">Processing</span></td>
-                  </tr>
-                  <tr>
-                    <td>25 Mar 2026</td>
-                    <td><span class="badge badge-purple">Swap</span></td>
-                    <td>FTR Hospitality Exchange</td>
-                    <td class="mono">-100 TGDPs</td>
-                    <td><span class="badge badge-success">Completed</span></td>
-                  </tr>
-                  <tr>
-                    <td>22 Mar 2026</td>
-                    <td><span class="badge badge-teal">Trade</span></td>
-                    <td>Sold to HH-IND-98765</td>
-                    <td class="mono">-200 TGDPs</td>
-                    <td><span class="badge badge-success">Completed</span></td>
-                  </tr>
-                  <tr>
-                    <td>18 Mar 2026</td>
-                    <td><span class="badge badge-gold">Mint</span></td>
-                    <td>Gold Earmarking - 24K Bangle</td>
-                    <td class="mono">+300 TGDPs</td>
-                    <td><span class="badge badge-success">Completed</span></td>
-                  </tr>
-                  <tr>
-                    <td>15 Mar 2026</td>
-                    <td><span class="badge badge-info">Withdraw</span></td>
-                    <td>Bank Transfer to HDFC ****4521</td>
-                    <td class="mono">₹1,50,000</td>
-                    <td><span class="badge badge-success">Completed</span></td>
-                  </tr>
+                  <tr><td colspan="5" style="text-align:center;color:var(--text-muted)">Loading…</td></tr>
                 </tbody>
               </table>
             </div>
@@ -569,8 +538,6 @@
                   <label class="form-label required">Bank Account</label>
                   <select class="form-select" name="bankAccount" required>
                     <option value="">Select Account</option>
-                    <option value="hdfc">HDFC Bank ****4521</option>
-                    <option value="sbi">SBI ****7890</option>
                     <option value="add">+ Add New Account</option>
                   </select>
                 </div>
@@ -611,51 +578,7 @@
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    <td class="mono">TXN-2026-00128</td>
-                    <td>28 Mar 2026</td>
-                    <td><span class="badge badge-gold">Mint</span></td>
-                    <td>Gold Earmarking - 22K Necklace</td>
-                    <td>-</td>
-                    <td class="mono" style="color: var(--success);">+50</td>
-                    <td class="mono">1,250</td>
-                  </tr>
-                  <tr>
-                    <td class="mono">TXN-2026-00127</td>
-                    <td>25 Mar 2026</td>
-                    <td><span class="badge badge-purple">Swap</span></td>
-                    <td>FTR Hospitality Exchange</td>
-                    <td class="mono" style="color: var(--danger);">-100</td>
-                    <td>-</td>
-                    <td class="mono">1,200</td>
-                  </tr>
-                  <tr>
-                    <td class="mono">TXN-2026-00126</td>
-                    <td>22 Mar 2026</td>
-                    <td><span class="badge badge-teal">Trade</span></td>
-                    <td>Sold to HH-IND-98765</td>
-                    <td class="mono" style="color: var(--danger);">-200</td>
-                    <td>-</td>
-                    <td class="mono">1,300</td>
-                  </tr>
-                  <tr>
-                    <td class="mono">TXN-2026-00125</td>
-                    <td>18 Mar 2026</td>
-                    <td><span class="badge badge-gold">Mint</span></td>
-                    <td>Gold Earmarking - 24K Bangle</td>
-                    <td>-</td>
-                    <td class="mono" style="color: var(--success);">+300</td>
-                    <td class="mono">1,500</td>
-                  </tr>
-                  <tr>
-                    <td class="mono">TXN-2026-00124</td>
-                    <td>15 Mar 2026</td>
-                    <td><span class="badge badge-info">Withdraw</span></td>
-                    <td>Bank Transfer to HDFC ****4521</td>
-                    <td class="mono" style="color: var(--danger);">-200</td>
-                    <td>-</td>
-                    <td class="mono">1,200</td>
-                  </tr>
+                  <tr><td colspan="7" style="text-align:center;color:var(--text-muted)">Loading…</td></tr>
                 </tbody>
               </table>
             </div>
@@ -728,7 +651,7 @@
               <div class="form-row">
                 <div class="form-group">
                   <label class="form-label">Full Name</label>
-                  <input type="text" class="form-input" value="Rajesh Kumar" disabled>
+                  <input type="text" class="form-input" name="profileName" value="" disabled>
                 </div>
                 <div class="form-group">
                   <label class="form-label">Email</label>
@@ -1154,6 +1077,10 @@
 
     // ── Logout ─────────────────────────────────────────────────────────────────
     window.tgdpLogout = logout;
+    if (sessionStorage.getItem('openPanel') === 'profile') {
+      sessionStorage.removeItem('openPanel');
+      showPanel('settings');
+    }
   </script>
 </body>
 </html>
