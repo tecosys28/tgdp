@@ -16,10 +16,12 @@
       "port": 5000
     },
     "ui": {
-      "enabled": true,
-      "port": 4000
+      "enabled": false
     },
     "singleProjectMode": true
+  },
+  "emulatorExport": {
+    "path": "emulator-data"
   },
   "firestore": {
     "rules": "firestore.rules",

@@ -11,8 +11,8 @@ async function getPinataJWT() {
   try {
     const res = await pool.query("SELECT value FROM config WHERE key = 'ipfs'");
     if (!res.rows.length) return null;
-    const val = res.rows[0].value;
-    const jwt = typeof val === 'string' ? JSON.parse(val).pinataJWT : val.pinataJWT;
+    const val = res.rows[0].value || {};
+    const jwt = val.pinataJWT;
     if (!jwt) return null;
     _cfPinataJWT = jwt;
     return jwt;

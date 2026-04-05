@@ -7,8 +7,7 @@ async function getLBMARate() {
   try {
     const res = await pool.query("SELECT value FROM config WHERE key = 'lbma'");
     if (!res.rows.length) return 7342;
-    const val = res.rows[0].value;
-    const data = typeof val === 'string' ? JSON.parse(val) : val;
+    const data = res.rows[0].value || {};
     return data.ratePerGram || 7342;
   } catch {
     return 7342;

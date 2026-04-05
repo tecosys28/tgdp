@@ -11,7 +11,8 @@ const router = express.Router();
 router.get('/lbma', async (req, res, next) => {
   try {
     const r = await pool.query("SELECT value FROM config WHERE key = 'lbma'");
-    const data = r.rows[0]?.value || {};
+    const val  = r.rows[0]?.value || {};
+    const data = typeof val === 'string' ? JSON.parse(val) : val;
     res.json({ ratePerGram: data.ratePerGram || 7342, ...data });
   } catch (err) { next(err); }
 });
@@ -20,7 +21,8 @@ router.get('/lbma', async (req, res, next) => {
 router.get('/ipfs', verifyFirebaseToken, async (req, res, next) => {
   try {
     const r = await pool.query("SELECT value FROM config WHERE key = 'ipfs'");
-    const data = r.rows[0]?.value || {};
+    const val  = r.rows[0]?.value || {};
+    const data = typeof val === 'string' ? JSON.parse(val) : val;
     res.json({ pinataJWT: data.pinataJWT || null });
   } catch (err) { next(err); }
 });

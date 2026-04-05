@@ -187,6 +187,7 @@ CREATE TABLE tgdp_withdrawals (
   ifsc_code             TEXT            NOT NULL,
   account_holder_name   TEXT            NOT NULL DEFAULT '',
   status                tx_status       NOT NULL DEFAULT 'processing',
+  utr_number            TEXT,
   processed_at          TIMESTAMPTZ,
   created_at            TIMESTAMPTZ     NOT NULL DEFAULT NOW(),
   updated_at            TIMESTAMPTZ     NOT NULL DEFAULT NOW()

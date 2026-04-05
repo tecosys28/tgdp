@@ -108,10 +108,16 @@ async function requireAdmin(uid) {
   if (!r.rows.length) throw apiError(403, 'FORBIDDEN', 'Admin access required.');
 }
 
+function normaliseRoles(roles) {
+  if (!roles) return [];
+  if (typeof roles === 'string') return roles.replace(/^\{|\}$/g, '').split(',').map(s => s.trim()).filter(Boolean);
+  return roles.filter(Boolean);
+}
+
 function kycRow(r) {
   return {
     uid: r.uid, firstName: r.first_name, lastName: r.last_name, email: r.email,
-    roles: r.roles?.filter(Boolean) || [],
+    roles: normaliseRoles(r.roles),
     panDocUrl: r.pan_doc_url, aadhaarDocUrl: r.aadhaar_doc_url,
     photoDocUrl: r.photo_doc_url, addressDocUrl: r.address_doc_url,
     kycStatus: r.kyc_status, submittedAt: r.submitted_at, notes: r.notes,

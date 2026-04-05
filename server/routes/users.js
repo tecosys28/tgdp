@@ -114,6 +114,14 @@ router.post('/', verifyFirebaseToken, async (req, res, next) => {
 // ─── helpers ──────────────────────────────────────────────────────────────────
 
 function toProfile(row) {
+  // pg returns array_agg as a JS array already when there are multiple rows,
+  // but as a string like "{admin}" when there's only one — normalise both.
+  let roles = row.roles || [];
+  if (typeof roles === 'string') {
+    roles = roles.replace(/^\{|\}$/g, '').split(',').map(s => s.trim()).filter(Boolean);
+  } else {
+    roles = roles.filter(Boolean);
+  }
   return {
     uid:         row.uid,
     email:       row.email,
@@ -127,7 +135,7 @@ function toProfile(row) {
     state:       row.state,
     pincode:     row.pincode,
     primaryRole: row.primary_role,
-    roles:       row.roles?.filter(Boolean) || [],
+    roles,
     status:      row.status,
     createdAt:   row.created_at,
     updatedAt:   row.updated_at,
