@@ -1,0 +1,87 @@
+## ═══════════════════════════════════════════════════════════════════════════
+## TGDP Ecosystem — Render deployment manifest
+## Docs: https://render.com/docs/render-yaml-spec
+## ═══════════════════════════════════════════════════════════════════════════
+##
+## Services defined here:
+##   1. tgdp-api     — Express REST API (Node.js web service)
+##   2. tgdp-db      — Managed PostgreSQL 15
+##
+## To deploy:
+##   1. Push this repo to GitHub
+##   2. In Render Dashboard → "New Blueprint" → select this repo
+##   3. Set the secret env vars listed below in the Render dashboard
+##      (they are NOT in this file for security)
+## ═══════════════════════════════════════════════════════════════════════════
+
+services:
+  # ─── Express API ────────────────────────────────────────────────────────────
+  - type: web
+    name: tgdp-api
+    runtime: node
+    region: singapore          # closest to India; use oregon if latency is ok
+    plan: starter              # $7/mo — upgrade to standard when you have users
+    rootDir: server            # Render runs npm install + start from this dir
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /api/v1/health
+
+    envVars:
+      # ── Runtime ─────────────────────────────────────────────────────────────
+      - key: NODE_ENV
+        value: production
+
+      - key: PORT
+        value: 3001
+
+      # ── Database ─────────────────────────────────────────────────────────────
+      # Render auto-injects DATABASE_URL when you link the tgdp-db service.
+      # You can also set it manually to an external Postgres URL.
+      - key: DATABASE_URL
+        fromDatabase:
+          name: tgdp-db
+          property: connectionString
+
+      # ── Firebase ─────────────────────────────────────────────────────────────
+      # Set these in the Render dashboard as secret env vars — never in this file.
+      - key: FIREBASE_PROJECT_ID
+        sync: false            # "sync: false" = you must set it in the dashboard
+
+      - key: FIREBASE_SERVICE_ACCOUNT_JSON
+        sync: false            # full JSON of serviceAccountKey, base64-encoded
+
+      # ── CORS ─────────────────────────────────────────────────────────────────
+      # Set to your Firebase Hosting URL once deployed, e.g.:
+      # https://tgdp-d4a3d.web.app,https://yourdomain.com
+      - key: ALLOWED_ORIGINS
+        sync: false
+
+      # ── Payment gateway ───────────────────────────────────────────────────────
+      - key: RAZORPAY_KEY_ID
+        sync: false
+
+      - key: RAZORPAY_KEY_SECRET
+        sync: false
+
+      # ── Gold price feed ───────────────────────────────────────────────────────
+      - key: NASDAQ_API_KEY
+        sync: false
+
+      # ── Blockchain (optional — leave blank to disable) ────────────────────────
+      - key: POLYGON_RPC_URL
+        sync: false
+
+      - key: POLYGON_NETWORK
+        sync: false
+
+      - key: REGISTRAR_PRIVATE_KEY
+        sync: false
+
+  # ─── Managed PostgreSQL ──────────────────────────────────────────────────────
+databases:
+  - name: tgdp-db
+    databaseName: tgdp
+    user: tgdp
+    plan: starter              # $7/mo — includes daily backups, 1GB storage
+    region: singapore          # must match the web service region
+    postgresMajorVersion: 15

@@ -9,6 +9,7 @@ const cors    = require('cors');
 const path    = require('path');
 
 const { errorHandler } = require('./middleware/errorHandler');
+const { migrate }      = require('./migrate');
 
 const usersRouter      = require('./routes/users');
 const balancesRouter   = require('./routes/balances');
@@ -27,6 +28,10 @@ const paymentsRouter   = require('./routes/payments');
 const app  = express();
 const PORT = process.env.PORT || 3001;
 const IS_PROD = process.env.NODE_ENV === 'production';
+
+// Render (and most PaaS) sits behind a load balancer — trust the X-Forwarded-For header
+// so req.ip contains the real client IP (used by rate limiter + audit logs)
+if (IS_PROD) app.set('trust proxy', 1);
 
 // ─── CORS ─────────────────────────────────────────────────────────────────────
 // In production: set ALLOWED_ORIGINS as a comma-separated list in .env
@@ -112,7 +117,15 @@ app.get('*', (req, res, next) => {
 app.use(errorHandler);
 
 // ─── Start ────────────────────────────────────────────────────────────────────
-app.listen(PORT, () => {
-  const mode = IS_PROD ? 'PRODUCTION' : 'development';
-  process.stdout.write(`[TGDP] Server started — port ${PORT} — ${mode}\n`);
-});
+// Run DB migration before accepting traffic, then start listening.
+migrate()
+  .then(() => {
+    app.listen(PORT, () => {
+      const mode = IS_PROD ? 'PRODUCTION' : 'development';
+      process.stdout.write(`[TGDP] Server started — port ${PORT} — ${mode}\n`);
+    });
+  })
+  .catch((err) => {
+    process.stderr.write(`[TGDP] Startup failed (migration error): ${err.message}\n`);
+    process.exit(1);
+  });
